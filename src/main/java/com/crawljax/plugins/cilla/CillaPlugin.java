@@ -16,6 +16,7 @@ import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import com.crawljax.plugins.cilla.analysis.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -28,12 +29,6 @@ import com.crawljax.core.ExitNotifier.ExitStatus;
 import com.crawljax.core.plugin.OnNewStatePlugin;
 import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
-import com.crawljax.plugins.cilla.analysis.CssAnalyzer;
-import com.crawljax.plugins.cilla.analysis.ElementWithClass;
-import com.crawljax.plugins.cilla.analysis.MCssRule;
-import com.crawljax.plugins.cilla.analysis.MProperty;
-import com.crawljax.plugins.cilla.analysis.MSelector;
-import com.crawljax.plugins.cilla.analysis.MatchedElements;
 import com.crawljax.plugins.cilla.util.CSSDOMHelper;
 import com.crawljax.plugins.cilla.util.CssParser;
 import com.crawljax.plugins.cilla.visualizer.CillaVisualizer;
@@ -51,6 +46,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	private final SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy-hhmmss");
 
+	private final File outputDir = new File("output");
 	private final File outputFile = new File("output/cilla"
 	        + String.format("%s", sdf.format(new Date())) + ".txt");
 
@@ -59,6 +55,10 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	private int cssLOC;
 	private int ineffectivePropsSize;
 	private int totalCssRulesSize;
+
+	private List<String> _processedCssFiles = new ArrayList<>();
+
+	public int numberofstates = 0;
 
 	public void onNewState(CrawlerContext context, StateVertex newState) {
 		// if the external CSS files are not parsed yet, do so
@@ -69,6 +69,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		checkClassDefinitions(newState);
 
+		numberofstates++;
 	}
 
 	private void checkClassDefinitions(StateVertex state) {
@@ -188,6 +189,18 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	@Override
 	public void postCrawling(CrawlSession session, ExitStatus exitReason) {
 
+		List<CloneDetector> cloneDetectors = new ArrayList<>();
+
+		for(String cssFile : cssRules.keySet()){
+			if(!_processedCssFiles.contains(cssFile))
+			{
+				_processedCssFiles.add(cssFile);
+				CloneDetector cd = new CloneDetector(cssFile);
+				cloneDetectors.add(cd);
+				cd.Detect(cssRules.get(cssFile));
+			}
+		}
+
 		int totalCssRules = 0;
 		int totalCssSelectors = 0;
 		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
@@ -252,8 +265,8 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		String url = session.getConfig().getUrl().toString();
 
 		/* This is where the Visualizer plug-in is invoked */
-		CillaVisualizer cv = new CillaVisualizer();
-		cv.openVisualizer(url, tmpStr, cssRules, elementsWithNoClassDef);
+/*		CillaVisualizer cv = new CillaVisualizer();
+		cv.openVisualizer(url, tmpStr, cssRules, elementsWithNoClassDef);*/
 
 		output.append(ineffectiveBuffer.toString());
 		output.append(effective.toString());
@@ -262,6 +275,18 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		output.append(undefinedClasses);
 		// output.append(duplicateSelectors);
 
+		StringBuffer clones = new StringBuffer();
+		clones.append("CloneDetector checked " + _processedCssFiles.size() + " files.\n");
+		clones.append(PrintFiles());
+
+		for(CloneDetector cd : cloneDetectors)
+		{
+			clones.append("\n\n Clone Report for file " + cd.GetFile());
+			clones.append("-> Found " + cd.CountClones() + " duplicate properties.\n");
+			clones.append(cd.PrintClones());
+		}
+		output.append(clones.toString());
+
 		try {
 			FileUtils.writeStringToFile(outputFile, output.toString());
 
@@ -269,6 +294,19 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			LOGGER.error(e.getMessage(), e);
 		}
 
+	}
+
+
+	/**
+	 *
+	 * @return
+	 */
+	private String PrintFiles()
+	{
+		StringBuilder builder = new StringBuilder();
+		for(String file : _processedCssFiles)
+			builder.append("#" + _processedCssFiles.indexOf(file) + ": " + file + "\n");
+		return builder.toString();
 	}
 
 	private int countProperties() {

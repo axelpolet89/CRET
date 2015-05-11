@@ -12,18 +12,22 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import se.fishtank.css.selectors.NodeSelector;
-import se.fishtank.css.selectors.NodeSelectorException;
-import se.fishtank.css.selectors.dom.DOMNodeSelector;
+//import se.fishtank.css.selectors.NodeSelector;
+//import se.fishtank.css.selectors.NodeSelectorException;
+import se.fishtank.css.selectors.Selectors;
+//import se.fishtank.css.selectors.dom.DOMNode;
+//import se.fishtank.css.selectors.dom.DOMNodeSelector;*/
 
 import com.crawljax.util.XPathHelper;
+import se.fishtank.css.selectors.dom.W3CNode;
+//import se.fishtank.css.selectors.selector.Selector;
 
 public class CssAnalyzer {
 
 	private static final Logger LOGGER = Logger.getLogger(CssAnalyzer.class.getName());
 
 	public static List<MCssRule> checkCssSelectorRulesOnDom(String stateName, Document dom,
-	        List<MCssRule> mRules) throws NodeSelectorException {
+	        List<MCssRule> mRules) {
 
 		for (MCssRule mRule : mRules) {
 			List<MSelector> selectors = mRule.getSelectors();
@@ -31,8 +35,8 @@ public class CssAnalyzer {
 
 				String cssSelector = selec.getCssSelector();
 
-				NodeSelector selector = new DOMNodeSelector(dom);
-				Set<Node> result = selector.querySelectorAll(cssSelector);
+				Selectors seSelectors = new Selectors(new W3CNode(dom));
+				List<Node> result = seSelectors.querySelectorAll(cssSelector);
 
 				for (Node node : result) {
 

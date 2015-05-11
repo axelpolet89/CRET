@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
-import se.fishtank.css.selectors.NodeSelectorException;
+//import se.fishtank.css.selectors.NodeSelectorException;
 
 import com.crawljax.core.CrawlSession;
 import com.crawljax.core.CrawlerContext;
@@ -124,9 +124,10 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			}
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
-		} catch (NodeSelectorException e) {
-			LOGGER.error(e.getMessage(), e);
 		}
+//		} catch (NodeSelectorException e) {
+//			LOGGER.error(e.getMessage(), e);
+//		}
 	}
 
 	private int countLines(String cssText) {

@@ -10,6 +10,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.steadystate.css.parser.SACParserCSS3;
 import org.apache.log4j.Logger;
 import org.w3c.css.sac.InputSource;
 import org.w3c.css.sac.Locator;
@@ -129,7 +130,7 @@ public class CssParser {
 
 	public static CSSRuleList getCSSRuleList(String cssText) {
 		InputSource source = new InputSource(new StringReader(cssText));
-		CSSOMParser cssomParser = new CSSOMParser();
+		CSSOMParser cssomParser = new CSSOMParser(new SACParserCSS3());
 		CSSRuleList rules = null;
 
 		try {

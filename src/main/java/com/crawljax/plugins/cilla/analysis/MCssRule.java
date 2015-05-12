@@ -21,28 +21,7 @@ public class MCssRule {
 	private List<MSelector> selectors;
 	private String ruleSelector;
 
-	private static Set<String> ignorePseudoClasses = new HashSet<String>(Arrays.asList(":link",
-	        ":visited", ":hover", ":focus", ":active", ":target", ":lang", ":enabled",
-	        ":disabled", ":checked", ":indeterminate"));
-
-	//link, visited are effective if set on a hyperlink element
-	//hover effective on visible element
-	//active effective if set on a hyperlink element
-	//focus effective on element that support focus, such as hyperlink
-
-	//target is problematic, because anchors have to be triggered to make it work
-
-	//lang is effective when body tag has a lang attribute for same language
-
-	//enabled/disabled are problematic, because their state may be based on any user interaction
-	//checked/indeterminate ""
-
-
-	/*
-	 * ":nth-child", ":nth-last-child", ":nth-of-type", ":nth-last-of-type", ":first-child",
-	 * ":last-child", ":first-of-type", ":last-of-type", ":only-child", ":only-of-type", ":empty",
-	 * ":contains", ":not", ":before", ":after", ":first-line", ":first-letter", ":selection")
-	 */
+	private static Set<String> ignorePseudoClasses = new HashSet<String>();
 
 	/**
 	 * Constructor.

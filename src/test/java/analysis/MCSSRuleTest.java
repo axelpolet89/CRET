@@ -45,7 +45,7 @@ public class MCSSRuleTest {
 
 		Assert.assertEquals(3, selectors.size());
 		MSelector selectorPojo = selectors.get(1);
-		Assert.assertEquals("a", selectorPojo.getCssSelector());
+		Assert.assertEquals("a", selectorPojo.getSelectorText());
 
 	}
 

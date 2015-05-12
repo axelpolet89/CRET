@@ -1,11 +1,8 @@
 package com.crawljax.plugins.cilla.analysis;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.steadystate.css.parser.SelectorListImpl;
 import org.w3c.css.sac.Locator;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
@@ -45,20 +42,23 @@ public class MCssRule {
 	}
 
 	private void setSelectors() {
-		if (this.rule instanceof CSSStyleRule) {
-			CSSStyleRule styleRule = (CSSStyleRule) rule;
+		if (this.rule instanceof CSSStyleRuleImpl) {
+			CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) rule;
 
-			this.ruleSelector = styleRule.getSelectorText();
-			// this.ruleSelector = CssToXpathConverter.removeChar(this.ruleSelector, '*');
-			// in case there are Grouping selectors: p, div, .news { }
 			List<MProperty> props = getProperties();
-			for (String sel : ruleSelector.split(",")) {
-				selectors.add(new MSelector(sel.trim(), props, shouldIgnore(sel)));
+
+			SelectorListImpl list = (SelectorListImpl)styleRuleImpl.getSelectors();
+
+			for(org.w3c.css.sac.Selector selector : list.getSelectors())
+			{
+				selectors.add(new MSelector(selector, props));
 			}
+
 		}
 
 	}
 
+	//todo: should remove
 	private boolean shouldIgnore(String sel) {
 		for (String ignore : ignorePseudoClasses) {
 			if (sel.contains(ignore)) {
@@ -144,7 +144,7 @@ public class MCssRule {
 		List<MSelector> unmatched = new ArrayList<MSelector>();
 
 		for (MSelector selector : this.selectors) {
-			if (!selector.isMatched() && !selector.isIgnore()) {
+			if (!selector.isMatched() && !selector.isIgnored()) {
 				unmatched.add(selector);
 			}
 		}
@@ -160,7 +160,7 @@ public class MCssRule {
 		List<MSelector> effective = new ArrayList<MSelector>();
 
 		for (MSelector selector : this.selectors) {
-			if (selector.isMatched() && !selector.isIgnore()) {
+			if (selector.isMatched() && !selector.isIgnored()) {
 				effective.add(selector);
 			}
 		}

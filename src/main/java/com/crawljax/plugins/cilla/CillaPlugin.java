@@ -31,9 +31,9 @@ import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.cilla.util.CSSDOMHelper;
 import com.crawljax.plugins.cilla.util.CssParser;
-import com.crawljax.plugins.cilla.visualizer.CillaVisualizer;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import se.fishtank.css.selectors.parser.ParserException;
 
 public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	private static final Logger LOGGER = Logger.getLogger(CillaPlugin.class.getName());
@@ -87,9 +87,9 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 					search: for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
 						for (MCssRule rule : entry.getValue()) {
 							for (MSelector selector : rule.getSelectors()) {
-								if (selector.getCssSelector().contains("." + classDef)) {
+								if (selector.getSelectorText().contains("." + classDef)) {
 									// TODO e.g. css: div.news { color: blue} <span><p>
-									// if (selector.getCssSelector().startsWith("." + classDef)) {
+									// if (selector.getSelectorText().startsWith("." + classDef)) {
 									matchFound = true;
 									break search;
 									// }
@@ -124,10 +124,9 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			}
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
+		} catch (ParserException e) {
+			LOGGER.error(e.getMessage(), e);
 		}
-//		} catch (NodeSelectorException e) {
-//			LOGGER.error(e.getMessage(), e);
-//		}
 	}
 
 	private int countLines(String cssText) {
@@ -332,7 +331,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				List<MSelector> selectors = rule.getSelectors();
 				if (selectors.size() > 0) {
 					for (MSelector selector : selectors) {
-						if (selector.isIgnore()) {
+						if (selector.isIgnored()) {
 							counter += rule.getProperties().size();
 						}
 
@@ -363,7 +362,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 						if (selector.hasEffectiveProperties()) {
 							buffer.append("CSS rule: " + rule.getRule().getCssText() + "\n");
 							buffer.append("at line: " + rule.getLocator().getLineNumber() + "\n");
-							buffer.append(" Selector: " + selector.getCssSelector() + "\n");
+							buffer.append(" Selector: " + selector.getSelectorText() + "\n");
 							counterEffectiveSelectors++;
 
 							// buffer.append(" has effective properties: \n");
@@ -395,14 +394,14 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				if (selectors.size() > 0) {
 
 					for (MSelector selector : selectors) {
-						if (!selector.hasEffectiveProperties() && !selector.isIgnore()) {
+						if (!selector.hasEffectiveProperties() && !selector.isIgnored()) {
 							buffer.append("Ineffective: ");
 							buffer.append("CSS rule: " + rule.getRule().getCssText() + "\n");
 
 							buffer.append("at line: " + rule.getLocator().getLineNumber() + "\n");
-							buffer.append(" Selector: " + selector.getCssSelector() + "\n\n");
+							buffer.append(" Selector: " + selector.getSelectorText() + "\n\n");
 							counterIneffectiveSelectors++;
-							// ineffectivePropsSize+=selector.getCssSelector().getBytes().length;
+							// ineffectivePropsSize+=selector.getSelectorText().getBytes().length;
 
 						}
 
@@ -424,7 +423,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				List<MSelector> selectors = rule.getSelectors();
 				if (selectors.size() > 0) {
 					for (MSelector selector : selectors) {
-						if (!selector.isIgnore()) {
+						if (!selector.isIgnored()) {
 							for (MProperty prop : selector.getProperties()) {
 								if (!prop.isEffective()) {
 									counter++;
@@ -476,22 +475,6 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			}
 		}
 
-	}
-
-	private int getDuplicateSelectors(StringBuffer buffer) {
-		buffer.append("========== Duplicate CSS Selectors ==========\n");
-		final List<MCssRule> allRules = new ArrayList<MCssRule>();
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
-			allRules.addAll(entry.getValue());
-		}
-
-		Set<String> dups = CssAnalyzer.getDuplicateSelectors(allRules);
-
-		for (String duplicate : dups) {
-			buffer.append("Duplicate: " + duplicate + "\n");
-		}
-
-		return dups.size();
 	}
 
 	private int getUndefinedClasses(StringBuffer output) {
@@ -613,14 +596,14 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			for (MCssRule mrule : entry.getValue()) {
 				List<MSelector> selector = mrule.getSelectors();
 				for (int i = 0; i < selector.size(); i++) {
-					if (!selector.get(i).isIgnore()) {
+					if (!selector.get(i).isIgnored()) {
 						exit = true;
 						List<MProperty> property = selector.get(i).getProperties();
 						for (int j = 0; j < property.size(); j++) {
 							if (!property.get(j).isEffective()) {
 								effective = false;
 								for (int k = i + 1; k < selector.size(); k++) {
-									if (!selector.get(k).isIgnore()) {
+									if (!selector.get(k).isIgnored()) {
 										if (selector.get(k).getProperties().get(j).isEffective()) {
 											effective = true;
 											break;

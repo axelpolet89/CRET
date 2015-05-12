@@ -1,26 +1,14 @@
 package com.crawljax.plugins.cilla.analysis;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-//import se.fishtank.css.selectors.NodeSelector;
-//import se.fishtank.css.selectors.NodeSelectorException;
 import se.fishtank.css.selectors.Selectors;
-//import se.fishtank.css.selectors.dom.DOMNode;
-//import se.fishtank.css.selectors.dom.DOMNodeSelector;*/
-
-import com.crawljax.util.XPathHelper;
 import se.fishtank.css.selectors.dom.W3CNode;
-//import se.fishtank.css.selectors.selector.Selector;
 
 public class CssAnalyzer {
 
@@ -29,11 +17,15 @@ public class CssAnalyzer {
 	public static List<MCssRule> checkCssSelectorRulesOnDom(String stateName, Document dom,
 	        List<MCssRule> mRules) {
 
-		for (MCssRule mRule : mRules) {
-			List<MSelector> selectors = mRule.getSelectors();
-			for (MSelector selec : selectors) {
+		for (MCssRule mRule : mRules)
+		{
+			List<MSelector> mSelectors = mRule.getSelectors();
+			for (MSelector mSelector : mSelectors)
+			{
+				if(mSelector.isIgnored())
+					continue;
 
-				String cssSelector = selec.getCssSelector();
+				String cssSelector = mSelector.getSelectorText();
 
 				Selectors seSelectors = new Selectors(new W3CNode(dom));
 				List<Node> result = seSelectors.querySelectorAll(cssSelector);
@@ -42,11 +34,11 @@ public class CssAnalyzer {
 
 					if (node instanceof Document) {
 						LOGGER.debug("CSS rule returns the whole document!!!");
-						selec.setMatched(true);
+						mSelector.setMatched(true);
 					} else {
 						ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
-						selec.addMatchedElement(ew);
-						MatchedElements.setMatchedElement(ew, selec);
+						mSelector.addMatchedElement(ew);
+						MatchedElements.setMatchedElement(ew, mSelector);
 					}
 				}
 
@@ -56,56 +48,4 @@ public class CssAnalyzer {
 
 		return mRules;
 	}
-
-	public static List<MCssRule> checkCssRulesOnDom(String stateName, Document dom,
-	        List<MCssRule> mRules) {
-
-		for (MCssRule mRule : mRules) {
-			List<MSelector> selectors = mRule.getSelectors();
-			for (MSelector selec : selectors) {
-
-				String xpath = selec.getXpathSelector();
-				try {
-					NodeList nodeList = XPathHelper.evaluateXpathExpression(dom, xpath);
-
-					for (int i = 0; i < nodeList.getLength(); i++) {
-
-						Node node = nodeList.item(i);
-						if (node instanceof Document) {
-							LOGGER.debug("CSS rule returns the whole document!!!");
-							selec.setMatched(true);
-						} else {
-							ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
-							selec.addMatchedElement(ew);
-							MatchedElements.setMatchedElement(ew, selec);
-						}
-					}
-				} catch (XPathExpressionException e) {
-					LOGGER.error("Css rule: " + selec.getCssSelector() + " xpath: " + xpath);
-					LOGGER.error(e.getMessage(), e);
-				}
-
-			}
-
-		}
-
-		return mRules;
-	}
-
-	public static Set<String> getDuplicateSelectors(List<MCssRule> mRules) {
-		Set<String> set = new HashSet<String>();
-		Set<String> duplicates = new HashSet<String>();
-
-		for (MCssRule mRule : mRules) {
-			List<MSelector> selectors = mRule.getSelectors();
-			for (MSelector selec : selectors) {
-				if (!set.add(selec.getCssSelector())) {
-					duplicates.add(selec.getCssSelector());
-				}
-			}
-		}
-
-		return duplicates;
-	}
-
 }

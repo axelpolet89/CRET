@@ -38,12 +38,12 @@ public class MatchedElementsTest {
 
 		try {
 			Document dom = DomUtils.asDocument(html);
-			MSelector selector = new MSelector("#div1", null);
+			//MSelector selector = new MSelector("#div1", null); todo:resolve
 			Element e = dom.getElementById("div1");
 
-			MatchedElements.setMatchedElement(new ElementWrapper("index", e), selector);
-			selector = new MSelector("div", null);
-			MatchedElements.setMatchedElement(new ElementWrapper("index", e), selector);
+			//MatchedElements.setMatchedElement(new ElementWrapper("index", e), selector);
+			//selector = new MSelector("div", null); todo:resolve
+			//MatchedElements.setMatchedElement(new ElementWrapper("index", e), selector);
 
 			Assert.assertEquals(2, MatchedElements.elementSelectors.size());
 

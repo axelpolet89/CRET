@@ -116,24 +116,24 @@ public class PlayingTest {
 	@Test
 	@Ignore
 	public void testCssOnDom() throws SAXException, IOException {
-		String html =
-		        "<html>" + "<head><title>example</title>"
-		                + "<link href='basic.css' rel='stylesheet' type='text/css'></head>" +
-
-		                "<body><span><div width='56' id='div1' class='news plusnews votebutton medium green'>"
-		                + "<p id='24'>this is just a test</p></div>"
-		                + "<span id='span1' class='news'/><p>bla</p></span></body></html>";
-
-		Document dom = DomUtils.asDocument(html);
-
-		List<MCssRule> mRules =
-		        CssParser.getMCSSRules("div.newsx { color: red;} div, a, span { font: black}");
-
-		List<MCssRule> rules = CssAnalyzer.checkCssRulesOnDom("state1", dom, mRules);
-
-		html = "<html><body><div id='div22'><a href='google.com'>Google</a></div></body></html>";
-		dom = DomUtils.asDocument(html);
-		rules = CssAnalyzer.checkCssRulesOnDom("state2", dom, mRules);
+//		String html =
+//		        "<html>" + "<head><title>example</title>"
+//		                + "<link href='basic.css' rel='stylesheet' type='text/css'></head>" +
+//
+//		                "<body><span><div width='56' id='div1' class='news plusnews votebutton medium green'>"
+//		                + "<p id='24'>this is just a test</p></div>"
+//		                + "<span id='span1' class='news'/><p>bla</p></span></body></html>";
+//
+//		Document dom = DomUtils.asDocument(html);
+//
+//		List<MCssRule> mRules =
+//		        CssParser.getMCSSRules("div.newsx { color: red;} div, a, span { font: black}");
+//
+//		List<MCssRule> rules = CssAnalyzer.checkCssRulesOnDom("state1", dom, mRules);
+//
+//		html = "<html><body><div id='div22'><a href='google.com'>Google</a></div></body></html>";
+//		dom = DomUtils.asDocument(html);
+//		rules = CssAnalyzer.checkCssRulesOnDom("state2", dom, mRules);
 	}
 
 	@Test

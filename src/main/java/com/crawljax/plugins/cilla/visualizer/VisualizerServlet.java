@@ -235,13 +235,13 @@ public class VisualizerServlet extends VelocityViewServlet {
 				List<MSelector> matched = rule.getMatchedSelectors();
 				if (matched.size() > 0) {
 					for (MSelector sel : matched) {
-						if (!sel.hasEffectiveProperties() && !sel.isIgnore()) {
+						if (!sel.hasEffectiveProperties() && !sel.isIgnored()) {
 							ineffectiveBuffer.append("CSS rule: " + rule.getRule().getCssText()
 							        + "<br>");
 
 							ineffectiveBuffer.append("at line: "
 							        + rule.getLocator().getLineNumber() + "<br>");
-							ineffectiveBuffer.append(" Selector: " + sel.getCssSelector()
+							ineffectiveBuffer.append(" Selector: " + sel.getSelectorText()
 							        + "<br><br>");
 
 							updateUnsortedMap(filename, rule.getLocator().getLineNumber(), rule
@@ -251,7 +251,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 							        + "<br>");
 							effectiveBuffer.append("at line: "
 							        + rule.getLocator().getLineNumber() + "<br>");
-							effectiveBuffer.append(" Selector: " + sel.getCssSelector()
+							effectiveBuffer.append(" Selector: " + sel.getSelectorText()
 							        + "<br><br>");
 
 							updateUnsortedMap(filename, rule.getLocator().getLineNumber(), rule

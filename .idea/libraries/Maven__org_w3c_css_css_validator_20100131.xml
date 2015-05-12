@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.w3c.css:css-validator:20100131">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/w3c/css/css-validator/20100131/css-validator-20100131.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/w3c/css/css-validator/20100131/css-validator-20100131-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/w3c/css/css-validator/20100131/css-validator-20100131-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

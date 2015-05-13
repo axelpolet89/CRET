@@ -32,6 +32,11 @@ public class CssAnalyzer {
 
 				for (Node node : result) {
 
+//					if(mSelector.isNonStructuralPseudo()) {
+//						if(!mSelector.TryTestPseudo(node.getNodeName(), node.getAttributes()))
+//							continue;
+//					}
+
 					if (node instanceof Document) {
 						LOGGER.debug("CSS rule returns the whole document!!!");
 						mSelector.setMatched(true);

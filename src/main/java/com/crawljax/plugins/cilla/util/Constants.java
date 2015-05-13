@@ -13,8 +13,15 @@ public class Constants {
 
     private static final ArrayList<String> pseudoElements = new ArrayList<>(Arrays.asList(":before", ":after", ":first-line", ":first-letter"));
 
-    public static ArrayList<String> NonStructuralPseudos(){
-        return nonStructuralPseudoClasses;
+    public static boolean IsNonStructuralPseudo(String pseudo)
+    {
+        if(pseudo.contains(":lang"))
+            return true;
+
+        if(nonStructuralPseudoClasses.contains(pseudo))
+            return true;
+
+        return false;
     }
 
     public static ArrayList<String> PseudoElements(){

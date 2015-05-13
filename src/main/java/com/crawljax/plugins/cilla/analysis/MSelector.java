@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.crawljax.plugins.cilla.util.Constants;
 import com.steadystate.css.parser.selectors.ChildSelectorImpl;
+import com.sun.corba.se.impl.orbutil.closure.Constant;
 import org.apache.log4j.Logger;
 
 import com.crawljax.plugins.cilla.util.CssToXpathConverter;
@@ -11,6 +12,8 @@ import com.crawljax.plugins.cilla.util.specificity.Specificity;
 import com.crawljax.plugins.cilla.util.specificity.SpecificityCalculator;
 import org.w3c.css.sac.*;
 import org.w3c.css.selectors.ChildSelector;
+import org.w3c.css.selectors.PseudoElementSelector;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * POJO class for a CSS selector.
@@ -33,6 +36,8 @@ public class MSelector {
 	private boolean isNonStructuralPseudo;
 	private LinkedHashMap<String, String> pseudoClasses;
 	private String selectorTextWithoutPseudo;
+
+	private String pseudoElement;
 
 	//todo: only used in test components
 	public MSelector(List<MProperty> properties) {
@@ -79,22 +84,14 @@ public class MSelector {
 
 			for(String value : pseudoClasses.values())
 			{
-				boolean isLang = false;
-
-				//escape brackets
+				//escape brackets for regex compare
 				if(value.contains("lang"))
 				{
-					isLang = true;
 					value = value.replace("(", "\\(");
 					value = value.replace(")", "\\)");
 				}
 
-				if(isLang || Constants.NonStructuralPseudos().contains(value))
-				{
-					//replaceFirst allowed here, because pseudoClasses is a LinkedHashMap (ordered)
-					selectorTextWithoutPseudo = selectorTextWithoutPseudo.replaceFirst(value, "");
-					isNonStructuralPseudo = true;
-				}
+				selectorTextWithoutPseudo = selectorTextWithoutPseudo.replaceFirst(value, "");
 			}
 		}
 	}
@@ -102,7 +99,11 @@ public class MSelector {
 
 	private void RecursiveParsePseudos(Selector selector)
 	{
-		if(selector instanceof SimpleSelector)
+		if(selector instanceof PseudoElementSelector)
+		{
+			pseudoElement = selector.toString();
+		}
+		else if(selector instanceof SimpleSelector)
 		{
 			TryPutPseudo(selector.toString().split(":"));
 		}
@@ -110,7 +111,7 @@ public class MSelector {
 		{
 			DescendantSelector dSelector = (DescendantSelector)selector;
 
-			TryPutPseudo(dSelector.getSimpleSelector().toString().split(":"));
+			RecursiveParsePseudos(dSelector.getSimpleSelector());
 
 			RecursiveParsePseudos(dSelector.getAncestorSelector());
 		}
@@ -118,23 +119,43 @@ public class MSelector {
 		{
 			SiblingSelector dSelector = (SiblingSelector)selector;
 
-			TryPutPseudo(dSelector.getSelector().toString().split(":"));
+			RecursiveParsePseudos(dSelector.getSelector());
 
 			RecursiveParsePseudos(dSelector.getSiblingSelector());
 		}
 	}
 
+	public boolean isNonStructuralPseudo() {
+		return isNonStructuralPseudo;
+	}
+
 	private void TryPutPseudo(String[] parts)
 	{
-		//will be 3 if :not
-		if(parts.length > 2)
+		//will be 3 if pseudo in :not
+		if(parts.length != 2)
+			return;
+
+		String pseudo = ":" + parts[1];
+		if(Constants.IsNonStructuralPseudo(pseudo))
 		{
+			pseudoClasses.put(parts[0], pseudo);
+			isNonStructuralPseudo = true;
+		}
+	}
+
+	public boolean TryTestPseudo(String elementType, NamedNodeMap attributes)
+	{
+		String pseudo = pseudoClasses.values().toArray()[0].toString();
+
+		switch (pseudo)
+		{
+			case ":link":
+			case "visited":
+				if(elementType == "a")
+					return true;
 		}
 
-		if(parts.length == 2)
-		{
-			pseudoClasses.put(parts[0], ":" + parts[1]);
-		}
+		return false;
 	}
 
 

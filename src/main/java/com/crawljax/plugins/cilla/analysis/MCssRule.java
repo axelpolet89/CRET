@@ -16,9 +16,6 @@ public class MCssRule {
 
 	private CSSRule rule;
 	private List<MSelector> selectors;
-	private String ruleSelector;
-
-	private static Set<String> ignorePseudoClasses = new HashSet<String>();
 
 	/**
 	 * Constructor.
@@ -29,7 +26,8 @@ public class MCssRule {
 	public MCssRule(CSSRule rule) {
 
 		this.rule = rule;
-		selectors = new ArrayList<MSelector>();
+		selectors = new ArrayList<>();
+
 		setSelectors();
 	}
 
@@ -51,21 +49,11 @@ public class MCssRule {
 
 			for(org.w3c.css.sac.Selector selector : list.getSelectors())
 			{
-				selectors.add(new MSelector(selector, props));
+				selectors.add(new MSelector(selector, props, this.getLocator().getLineNumber()));
 			}
 
 		}
 
-	}
-
-	//todo: should remove
-	private boolean shouldIgnore(String sel) {
-		for (String ignore : ignorePseudoClasses) {
-			if (sel.contains(ignore)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public List<MProperty> getProperties() {
@@ -180,9 +168,4 @@ public class MCssRule {
 
 		return null;
 	}
-
-	public String getRuleSelector() {
-		return ruleSelector;
-	}
-
 }

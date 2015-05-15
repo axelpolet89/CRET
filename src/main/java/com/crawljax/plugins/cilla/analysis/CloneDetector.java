@@ -131,7 +131,7 @@ public class CloneDetector {
             builder.append("Clone: " + PropertyToString(cloneSet.GetProperty()) + "\n");
             for(MCssRule mRule : cloneSet.GetRules())
             {
-                builder.append("Rule: " + mRule.getRuleSelector() + "\n");
+                builder.append("Rule: " + mRule.toString() + "\n");
             }
             result.append(builder.toString() + "\n\n");
         }
@@ -139,7 +139,7 @@ public class CloneDetector {
         for (List<MCssRule> key : _mixinClones.keySet()) {
             StringBuilder builder = new StringBuilder();
             final String[] s = {""};
-            key.forEach((MCssRule) -> s[0] += "in rule: " + MCssRule.getRuleSelector() + "\n");
+            key.forEach((MCssRule) -> s[0] += "in rule: " + MCssRule.toString() + "\n");
 
             builder.append("Shared Properties Found!\n");
             builder.append(s[0]);

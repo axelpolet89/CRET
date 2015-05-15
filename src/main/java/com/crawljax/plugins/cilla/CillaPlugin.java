@@ -444,12 +444,19 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	private void analyzeProperties() {
 
 		for (String keyElement : MatchedElements.elementSelectors.keySet()) {
+
 			LOGGER.debug("keyElement: " + keyElement);
+
+			//get selectors that matched the keyElement
 			List<MSelector> selectors = MatchedElements.elementSelectors.get(keyElement);
-			// order according to the com.crawljax.plugins.cilla.util.specificity rules
+
+			//order the selectors by their specificity and location
 			MSelector.orderSpecificity(selectors);
+
 			String overridden = "overridden-" + random.nextInt();
+
 			LOGGER.debug("RANDOM: " + overridden);
+
 			for (int i = 0; i < selectors.size(); i++) {
 				MSelector selector = selectors.get(i);
 				for (MProperty property : selector.getProperties()) {
@@ -461,11 +468,31 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 						for (int j = i + 1; j < selectors.size(); j++) {
 							MSelector nextSelector = selectors.get(j);
-							for (MProperty nextProperty : nextSelector.getProperties()) {
-								if (property.getName().equalsIgnoreCase(nextProperty.getName())) {
 
-									nextProperty.setStatus(overridden);
+							// when 'this' selector includes a pseudo-element (as selector-key),
+							// it is always effective and does not affect other selectors, so we can break
+							if(selector.IsPseudoElement())
+								break;
+
+							// if 'the other' selector includes a pseudo-element (as selector-key),
+							// it is always effective and does not affect 'this' selector
+							if(nextSelector.IsPseudoElement())
+								continue;
+
+							if(selector.IsNonStructuralPseudo() || nextSelector.IsNonStructuralPseudo())
+							{
+								if(selector.CompareKeyPseudoClass(nextSelector))
+								{
+									CompareProperties(property, nextSelector, overridden);
 								}
+								else
+								{
+									ComparePropertiesWithValue(property, nextSelector, overridden);
+								}
+							}
+							else
+							{
+								CompareProperties(property, nextSelector, overridden);
 							}
 						}
 					} else {
@@ -475,6 +502,29 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			}
 		}
 
+	}
+
+	private void CompareProperties(MProperty property, MSelector otherSelector, String overridden)
+	{
+		for (MProperty nextProperty : otherSelector.getProperties())
+		{
+			if (property.getName().equalsIgnoreCase(nextProperty.getName()))
+			{
+				nextProperty.setStatus(overridden);
+			}
+		}
+	}
+
+	private void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden)
+	{
+		for (MProperty nextProperty : otherSelector.getProperties())
+		{
+			if (property.getName().equalsIgnoreCase(nextProperty.getName())
+					&& property.getValue().equalsIgnoreCase(nextProperty.getValue()))
+			{
+				nextProperty.setStatus(overridden);
+			}
+		}
 	}
 
 	private int getUndefinedClasses(StringBuffer output) {

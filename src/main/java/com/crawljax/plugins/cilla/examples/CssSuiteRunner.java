@@ -18,7 +18,7 @@ public class CssSuiteRunner {
 	private static final int waitAfterReload = 400;
 
 	//private static final String INDEX = "http://www.beckerelectric.com";
-	private static final String INDEX = "http://localhost/test/clones.html";
+	private static final String INDEX = "http://localhost/test/index.html";
 
 	public static void main(String[] args) {
 //		try {

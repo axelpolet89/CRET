@@ -32,10 +32,12 @@ public class CssAnalyzer {
 
 				for (Node node : result) {
 
-//					if(mSelector.isNonStructuralPseudo()) {
-//						if(!mSelector.TryTestPseudo(node.getNodeName(), node.getAttributes()))
-//							continue;
-//					}
+					//compare selectors containing non-structural pseudo classes on their compatibility with the node they matched
+					if(mSelector.IsNonStructuralPseudo())
+					{
+						if(!mSelector.CheckPseudoCompatibility(node.getNodeName(), node.getAttributes()))
+							continue;
+					}
 
 					if (node instanceof Document) {
 						LOGGER.debug("CSS rule returns the whole document!!!");

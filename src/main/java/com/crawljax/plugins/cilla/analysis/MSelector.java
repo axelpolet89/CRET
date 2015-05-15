@@ -3,16 +3,13 @@ package com.crawljax.plugins.cilla.analysis;
 import java.util.*;
 
 import com.crawljax.plugins.cilla.util.Constants;
-import com.steadystate.css.parser.selectors.ChildSelectorImpl;
-import com.sun.corba.se.impl.orbutil.closure.Constant;
+import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
 import org.apache.log4j.Logger;
 
 import com.crawljax.plugins.cilla.util.CssToXpathConverter;
 import com.crawljax.plugins.cilla.util.specificity.Specificity;
 import com.crawljax.plugins.cilla.util.specificity.SpecificityCalculator;
 import org.w3c.css.sac.*;
-import org.w3c.css.selectors.ChildSelector;
-import org.w3c.css.selectors.PseudoElementSelector;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -34,14 +31,19 @@ public class MSelector {
 	private List<MProperty> properties;
 
 	private boolean isNonStructuralPseudo;
-	private LinkedHashMap<String, String> pseudoClasses;
+	private boolean isPseudoElement;
+
+	private int pseudoLevel;
+	private String keyPseudoClass;
 	private String selectorTextWithoutPseudo;
+	private LinkedHashMap<String, String> pseudoClasses;
 
 	private String pseudoElement;
+	private int ruleNumber;
 
 	//todo: only used in test components
 	public MSelector(List<MProperty> properties) {
-		this(null, properties);
+		this(null, properties, 1);
 	}
 
 	/**
@@ -50,18 +52,32 @@ public class MSelector {
 	 * @param selector
 	 *            the selector text (CSS).
 	 */
-	public MSelector(Selector selector,  List<MProperty> properties) {
+	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber) {
 		this.selectorText = selector.toString();
 		this.selector = selector;
 		this.isIgnored = selectorText.contains(":not");
 		this.matchedElements = new ArrayList<ElementWrapper>();
 		this.properties = properties;
 		this.pseudoClasses = new LinkedHashMap<>();
+		this.ruleNumber = ruleNumber;
+		this.keyPseudoClass = "";
 
 		setXPathSelector();
 		setSpecificity();
-		determinePseudo();
+		DeterminePseudo();
 	}
+
+
+	public int getRuleNumber() {
+		return ruleNumber;
+	}
+
+	public boolean IsNonStructuralPseudo() { return isNonStructuralPseudo; }
+
+	public boolean IsPseudoElement() { return isPseudoElement; }
+
+	public String GetPseudoClass() { return keyPseudoClass; }
+
 
 	/**
 	 * Determines whether this selector contains pseudo-selectors
@@ -69,7 +85,7 @@ public class MSelector {
 	 * Foreach selector that is a non-structural pseudo-selector, we filter the selectorText with that pseudo-selector,
 	 * so that we can use the selector to track any elements (without pseudo-state in a DOM tree)
 	 */
-	private void determinePseudo(){
+	private void DeterminePseudo(){
 
 		//todo: what to do with negation pseudo?
 		if(selectorText.contains(":not"))
@@ -80,7 +96,8 @@ public class MSelector {
 			selectorTextWithoutPseudo = selectorText;
 
 			//find all pseudo selectors in the whole selector
-			RecursiveParsePseudos(this.selector);
+			pseudoLevel = 0;
+			RecursiveParsePseudoClasses(this.selector);
 
 			for(String value : pseudoClasses.values())
 			{
@@ -97,39 +114,48 @@ public class MSelector {
 	}
 
 
-	private void RecursiveParsePseudos(Selector selector)
+	/**
+	 * Recursively check every selector for a pseudo-class, starting at the key-selector (right-most)
+	 * If a pseudo-class is present, set it via PutPseudoClass
+	 * @param selector
+	 */
+	private void RecursiveParsePseudoClasses(Selector selector)
 	{
-		if(selector instanceof PseudoElementSelector)
+		if(selector instanceof PseudoElementSelectorImpl)
 		{
-			pseudoElement = selector.toString();
+			isPseudoElement = true;
+			pseudoElement = ":" + selector.toString();
 		}
 		else if(selector instanceof SimpleSelector)
 		{
-			TryPutPseudo(selector.toString().split(":"));
+			PutPseudoClass(selector.toString().split(":"));
 		}
 		else if (selector instanceof DescendantSelector)
 		{
 			DescendantSelector dSelector = (DescendantSelector)selector;
 
-			RecursiveParsePseudos(dSelector.getSimpleSelector());
+			RecursiveParsePseudoClasses(dSelector.getSimpleSelector());
 
-			RecursiveParsePseudos(dSelector.getAncestorSelector());
+			pseudoLevel++;
+			RecursiveParsePseudoClasses(dSelector.getAncestorSelector());
 		}
 		else if (selector instanceof SiblingSelector)
 		{
 			SiblingSelector dSelector = (SiblingSelector)selector;
 
-			RecursiveParsePseudos(dSelector.getSelector());
+			RecursiveParsePseudoClasses(dSelector.getSelector());
 
-			RecursiveParsePseudos(dSelector.getSiblingSelector());
+			pseudoLevel++;
+			RecursiveParsePseudoClasses(dSelector.getSiblingSelector());
 		}
 	}
 
-	public boolean isNonStructuralPseudo() {
-		return isNonStructuralPseudo;
-	}
 
-	private void TryPutPseudo(String[] parts)
+	/**
+	 *
+	 * @param parts
+	 */
+	private void PutPseudoClass(String[] parts)
 	{
 		//will be 3 if pseudo in :not
 		if(parts.length != 2)
@@ -138,24 +164,66 @@ public class MSelector {
 		String pseudo = ":" + parts[1];
 		if(Constants.IsNonStructuralPseudo(pseudo))
 		{
+			if(pseudoLevel == 0)
+				keyPseudoClass = pseudo;
+
 			pseudoClasses.put(parts[0], pseudo);
 			isNonStructuralPseudo = true;
 		}
 	}
 
-	public boolean TryTestPseudo(String elementType, NamedNodeMap attributes)
+
+	/**
+	 *
+	 * @param elementType
+	 * @param attributes
+	 * @return
+	 */
+	public boolean CheckPseudoCompatibility(String elementType, NamedNodeMap attributes)
 	{
 		String pseudo = pseudoClasses.values().toArray()[0].toString();
 
 		switch (pseudo)
 		{
 			case ":link":
-			case "visited":
-				if(elementType == "a")
+			case ":visited":
+				if(elementType.equalsIgnoreCase("a") && GetAttributeValue(attributes, "href") != null)
 					return true;
+				break;
+			case ":checked":
+				if(elementType.equalsIgnoreCase("input"))
+				{
+					String type = GetAttributeValue(attributes, "type");
+					if(type.equalsIgnoreCase("checkbox") || type.equalsIgnoreCase("radio") || type.equalsIgnoreCase("option"))
+					 	return true;
+				}
+				break;
+			case ":focus":
+			case ":active":
+				if((pseudo.equals(":active") && elementType.equalsIgnoreCase("a")) || (elementType.equalsIgnoreCase("textarea")))
+					return true;
+				if(elementType.equalsIgnoreCase("input"))
+				{
+					String type = GetAttributeValue(attributes, "type");
+					if(type.equalsIgnoreCase("button") || type.equalsIgnoreCase("text"))
+						return true;
+				}
+				break;
+			default:
+				return true;
 		}
 
 		return false;
+	}
+
+	public boolean CompareKeyPseudoClass(MSelector otherSelector)
+	{
+		return keyPseudoClass.equals(otherSelector.GetPseudoClass());
+	}
+
+	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
+	{
+		return attributes.getNamedItem(attributeName).getNodeValue();
 	}
 
 
@@ -253,11 +321,11 @@ public class MSelector {
 				int value1 = o1.getSpecificity().getValue();
 				int value2 = o2.getSpecificity().getValue();
 
-				// if two selectors have the same com.crawljax.plugins.cilla.util.specificity, the
-				// one closest to element is
-				// effective
+				//if two selectors have the same specificity,
+				//then the one that is defined later (e.g. a higher row number in the css file)
+				//has a higher order
 				if (value1 == value2) {
-					return -1;
+					return new Integer(o1.getRuleNumber()).compareTo(o2.getRuleNumber());
 				}
 
 				return new Integer(value1).compareTo(new Integer(value2));
@@ -265,8 +333,8 @@ public class MSelector {
 
 		});
 
+		//we need selectors sorted ascending (from specific to less-specific)
 		Collections.reverse(selectors);
-
 	}
 
 	public boolean hasEffectiveProperties() {

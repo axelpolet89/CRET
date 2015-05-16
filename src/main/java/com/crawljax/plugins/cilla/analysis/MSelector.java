@@ -2,7 +2,7 @@ package com.crawljax.plugins.cilla.analysis;
 
 import java.util.*;
 
-import com.crawljax.plugins.cilla.util.Constants;
+import com.crawljax.plugins.cilla.util.PseudoHelper;
 import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
 
 import com.crawljax.plugins.cilla.util.specificity.Specificity;
@@ -148,7 +148,7 @@ public class MSelector
 			return;
 
 		String pseudo = ":" + parts[1];
-		if(Constants.IsNonStructuralPseudo(pseudo))
+		if(PseudoHelper.IsNonStructuralPseudo(pseudo))
 		{
 			if(_pseudoLevel == 0)
 				_keyPseudoClass = pseudo;

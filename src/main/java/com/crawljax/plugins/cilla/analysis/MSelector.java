@@ -16,15 +16,16 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class MSelector
 {
+	private Selector _selector;
+	private List<MProperty> _properties;
+
 	private String _selectorText;
 	private boolean _isIgnored;
 	private Specificity _specificity;
 	private boolean _isMatched;
-	private boolean _effective;
+	private boolean _isEffective;
 
-	private Selector _selector;
 	private List<ElementWrapper> _matchedElements;
-	private List<MProperty> _properties;
 
 	private boolean _isNonStructuralPseudo;
 	private boolean _isPseudoElement;
@@ -42,6 +43,12 @@ public class MSelector
 	{
 		this(null, properties, 1);
 	}
+
+	public MSelector(Selector selector)
+	{
+		this(selector, new ArrayList<>(), 1);
+	}
+
 
 	/**
 	 * Constructor.
@@ -204,9 +211,9 @@ public class MSelector
 		}
 	}
 
-	public boolean isEffective() { return _effective; }
+	public boolean isEffective() { return _isEffective; }
 
-	public void setEffective(boolean effective) { _effective = effective; }
+	public void setEffective(boolean effective) { _isEffective = effective; }
 
 
 	/**

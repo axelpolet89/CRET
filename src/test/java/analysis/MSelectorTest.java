@@ -1,14 +1,21 @@
 package analysis;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.crawljax.plugins.cilla.util.CssParser;
+import com.steadystate.css.parser.CSSOMParser;
+import com.steadystate.css.parser.SACParserCSS3;
 import junit.framework.Assert;
 
 import org.junit.Test;
 
 import com.crawljax.plugins.cilla.analysis.MSelector;
 import com.crawljax.plugins.cilla.util.specificity.Specificity;
+import org.w3c.css.sac.InputSource;
+import org.w3c.css.sac.Selector;
 
 public class MSelectorTest {
 
@@ -36,55 +43,61 @@ public class MSelectorTest {
 //		Assert.assertEquals("./descendant::*[@id = 'UbcMainContent']/descendant::UL",
 //		        selectorPojo.getXpathSelector());
 //	}
-//
-//	@Test
-//	public void testSpecificity() {
-//
-//		MSelector selector = new MSelector("p#242", null);
-//
-//		Specificity sp = selector.getSpecificity();
-//
-//		Assert.assertNotNull(sp);
-//		Assert.assertEquals(10001, sp.getValue());
-//
-//		selector = new MSelector("p.newsitem", null);
-//		sp = selector.getSpecificity();
-//
-//		Assert.assertNotNull(sp);
-//		Assert.assertEquals(101, sp.getValue());
-//
-//		selector = new MSelector(".newsitem", null);
-//		sp = selector.getSpecificity();
-//
-//		Assert.assertNotNull(sp);
-//		Assert.assertEquals(100, sp.getValue());
-//
-//		selector = new MSelector("#newsitem", null);
-//		sp = selector.getSpecificity();
-//
-//		Assert.assertNotNull(sp);
-//		Assert.assertEquals(10000, sp.getValue());
-//
-//		selector = new MSelector("div", null);
-//		sp = selector.getSpecificity();
-//
-//		Assert.assertNotNull(sp);
-//		Assert.assertEquals(1, sp.getValue());
-//
-//		selector = new MSelector("div div", null);
-//		sp = selector.getSpecificity();
-//
-//		Assert.assertNotNull(sp);
-//		Assert.assertEquals(2, sp.getValue());
-//
-//		selector = new MSelector("div span#news .item", null);
-//		sp = selector.getSpecificity();
-//
-//		Assert.assertNotNull(sp);
-//		Assert.assertEquals(10102, sp.getValue());
-//
-//	}
-//
+
+	@Test
+	public void TestSpecificity() throws IOException
+    {
+		MSelector selector = new MSelector(CreateSelector("p#242"));
+		Specificity sp = selector.getSpecificity();
+
+		Assert.assertNotNull(sp);
+		Assert.assertEquals(10001, sp.getValue());
+
+		selector = new MSelector(CreateSelector("p.newsitem"));
+		sp = selector.getSpecificity();
+
+		Assert.assertNotNull(sp);
+		Assert.assertEquals(101, sp.getValue());
+
+		selector = new MSelector(CreateSelector(".newsitem"));
+		sp = selector.getSpecificity();
+
+		Assert.assertNotNull(sp);
+		Assert.assertEquals(100, sp.getValue());
+
+		selector = new MSelector(CreateSelector("#newsitem"));
+		sp = selector.getSpecificity();
+
+		Assert.assertNotNull(sp);
+		Assert.assertEquals(10000, sp.getValue());
+
+		selector = new MSelector(CreateSelector("div"));
+		sp = selector.getSpecificity();
+
+		Assert.assertNotNull(sp);
+		Assert.assertEquals(1, sp.getValue());
+
+		selector = new MSelector(CreateSelector("div div"));
+		sp = selector.getSpecificity();
+
+		Assert.assertNotNull(sp);
+		Assert.assertEquals(2, sp.getValue());
+
+		selector = new MSelector(CreateSelector("div span#news .item"));
+		sp = selector.getSpecificity();
+
+		Assert.assertNotNull(sp);
+		Assert.assertEquals(10102, sp.getValue());
+	}
+
+    private Selector CreateSelector(String selector) throws IOException
+    {
+        InputSource source = new InputSource(new StringReader(selector));
+        CSSOMParser cssomParser = new CSSOMParser(new SACParserCSS3());
+
+        return cssomParser.parseSelectors(source).item(0);
+    }
+
 //	@Test
 //	public void testorderSpecificity() {
 //		List<MSelector> list = new ArrayList<MSelector>();

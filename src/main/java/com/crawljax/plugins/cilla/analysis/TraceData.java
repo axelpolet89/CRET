@@ -2,45 +2,38 @@ package com.crawljax.plugins.cilla.analysis;
 
 import org.apache.log4j.Logger;
 
-public class TraceData {
+public class TraceData
+{
 	private static final Logger LOGGER = Logger.getLogger(TraceData.class.getName());
-	private String trace;
-	private String selector;
-	private String url;
+	private String _trace;
+	private String _selector;
+	private String _url;
 	private int lineNumber;
 
 	public TraceData(String trace) {
 
-		this.trace = trace;
-		parse();
-
+		_trace = trace;
+		Parse();
 	}
 
-	private void parse() {
-		LOGGER.debug("PARSING: " + trace);
+	private void Parse() {
+		LOGGER.debug("PARSING: " + _trace);
 
-		this.selector = trace.substring(trace.indexOf('{') + 1, trace.indexOf('}'));
-		// this.selector = selector.replaceAll("\\_", " ").replaceAll("\\*", "");
-		this.selector = selector.replaceAll("\\*", "");
-		this.lineNumber =
-		        Integer.parseInt(trace.substring(trace.indexOf('[') + 1, trace.indexOf(']')));
-		this.url = trace.substring(0, trace.indexOf('['));
-
+		_selector = _trace.substring(_trace.indexOf('{') + 1, _trace.indexOf('}'));
+		_selector = _selector.replaceAll("\\*", "");
+		lineNumber = Integer.parseInt(_trace.substring(_trace.indexOf('[') + 1, _trace.indexOf(']')));
+		_url = _trace.substring(0, _trace.indexOf('['));
 	}
 
-	public String getTrace() {
-		return trace;
+	public String GetSelector() {
+		return _selector;
 	}
 
-	public String getSelector() {
-		return selector;
+	public String GetUrl() {
+		return _url;
 	}
 
-	public String getUrl() {
-		return url;
-	}
-
-	public int getLineNumber() {
+	public int GetLineNumber() {
 		return lineNumber;
 	}
 
@@ -48,10 +41,9 @@ public class TraceData {
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 
-		buffer.append("Selector " + this.selector + "\n");
-		buffer.append("Linenumber " + this.lineNumber + "\n");
+		buffer.append("Selector " + _selector + "\n");
+		buffer.append("Linenumber " + lineNumber + "\n");
 
 		return buffer.toString();
 	}
-
 }

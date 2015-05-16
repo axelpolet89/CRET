@@ -21,6 +21,6 @@ public class CssParserTest {
 
 		MCssRule mRule = mRules.get(1);
 
-		Assert.assertEquals(3, mRule.getSelectors().size());
+		Assert.assertEquals(3, mRule.GetSelectors().size());
 	}
 }

@@ -15,11 +15,11 @@ public class TraceDataTest {
 
 		TraceData trData = new TraceData(trace);
 
-		Assert.assertEquals("http://www.ece.ubc.ca:80/~amesbah/exp/default.css", trData.getUrl());
+		Assert.assertEquals("http://www.ece.ubc.ca:80/~amesbah/exp/default.css", trData.GetUrl());
 
-		Assert.assertEquals("div_.c1", trData.getSelector());
+		Assert.assertEquals("div_.c1", trData.GetSelector());
 
-		Assert.assertEquals(11, trData.getLineNumber());
+		Assert.assertEquals(11, trData.GetLineNumber());
 
 	}
 }

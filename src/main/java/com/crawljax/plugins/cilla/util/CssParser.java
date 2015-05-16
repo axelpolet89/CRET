@@ -125,7 +125,7 @@ public class CssParser {
 
 		CSSRuleList ruleList = getCSSRuleList(cssText);
 
-		return MCssRule.convertToMCssRules(ruleList);
+		return MCssRule.ConvertToMCssRules(ruleList);
 	}
 
 	public static CSSRuleList getCSSRuleList(String cssText) {

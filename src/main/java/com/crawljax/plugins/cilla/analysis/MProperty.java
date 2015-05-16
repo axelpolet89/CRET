@@ -1,57 +1,59 @@
 package com.crawljax.plugins.cilla.analysis;
 
-public class MProperty {
+public class MProperty
+{
 
-	private String name = "";
-	private String value = "";
-	private String status = "notset";
-	private boolean effective;
+	private String _name;
+	private String _value;
+	private String _status = "notset";
+	private boolean _isEffective;
 
-	public boolean isEffective() {
-		return effective;
+	public MProperty(String name, String value)
+	{
+		_name = name;
+		_value = value;
 	}
 
-	public void setEffective(boolean effective) {
-		this.effective = effective;
+	public String GetName()
+	{
+		return _name;
 	}
 
-	public MProperty(String name, String value) {
-		this.name = name;
-		this.value = value;
+	public String GetValue()
+	{
+		return _value;
 	}
 
-	public String getName() {
-		return name;
+	public boolean IsEffective()
+	{
+		return _isEffective;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void SetEffective(boolean effective)
+	{
+		_isEffective = effective;
 	}
 
-	public String getValue() {
-		return value;
+	public String GetStatus()
+	{
+		return _status;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void SetStatus(String status)
+	{
+		_status = status;
 	}
 
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
+	public int GetSize()
+	{
+		return (_name.getBytes().length+ _value.getBytes().length);
 	}
 
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
 
-		return "{ " + name + " : " + value + " " + (effective ? "Effective" : "Ineffective")
+		return "{ " + _name + " : " + _value + " " + (_isEffective ? "Effective" : "Ineffective")
 		        + " }";
-	}
-	public int getsize(){
-		return (name.getBytes().length+value.getBytes().length);
 	}
 }

@@ -219,43 +219,43 @@ public class VisualizerServlet extends VelocityViewServlet {
 			for (MCssRule rule : rules) {
 
 				// First print out the unmatched rules
-				List<MSelector> unmatched = rule.getUnmatchedSelectors();
+				List<MSelector> unmatched = rule.GetUnmatchedSelectors();
 				if (unmatched.size() > 0) {
-					unmatchedBuffer.append("CSS rule: " + rule.getRule().getCssText() + "<br>");
-					unmatchedBuffer.append("at line: " + rule.getLocator().getLineNumber()
+					unmatchedBuffer.append("CSS rule: " + rule.GetRule().getCssText() + "<br>");
+					unmatchedBuffer.append("at line: " + rule.GetLocator().getLineNumber()
 					        + "<br><br>");
 
-					updateUnsortedMap(filename, rule.getLocator().getLineNumber(), rule.getRule()
+					updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule.GetRule()
 					        .getCssText(), HighlightColor.UNMATCHED);
 				} else {
 					// unmatchedBuffer.append("(none) <br><br>");
 				}
 
 				// Second handle the ineffective and effective rules
-				List<MSelector> matched = rule.getMatchedSelectors();
+				List<MSelector> matched = rule.GetMatchedSelectors();
 				if (matched.size() > 0) {
 					for (MSelector sel : matched) {
-						if (!sel.hasEffectiveProperties() && !sel.isIgnored()) {
-							ineffectiveBuffer.append("CSS rule: " + rule.getRule().getCssText()
+						if (!sel.hasEffectiveProperties() && !sel.IsIgnored()) {
+							ineffectiveBuffer.append("CSS rule: " + rule.GetRule().getCssText()
 							        + "<br>");
 
 							ineffectiveBuffer.append("at line: "
-							        + rule.getLocator().getLineNumber() + "<br>");
+							        + rule.GetLocator().getLineNumber() + "<br>");
 							ineffectiveBuffer.append(" Selector: " + sel.getSelectorText()
 							        + "<br><br>");
 
-							updateUnsortedMap(filename, rule.getLocator().getLineNumber(), rule
-							        .getRule().getCssText(), HighlightColor.INEFFECTIVE);
+							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule
+							        .GetRule().getCssText(), HighlightColor.INEFFECTIVE);
 						} else if (sel.hasEffectiveProperties()) {
-							effectiveBuffer.append("CSS rule: " + rule.getRule().getCssText()
+							effectiveBuffer.append("CSS rule: " + rule.GetRule().getCssText()
 							        + "<br>");
 							effectiveBuffer.append("at line: "
-							        + rule.getLocator().getLineNumber() + "<br>");
+							        + rule.GetLocator().getLineNumber() + "<br>");
 							effectiveBuffer.append(" Selector: " + sel.getSelectorText()
 							        + "<br><br>");
 
-							updateUnsortedMap(filename, rule.getLocator().getLineNumber(), rule
-							        .getRule().getCssText(), HighlightColor.EFFECTIVE);
+							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule
+							        .GetRule().getCssText(), HighlightColor.EFFECTIVE);
 						}
 
 					}
@@ -274,7 +274,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 				// output.append("State: " + key + "\n");
 				Set<ElementWithClass> set = elementsWithNoClassDef.get(key);
 				for (ElementWithClass e : set) {
-					for (String unmatched : e.getUnmatchedClasses()) {
+					for (String unmatched : e.GetUnmatchedClasses()) {
 						if (undefinedClasses.add(unmatched)) {
 
 							// output.append("Undefined class: ");
@@ -350,11 +350,11 @@ public class VisualizerServlet extends VelocityViewServlet {
 				filename = entry.getKey();
 				List<MCssRule> rules = entry.getValue();
 				for (MCssRule rule : rules) {
-					if (null != rule.getLocator()) {
+					if (null != rule.GetLocator()) {
 						colorMap = new HashMap<Integer, HighlightColor>();
-						line = rule.getLocator().getLineNumber();
-						System.err.println("LOCATOR FOUND: " + rule.getLocator().getLineNumber());
-						parsedRule = rule.getRule().getCssText();
+						line = rule.GetLocator().getLineNumber();
+						System.err.println("LOCATOR FOUND: " + rule.GetLocator().getLineNumber());
+						parsedRule = rule.GetRule().getCssText();
 						colorMap.put(line, HighlightColor.NONE);
 						ruleMap.put(parsedRule, colorMap);
 					} else {

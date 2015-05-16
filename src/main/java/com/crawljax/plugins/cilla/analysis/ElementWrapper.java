@@ -4,10 +4,10 @@ import org.w3c.dom.Element;
 
 import com.crawljax.util.DomUtils;
 
-public class ElementWrapper {
-
-	private String stateName;
-	private Element element;
+public class ElementWrapper 
+{
+	private String _stateName;
+	private Element _element;
 
 	/**
 	 * @param stateName
@@ -16,42 +16,34 @@ public class ElementWrapper {
 	 *            the affected element.
 	 */
 	public ElementWrapper(String stateName, Element element) {
-		this.stateName = stateName;
-		this.element = element;
+		_stateName = stateName;
+		_element = element;
 	}
 
-	public String getStateName() {
-		return stateName;
+	public String getStateName()
+	{
+		return _stateName;
 	}
 
-	public void setStateName(String stateName) {
-		this.stateName = stateName;
-	}
-
-	public Element getElement() {
-		return element;
-	}
-
-	public void setElement(Element element) {
-		this.element = element;
+	public Element getElement()
+	{
+		return _element;
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("Statename: " + stateName + "\n");
-		buffer.append("<" + element.getNodeName() + " "
-		        + DomUtils.getAllElementAttributes(element) + ">");
-		if (element.getNodeValue() != null) {
-			buffer.append(element.getNodeValue());
+
+		buffer.append("Statename: " + _stateName + "\n");
+		buffer.append("<" + _element.getNodeName() + " "
+		        + DomUtils.getAllElementAttributes(_element) + ">");
+
+		if (_element.getNodeValue() != null) {
+			buffer.append(_element.getNodeValue());
 		}
 
 		buffer.append("\n");
-		// buffer.append("</" + element.getNodeName() + ">\n");
-
-		// buffer.append(Helper.getDocumentToString(element.getOwnerDocument()));
-
 		return buffer.toString();
 	}
-
 }

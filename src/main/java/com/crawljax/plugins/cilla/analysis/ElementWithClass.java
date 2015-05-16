@@ -2,38 +2,40 @@ package com.crawljax.plugins.cilla.analysis;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.w3c.dom.Element;
 
-public class ElementWithClass extends ElementWrapper {
+public class ElementWithClass extends ElementWrapper
+{
+	private List<String> _classValues;
+	private List<String> _unmatchedClasses;
 
-	private List<String> classValues;
-	private List<String> unmatchedClasses;
-
-	public ElementWithClass(String stateName, Element element, List<String> classValues) {
+	public ElementWithClass(String stateName, Element element, List<String> classValues) 
+	{
 		super(stateName, element);
-		this.classValues = classValues;
-		this.unmatchedClasses = new ArrayList<String>();
+
+		_classValues = classValues;
+		_unmatchedClasses = new ArrayList<>();
 	}
 
-	public List<String> getUnmatchedClasses() {
-		return unmatchedClasses;
+	public void AddUnmatchedClass(String unmatchedClass)
+	{
+		_unmatchedClasses.add(unmatchedClass);
 	}
 
-	public void setUnmatchedClass(String unmatchedClass) {
-		this.unmatchedClasses.add(unmatchedClass);
+	public List<String> GetUnmatchedClasses()
+	{
+		return _unmatchedClasses;
 	}
 
-	public List<String> getClassValues() {
-		return classValues;
+	public List<String> GetClassValues()
+	{
+		return _classValues;
 	}
 
-	public void setClassValues(List<String> classValues) {
-		this.classValues = classValues;
-	}
-
+	//todo: remove?
 	@Override
-	public String toString() {
+	public String toString()
+	{
 		return super.toString();
 	}
 }

@@ -4,9 +4,7 @@ import java.util.*;
 
 import com.crawljax.plugins.cilla.util.Constants;
 import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
-import org.apache.log4j.Logger;
 
-import com.crawljax.plugins.cilla.util.CssToXpathConverter;
 import com.crawljax.plugins.cilla.util.specificity.Specificity;
 import com.crawljax.plugins.cilla.util.specificity.SpecificityCalculator;
 import org.w3c.css.sac.*;
@@ -16,33 +14,32 @@ import org.w3c.dom.NamedNodeMap;
  * POJO class for a CSS selector.
  * 
  */
-public class MSelector {
-	private static final Logger LOGGER = Logger.getLogger(MSelector.class.getName());
+public class MSelector
+{
+	private String _selectorText;
+	private boolean _isIgnored;
+	private Specificity _specificity;
+	private boolean _isMatched;
+	private boolean _effective;
 
-	private String selectorText;
-	private String xpathSelector;
-	private boolean isIgnored;
-	private Specificity specificity;
-	private boolean isMatched;
-	private boolean effective;
+	private Selector _selector;
+	private List<ElementWrapper> _matchedElements;
+	private List<MProperty> _properties;
 
-	private Selector selector;
-	private List<ElementWrapper> matchedElements;
-	private List<MProperty> properties;
+	private boolean _isNonStructuralPseudo;
+	private boolean _isPseudoElement;
 
-	private boolean isNonStructuralPseudo;
-	private boolean isPseudoElement;
+	private int _pseudoLevel;
+	private String _keyPseudoClass;
+	private String _selectorTextWithoutPseudo;
+	private LinkedHashMap<String, String> _pseudoClasses;
 
-	private int pseudoLevel;
-	private String keyPseudoClass;
-	private String selectorTextWithoutPseudo;
-	private LinkedHashMap<String, String> pseudoClasses;
-
-	private String pseudoElement;
-	private int ruleNumber;
+	private String _pseudoElement;
+	private int _ruleNumber;
 
 	//todo: only used in test components
-	public MSelector(List<MProperty> properties) {
+	public MSelector(List<MProperty> properties)
+	{
 		this(null, properties, 1);
 	}
 
@@ -52,54 +49,43 @@ public class MSelector {
 	 * @param selector
 	 *            the selector text (CSS).
 	 */
-	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber) {
-		this.selectorText = selector.toString();
-		this.selector = selector;
-		this.isIgnored = selectorText.contains(":not");
-		this.matchedElements = new ArrayList<ElementWrapper>();
-		this.properties = properties;
-		this.pseudoClasses = new LinkedHashMap<>();
-		this.ruleNumber = ruleNumber;
-		this.keyPseudoClass = "";
+	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber)
+	{
+		_selector = selector;
+		_ruleNumber = ruleNumber;
+		_selectorText = selector.toString();
+		_isIgnored = _selectorText.contains(":not");
+		_properties = properties;
 
-		setXPathSelector();
-		setSpecificity();
+		_specificity = new SpecificityCalculator().getSpecificity(_selectorText);
+		_matchedElements = new ArrayList<>();
+		_pseudoClasses = new LinkedHashMap<>();
+		_keyPseudoClass = "";
+
 		DeterminePseudo();
 	}
-
-
-	public int getRuleNumber() {
-		return ruleNumber;
-	}
-
-	public boolean IsNonStructuralPseudo() { return isNonStructuralPseudo; }
-
-	public boolean IsPseudoElement() { return isPseudoElement; }
-
-	public String GetPseudoClass() { return keyPseudoClass; }
-
 
 	/**
 	 * Determines whether this selector contains pseudo-selectors
 	 * If they do, then find combinations of ancestor selector and pseudo-selector
-	 * Foreach selector that is a non-structural pseudo-selector, we filter the selectorText with that pseudo-selector,
+	 * Foreach selector that is a non-structural pseudo-selector, we filter the _selectorText with that pseudo-selector,
 	 * so that we can use the selector to track any elements (without pseudo-state in a DOM tree)
 	 */
-	private void DeterminePseudo(){
-
+	private void DeterminePseudo()
+	{
 		//todo: what to do with negation pseudo?
-		if(selectorText.contains(":not"))
+		if(_selectorText.contains(":not"))
 			return;
 
-		if(selectorText.contains(":"))
+		if(_selectorText.contains(":"))
 		{
-			selectorTextWithoutPseudo = selectorText;
+			_selectorTextWithoutPseudo = _selectorText;
 
 			//find all pseudo selectors in the whole selector
-			pseudoLevel = 0;
-			RecursiveParsePseudoClasses(this.selector);
+			_pseudoLevel = 0;
+			RecursiveParsePseudoClasses(_selector);
 
-			for(String value : pseudoClasses.values())
+			for(String value : _pseudoClasses.values())
 			{
 				//escape brackets for regex compare
 				if(value.contains("lang"))
@@ -108,7 +94,7 @@ public class MSelector {
 					value = value.replace(")", "\\)");
 				}
 
-				selectorTextWithoutPseudo = selectorTextWithoutPseudo.replaceFirst(value, "");
+				_selectorTextWithoutPseudo = _selectorTextWithoutPseudo.replaceFirst(value, "");
 			}
 		}
 	}
@@ -123,8 +109,8 @@ public class MSelector {
 	{
 		if(selector instanceof PseudoElementSelectorImpl)
 		{
-			isPseudoElement = true;
-			pseudoElement = ":" + selector.toString();
+			_isPseudoElement = true;
+			_pseudoElement = ":" + selector.toString();
 		}
 		else if(selector instanceof SimpleSelector)
 		{
@@ -136,7 +122,7 @@ public class MSelector {
 
 			RecursiveParsePseudoClasses(dSelector.getSimpleSelector());
 
-			pseudoLevel++;
+			_pseudoLevel++;
 			RecursiveParsePseudoClasses(dSelector.getAncestorSelector());
 		}
 		else if (selector instanceof SiblingSelector)
@@ -145,7 +131,7 @@ public class MSelector {
 
 			RecursiveParsePseudoClasses(dSelector.getSelector());
 
-			pseudoLevel++;
+			_pseudoLevel++;
 			RecursiveParsePseudoClasses(dSelector.getSiblingSelector());
 		}
 	}
@@ -164,13 +150,63 @@ public class MSelector {
 		String pseudo = ":" + parts[1];
 		if(Constants.IsNonStructuralPseudo(pseudo))
 		{
-			if(pseudoLevel == 0)
-				keyPseudoClass = pseudo;
+			if(_pseudoLevel == 0)
+				_keyPseudoClass = pseudo;
 
-			pseudoClasses.put(parts[0], pseudo);
-			isNonStructuralPseudo = true;
+			_pseudoClasses.put(parts[0], pseudo);
+			_isNonStructuralPseudo = true;
 		}
 	}
+
+	/**
+	 *
+	 * @param attributes
+	 * @param attributeName
+	 * @return
+	 */
+	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
+	{
+		return attributes.getNamedItem(attributeName).getNodeValue();
+	}
+
+
+
+	public int GetRuleNumber() { return _ruleNumber; }
+
+	public boolean IsIgnored() { return _isIgnored; }
+
+	public Specificity getSpecificity() { return _specificity; }
+
+	public List<MProperty> getProperties() { return _properties; }
+
+	public String getSelectorText() {
+		if(_isNonStructuralPseudo)
+			return _selectorTextWithoutPseudo;
+
+		return _selectorText;
+	}
+
+
+	public boolean IsNonStructuralPseudo() { return _isNonStructuralPseudo; }
+
+	public boolean IsPseudoElement() { return _isPseudoElement; }
+
+	public String GetPseudoClass() { return _keyPseudoClass; }
+
+	public boolean isMatched() { return _isMatched; }
+
+	public void setMatched(boolean matched) { _isMatched = matched; }
+
+	public void addMatchedElement(ElementWrapper element) {
+		if (element != null) {
+			_matchedElements.add(element);
+			setMatched(true);
+		}
+	}
+
+	public boolean isEffective() { return _effective; }
+
+	public void setEffective(boolean effective) { _effective = effective; }
 
 
 	/**
@@ -181,9 +217,7 @@ public class MSelector {
 	 */
 	public boolean CheckPseudoCompatibility(String elementType, NamedNodeMap attributes)
 	{
-		String pseudo = pseudoClasses.values().toArray()[0].toString();
-
-		switch (pseudo)
+		switch (_keyPseudoClass)
 		{
 			case ":link":
 			case ":visited":
@@ -200,7 +234,7 @@ public class MSelector {
 				break;
 			case ":focus":
 			case ":active":
-				if((pseudo.equals(":active") && elementType.equalsIgnoreCase("a")) || (elementType.equalsIgnoreCase("textarea")))
+				if((_keyPseudoClass.equals(":active") && elementType.equalsIgnoreCase("a")) || (elementType.equalsIgnoreCase("textarea")))
 					return true;
 				if(elementType.equalsIgnoreCase("input"))
 				{
@@ -216,131 +250,26 @@ public class MSelector {
 		return false;
 	}
 
+
+	/**
+	 *
+	 * @param otherSelector
+	 * @return
+	 */
 	public boolean CompareKeyPseudoClass(MSelector otherSelector)
 	{
-		return keyPseudoClass.equals(otherSelector.GetPseudoClass());
+		return _keyPseudoClass.equals(otherSelector.GetPseudoClass());
 	}
 
-	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
+
+	/**
+	 *
+	 * @return
+	 */
+	public boolean hasEffectiveProperties()
 	{
-		return attributes.getNamedItem(attributeName).getNodeValue();
-	}
-
-
-	public Specificity getSpecificity() {
-		return specificity;
-	}
-
-	private void setSpecificity() {
-		this.specificity = new SpecificityCalculator().getSpecificity(this.selectorText);
-	}
-
-	public void addProperty(MProperty property) {
-		this.properties.add(property);
-	}
-
-	public List<MProperty> getProperties() {
-		return this.properties;
-	}
-
-	public boolean isEffective() {
-		return effective;
-	}
-
-	public void setEffective(boolean effective) {
-		this.effective = effective;
-	}
-
-	public boolean isMatched() {
-
-		return isMatched;
-	}
-
-	public void setMatched(boolean matched) {
-		this.isMatched = matched;
-	}
-
-	public List<ElementWrapper> getAffectedElements() {
-		return matchedElements;
-	}
-
-	public void addMatchedElement(ElementWrapper element) {
-		if (element != null) {
-			this.matchedElements.add(element);
-			setMatched(true);
-		}
-	}
-
-	//todo: refactor usages in CillaPlugin and Visualizer
-	public String getSelectorText() {
-		if(isNonStructuralPseudo)
-			return selectorTextWithoutPseudo;
-
-		return selectorText;
-	}
-
-	//todo: unused?
-	private void setXPathSelector() {
-		this.xpathSelector = CssToXpathConverter.convert(this.selectorText);
-	}
-
-
-	//todo: unused?
-	public String getXpathSelector() {
-		return xpathSelector;
-	}
-
-	@Override
-	public String toString() {
-
-		StringBuffer buffer = new StringBuffer();
-
-		buffer.append("Selector: " + this.selectorText + "\n");
-		buffer.append(" XPath: " + this.xpathSelector + "\n");
-		buffer.append(" Matched?: " + this.isMatched + "\n");
-
-		if (this.matchedElements.size() > 0) {
-			buffer.append(" Matched elements:: \n");
-		}
-
-		for (ElementWrapper eWrapper : this.matchedElements) {
-			buffer.append(eWrapper.toString());
-		}
-
-		return buffer.toString();
-	}
-
-	public boolean isIgnored() {
-		return isIgnored;
-	}
-
-	public static void orderSpecificity(List<MSelector> selectors) {
-		Collections.sort(selectors, new Comparator<MSelector>() {
-
-			public int compare(MSelector o1, MSelector o2) {
-				int value1 = o1.getSpecificity().getValue();
-				int value2 = o2.getSpecificity().getValue();
-
-				//if two selectors have the same specificity,
-				//then the one that is defined later (e.g. a higher row number in the css file)
-				//has a higher order
-				if (value1 == value2) {
-					return new Integer(o1.getRuleNumber()).compareTo(o2.getRuleNumber());
-				}
-
-				return new Integer(value1).compareTo(new Integer(value2));
-			}
-
-		});
-
-		//we need selectors sorted ascending (from specific to less-specific)
-		Collections.reverse(selectors);
-	}
-
-	public boolean hasEffectiveProperties() {
-
-		for (MProperty p : this.properties) {
-			if (p.isEffective()) {
+		for (MProperty p : _properties) {
+			if (p.IsEffective()) {
 				return true;
 			}
 		}
@@ -348,11 +277,37 @@ public class MSelector {
 		return false;
 	}
 
-	public int getSize() {
+	/**
+	 *
+	 * @return
+	 */
+	public int getSize()
+	{
 		int propsSize = 0;
-		for (MProperty prop : this.properties) {
-			propsSize += prop.getsize();
+		for (MProperty prop : _properties) {
+			propsSize += prop.GetSize();
 		}
-		return (propsSize + selectorText.trim().replace(" ", "").getBytes().length);
+		return (propsSize + _selectorText.trim().replace(" ", "").getBytes().length);
+	}
+
+
+
+	@Override
+	public String toString()
+	{
+		StringBuffer buffer = new StringBuffer();
+
+		buffer.append("Selector: " + _selectorText + "\n");
+		buffer.append(" Matched?: " + _isMatched + "\n");
+
+		if (_matchedElements.size() > 0) {
+			buffer.append(" Matched elements:: \n");
+		}
+
+		for (ElementWrapper eWrapper : _matchedElements) {
+			buffer.append(eWrapper.toString());
+		}
+
+		return buffer.toString();
 	}
 }

@@ -1,6 +1,7 @@
 package com.crawljax.plugins.cilla.analysis;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.steadystate.css.parser.SelectorListImpl;
 import org.w3c.css.sac.Locator;
@@ -12,94 +13,136 @@ import org.w3c.dom.css.CSSStyleRule;
 import com.steadystate.css.dom.CSSStyleRuleImpl;
 import com.steadystate.css.userdata.UserDataConstants;
 
-public class MCssRule {
+public class MCssRule
+{
 
-	private CSSRule rule;
-	private List<MSelector> selectors;
+	private CSSRule _rule;
+	private List<MSelector> _selectors;
 
 	/**
-	 * Constructor.
-	 * 
+	 *
 	 * @param rule
-	 *            the CSS rule.
 	 */
 	public MCssRule(CSSRule rule) {
 
-		this.rule = rule;
-		selectors = new ArrayList<>();
+		_rule = rule;
+		_selectors = new ArrayList<>();
 
-		setSelectors();
+		SetSelectors();
 	}
 
-	public CSSRule getRule() {
-		return rule;
-	}
+	private void SetSelectors() {
+		if (_rule instanceof CSSStyleRuleImpl)
+		{
+			CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) _rule;
 
-	public List<MSelector> getSelectors() {
-		return selectors;
-	}
-
-	private void setSelectors() {
-		if (this.rule instanceof CSSStyleRuleImpl) {
-			CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) rule;
-
-			List<MProperty> props = getProperties();
+			List<MProperty> props = GetProperties();
 
 			SelectorListImpl list = (SelectorListImpl)styleRuleImpl.getSelectors();
 
 			for(org.w3c.css.sac.Selector selector : list.getSelectors())
 			{
-				selectors.add(new MSelector(selector, props, this.getLocator().getLineNumber()));
+				_selectors.add(new MSelector(selector, props, GetLocator().getLineNumber()));
 			}
-
 		}
-
 	}
 
-	public List<MProperty> getProperties() {
-		CSSStyleDeclaration styleDeclaration = null;
-		List<MProperty> properties = new ArrayList<MProperty>();
 
-		if (this.rule instanceof CSSStyleRule) {
-			CSSStyleRule styleRule = (CSSStyleRule) rule;
-			styleDeclaration = styleRule.getStyle();
+	//todo: store properties instead of parsing them on every call?
+	public List<MProperty> GetProperties()
+	{
+		List<MProperty> properties = new ArrayList<>();
 
-			for (int j = 0; j < styleDeclaration.getLength(); j++) {
+		if (_rule instanceof CSSStyleRule)
+		{
+			CSSStyleRule styleRule = (CSSStyleRule) _rule;
+			CSSStyleDeclaration styleDeclaration = styleRule.getStyle();
+
+			for (int j = 0; j < styleDeclaration.getLength(); j++)
+			{
 				String property = styleDeclaration.item(j);
 				String value = styleDeclaration.getPropertyCSSValue(property).getCssText();
 				properties.add(new MProperty(property, value));
 			}
-
 		}
 
 		return properties;
 	}
 
+
 	/**
-	 * @return the CSS Style declaration of this rule.
+	 *
+	 * @return
 	 */
-	public CSSStyleDeclaration getStyleDeclaration() {
-		CSSStyleDeclaration styleDeclaration = null;
-
-		if (this.rule instanceof CSSStyleRule) {
-			CSSStyleRule styleRule = (CSSStyleRule) rule;
-			styleDeclaration = styleRule.getStyle();
-
-			for (int j = 0; j < styleDeclaration.getLength(); j++) {
-				String property = styleDeclaration.item(j);
-				System.out.println("property: " + property);
-				System.out.println("value: "
-				        + styleDeclaration.getPropertyCSSValue(property).getCssText());
-			}
-
-		}
-
-		return styleDeclaration;
+	public CSSRule GetRule()
+	{
+		return _rule;
 	}
 
-	public static List<MCssRule> convertToMCssRules(CSSRuleList ruleList) {
 
-		List<MCssRule> mCssRules = new ArrayList<MCssRule>();
+	/**
+	 *
+	 * @return
+	 */
+	public List<MSelector> GetSelectors()
+	{
+		return _selectors;
+	}
+
+
+	/**
+	 * @return the _selectors that are not matched (not associated DOM elements have been detected).
+	 */
+	public List<MSelector> GetUnmatchedSelectors() {
+		List<MSelector> unmatched = new ArrayList<>();
+
+		for (MSelector selector : _selectors) {
+			if (!selector.isMatched() && !selector.IsIgnored()) {
+				unmatched.add(selector);
+			}
+		}
+
+		return unmatched;
+
+	}
+
+	/**
+	 * @return the _selectors that are effective (associated DOM elements have been detected).
+	 */
+	public List<MSelector> GetMatchedSelectors() {
+		List<MSelector> effective = new ArrayList<MSelector>();
+
+		for (MSelector selector : _selectors) {
+			if (selector.isMatched() && !selector.IsIgnored()) {
+				effective.add(selector);
+			}
+		}
+
+		return effective;
+
+	}
+
+	/**
+	 * @return the Locator of this _rule (line number, column).
+	 */
+	public Locator GetLocator() {
+		if (_rule instanceof CSSStyleRuleImpl) {
+			return (Locator) ((CSSStyleRuleImpl) _rule)
+			        .getUserData(UserDataConstants.KEY_LOCATOR);
+		}
+
+		return null;
+	}
+
+
+	/**
+	 *
+	 * @param ruleList
+	 * @return
+	 */
+	public static List<MCssRule> ConvertToMCssRules(CSSRuleList ruleList)
+	{
+		List<MCssRule> mCssRules = new ArrayList<>();
 
 		for (int i = 0; i < ruleList.getLength(); i++) {
 			mCssRules.add(new MCssRule(ruleList.item(i)));
@@ -112,60 +155,17 @@ public class MCssRule {
 	public String toString() {
 
 		StringBuffer buffer = new StringBuffer();
-		Locator locator = getLocator();
+		Locator locator = GetLocator();
 
 		buffer.append("locator: line=" + locator.getLineNumber() + " col="
-		        + locator.getColumnNumber() + "\n");
-		buffer.append("Rule: " + rule.getCssText() + "\n");
+				+ locator.getColumnNumber() + "\n");
+		buffer.append("Rule: " + _rule.getCssText() + "\n");
 
-		for (MSelector selector : this.selectors) {
+		for (MSelector selector : _selectors) {
 			buffer.append(selector.toString());
 		}
 
 		return buffer.toString();
 	}
 
-	/**
-	 * @return the selectors that are not matched (not associated DOM elements have been detected).
-	 */
-	public List<MSelector> getUnmatchedSelectors() {
-		List<MSelector> unmatched = new ArrayList<MSelector>();
-
-		for (MSelector selector : this.selectors) {
-			if (!selector.isMatched() && !selector.isIgnored()) {
-				unmatched.add(selector);
-			}
-		}
-
-		return unmatched;
-
-	}
-
-	/**
-	 * @return the selectors that are effective (associated DOM elements have been detected).
-	 */
-	public List<MSelector> getMatchedSelectors() {
-		List<MSelector> effective = new ArrayList<MSelector>();
-
-		for (MSelector selector : this.selectors) {
-			if (selector.isMatched() && !selector.isIgnored()) {
-				effective.add(selector);
-			}
-		}
-
-		return effective;
-
-	}
-
-	/**
-	 * @return the Locator of this rule (line number, column).
-	 */
-	public Locator getLocator() {
-		if (this.rule instanceof CSSStyleRuleImpl) {
-			return (Locator) ((CSSStyleRuleImpl) this.rule)
-			        .getUserData(UserDataConstants.KEY_LOCATOR);
-		}
-
-		return null;
-	}
 }

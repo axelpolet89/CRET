@@ -37,7 +37,7 @@ public class CloneDetector {
      * @return
      */
     private static String PropertyToString(MProperty mProp){
-        return mProp.getName() + ":" + mProp.getValue();
+        return mProp.GetName() + ":" + mProp.GetValue();
     }
 
 
@@ -61,7 +61,7 @@ public class CloneDetector {
 
         for(MCssRule mRule : rules)
         {
-            for(MProperty mProp : mRule.getProperties())
+            for(MProperty mProp : mRule.GetProperties())
             {
                 String key = PropertyToString(mProp);
                 if(clones.containsKey(key)) {
@@ -169,7 +169,7 @@ public class CloneDetector {
         public List<MSelector> GetSelectors() {
             List<MSelector> result = new ArrayList<>();
             for(MCssRule mRule : _mRules)
-                result.addAll(mRule.getSelectors());
+                result.addAll(mRule.GetSelectors());
             return result;
         }
 

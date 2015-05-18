@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +18,10 @@ import java.util.Set;
 import javax.xml.xpath.XPathExpressionException;
 
 import com.crawljax.plugins.cilla.analysis.*;
+import com.crawljax.plugins.cilla.data.*;
+import com.crawljax.plugins.cilla.generator.CssWriter;
+import com.crawljax.plugins.cilla.interfaces.ICssCrawlPlugin;
+import com.crawljax.plugins.cilla.interfaces.ICssPostCrawlPlugin;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -33,7 +38,6 @@ import com.crawljax.plugins.cilla.util.CSSDOMHelper;
 import com.crawljax.plugins.cilla.util.CssParser;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-import se.fishtank.css.selectors.parser.ParserException;
 
 public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	private static final Logger LOGGER = Logger.getLogger(CillaPlugin.class.getName());
@@ -60,16 +64,62 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	public int numberofstates = 0;
 
+	private List<ICssCrawlPlugin> _plugins;
+	private List<ICssPostCrawlPlugin> _postPlugins;
+
+	public CillaPlugin()
+	{
+		_plugins = new ArrayList<>();
+		_postPlugins = new ArrayList<>();
+
+		CssAnalyzer analyzer = new CssAnalyzer();
+
+		_plugins.add(analyzer);
+		_postPlugins.add(analyzer);
+	}
+
 	public void onNewState(CrawlerContext context, StateVertex newState) {
 		// if the external CSS files are not parsed yet, do so
 		parseCssRules(context, newState);
 
 		// now we have all the CSS rules neatly parsed in "rules"
-		checkCssOnDom(newState);
+		//checkCssOnDom(newState);
+		ExecuteCrawlTransformations(newState);
 
 		checkClassDefinitions(newState);
 
 		numberofstates++;
+	}
+
+
+	private void ExecuteCrawlTransformations(StateVertex state)
+	{
+		Document dom = null;
+		try
+		{
+			dom = state.getDocument();
+		}
+		catch (IOException ex)
+		{
+			LOGGER.debug(ex.toString());
+		}
+		finally
+		{
+			for(ICssCrawlPlugin plugin : _plugins)
+			{
+				plugin.Transform(state.getName(), dom, cssRules);
+			}
+		}
+	}
+
+	private Map<String, List<MCssRule>> ExecutePostTransformations()
+	{
+		Map<String, List<MCssRule>> rules = cssRules;
+		for(ICssPostCrawlPlugin plugin : _postPlugins)
+		{
+			rules = plugin.Transform(rules);
+		}
+		return rules;
 	}
 
 	private void checkClassDefinitions(StateVertex state) {
@@ -87,7 +137,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 					search: for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
 						for (MCssRule rule : entry.getValue()) {
 							for (MSelector selector : rule.GetSelectors()) {
-								if (selector.getSelectorText().contains("." + classDef)) {
+								if (selector.GetSelectorText().contains("." + classDef)) {
 									// TODO e.g. css: div.news { color: blue} <span><p>
 									// if (selector.getSelectorText().startsWith("." + classDef)) {
 									matchFound = true;
@@ -114,20 +164,20 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	}
 
-	private void checkCssOnDom(StateVertex state) {
-		LOGGER.info("Checking CSS on DOM...");
-		// check the rules on the current DOM state.
-		try {
-			for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet())
-			{
-				CssAnalyzer.checkCssSelectorRulesOnDom(state.getName(), state.getDocument(), entry.getValue());
-			}
-		} catch (IOException e) {
-			LOGGER.error(e.getMessage(), e);
-		} catch (ParserException e) {
-			LOGGER.error(e.getMessage(), e);
-		}
-	}
+//	private void checkCssOnDom(StateVertex state) {
+//		LOGGER.info("Checking CSS on DOM...");
+//		// check the rules on the current DOM state.
+//		try {
+//			for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet())
+//			{
+//				CssAnalyzer.checkCssSelectorRulesOnDom(state.getName(), state.getDocument(), entry.getValue());
+//			}
+//		} catch (IOException e) {
+//			LOGGER.error(e.getMessage(), e);
+//		} catch (ParserException e) {
+//			LOGGER.error(e.getMessage(), e);
+//		}
+//	}
 
 	private int countLines(String cssText) {
 		int count = 0;
@@ -218,8 +268,21 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		int used = getUsedRules(bufferUsed);
 		int unused = getUnmatchedRules(bufferUnused);
 
+		Map<String, List<MCssRule>> rules = ExecutePostTransformations();
+
+		CssWriter writer = new CssWriter();
+		for(String file : rules.keySet()) {
+			try {
+				writer.Generate(file, rules.get(file));
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (URISyntaxException e) {
+				e.printStackTrace();
+			}
+		}
+
 		//determine if matched selectors are effective
-		CssAnalyzer.analyzeCssSelectorEffectiveness();
+//		CssAnalyzer.analyzeCssSelectorEffectiveness();
 
 		int undefClasses = getUndefinedClasses(undefinedClasses);
 		StringBuffer effective = new StringBuffer();
@@ -295,7 +358,6 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
 		}
-
 	}
 
 
@@ -364,7 +426,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 						if (selector.hasEffectiveProperties()) {
 							buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
 							buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
-							buffer.append(" Selector: " + selector.getSelectorText() + "\n");
+							buffer.append(" Selector: " + selector.GetSelectorText() + "\n");
 							counterEffectiveSelectors++;
 
 							// buffer.append(" has effective properties: \n");
@@ -401,7 +463,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 							buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
 
 							buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
-							buffer.append(" Selector: " + selector.getSelectorText() + "\n\n");
+							buffer.append(" Selector: " + selector.GetSelectorText() + "\n\n");
 							counterIneffectiveSelectors++;
 							// ineffectivePropsSize+=selector.getSelectorText().getBytes().length;
 

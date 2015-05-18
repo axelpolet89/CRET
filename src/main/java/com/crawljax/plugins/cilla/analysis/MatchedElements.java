@@ -1,5 +1,6 @@
 package com.crawljax.plugins.cilla.analysis;
 
+import com.crawljax.plugins.cilla.data.MSelector;
 import com.crawljax.util.XPathHelper;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;

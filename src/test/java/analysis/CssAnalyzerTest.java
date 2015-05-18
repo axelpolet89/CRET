@@ -1,14 +1,6 @@
 package analysis;
 
-import java.util.List;
-
-import junit.framework.Assert;
-
 import org.junit.Test;
-
-import com.crawljax.plugins.cilla.analysis.CssAnalyzer;
-import com.crawljax.plugins.cilla.analysis.MCssRule;
-import com.crawljax.plugins.cilla.util.CssParser;
 
 
 public class CssAnalyzerTest {

@@ -2,17 +2,14 @@ package analysis;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
-import com.crawljax.plugins.cilla.util.CssParser;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.crawljax.plugins.cilla.analysis.MSelector;
+import com.crawljax.plugins.cilla.data.MSelector;
 import com.crawljax.plugins.cilla.util.specificity.Specificity;
 import org.w3c.css.sac.InputSource;
 import org.w3c.css.sac.Selector;

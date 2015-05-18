@@ -1,7 +1,8 @@
-package com.crawljax.plugins.cilla.analysis;
+package com.crawljax.plugins.cilla.data;
 
 import java.util.*;
 
+import com.crawljax.plugins.cilla.analysis.ElementWrapper;
 import com.crawljax.plugins.cilla.util.PseudoHelper;
 import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
 
@@ -52,15 +53,17 @@ public class MSelector
 
 	/**
 	 * Constructor.
+	 * For some reason, the cssparser implementation displays a * prefix on any selector
+	 * the selector sequence, this is viewed as a 'elementSelector' by the specificity algorithm
+	 * so we need to remove those
 	 * 
-	 * @param selector
-	 *            the selector text (CSS).
+	 * @param selector: the selector text (CSS).
 	 */
 	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber)
 	{
 		_selector = selector;
 		_ruleNumber = ruleNumber;
-		_selectorText = selector.toString();
+		_selectorText = selector.toString().replaceAll("\\*", "");
 		_isIgnored = _selectorText.contains(":not");
 		_properties = properties;
 
@@ -186,7 +189,11 @@ public class MSelector
 
 	public List<MProperty> getProperties() { return _properties; }
 
-	public String getSelectorText() {
+	public String GetSelectorText() {
+		return _selectorText;
+	}
+
+	public String GetFilteredSelectorText(){
 		if(_isNonStructuralPseudo)
 			return _selectorTextWithoutPseudo;
 
@@ -297,6 +304,11 @@ public class MSelector
 		return (propsSize + _selectorText.trim().replace(" ", "").getBytes().length);
 	}
 
+
+	public void RemoveIneffectiveSelectors()
+	{
+		_properties.removeIf((MProperty) -> !MProperty.IsEffective());
+	}
 
 
 	@Override

@@ -8,8 +8,8 @@ import org.junit.Test;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
 
-import com.crawljax.plugins.cilla.analysis.MCssRule;
-import com.crawljax.plugins.cilla.analysis.MSelector;
+import com.crawljax.plugins.cilla.data.MCssRule;
+import com.crawljax.plugins.cilla.data.MSelector;
 import com.crawljax.plugins.cilla.util.CssParser;
 
 
@@ -45,7 +45,7 @@ public class MCSSRuleTest {
 
 		Assert.assertEquals(3, selectors.size());
 		MSelector selectorPojo = selectors.get(1);
-		Assert.assertEquals("a", selectorPojo.getSelectorText());
+		Assert.assertEquals("a", selectorPojo.GetSelectorText());
 
 	}
 

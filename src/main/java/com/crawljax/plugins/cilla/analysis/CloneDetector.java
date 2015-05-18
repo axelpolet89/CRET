@@ -3,6 +3,9 @@ package com.crawljax.plugins.cilla.analysis;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.crawljax.plugins.cilla.data.MCssRule;
+import com.crawljax.plugins.cilla.data.MProperty;
+import com.crawljax.plugins.cilla.data.MSelector;
 import org.apache.log4j.Logger;
 
 /**

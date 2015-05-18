@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cilla.analysis;
+package com.crawljax.plugins.cilla.data;
 
 public class MProperty
 {

@@ -21,7 +21,7 @@ import org.w3c.dom.css.CSSStyleRule;
 import org.w3c.dom.css.CSSStyleSheet;
 
 
-import com.crawljax.plugins.cilla.analysis.MCssRule;
+import com.crawljax.plugins.cilla.data.MCssRule;
 import com.steadystate.css.dom.CSSStyleRuleImpl;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.userdata.UserDataConstants;

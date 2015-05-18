@@ -1,7 +1,6 @@
-package com.crawljax.plugins.cilla.analysis;
+package com.crawljax.plugins.cilla.data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.steadystate.css.parser.SelectorListImpl;
 import org.w3c.css.sac.Locator;
@@ -30,6 +29,17 @@ public class MCssRule
 
 		SetSelectors();
 	}
+
+	public void RemoveSelector(MSelector mSelector)
+	{
+		_selectors.remove(mSelector);
+	}
+
+	public void RemoveSelectors(List<MSelector> selectors)
+	{
+		_selectors.removeAll(selectors);
+	}
+
 
 	private void SetSelectors() {
 		if (_rule instanceof CSSStyleRuleImpl)
@@ -149,6 +159,48 @@ public class MCssRule
 		}
 
 		return mCssRules;
+	}
+
+
+	public String Print()
+	{
+		Map<List<MProperty>, List<MSelector>> combinations = new HashMap<>();
+		for(MSelector mSelector : _selectors)
+		{
+			List<MProperty> mProps = mSelector.getProperties();
+
+			if(combinations.containsKey(mProps))
+			{
+				combinations.get(mProps).add(mSelector);
+			}
+			else
+			{
+				combinations.put(mProps, new ArrayList<>(Arrays.asList(mSelector)));
+			}
+		}
+
+		StringBuilder builder = new StringBuilder();
+		for(List<MProperty> mProps : combinations.keySet())
+		{
+			List<MSelector> mSelectors = combinations.get(mProps);
+			int size = mSelectors.size();
+			for(int i = 0; i < size; i++)
+			{
+				builder.append(mSelectors.get(i).GetSelectorText());
+				if(i < size - 1)
+					builder.append(", ");
+			}
+
+			builder.append(" {");
+			for(MProperty mProp : mProps)
+			{
+				builder.append("\n");
+				builder.append("\t" + mProp.GetName() + ":" + mProp.GetValue() + ";");
+			}
+			builder.append("\n}\n\n");
+		}
+
+		return builder.toString();
 	}
 
 	@Override

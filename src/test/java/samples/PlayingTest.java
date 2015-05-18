@@ -26,8 +26,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.crawljax.plugins.cilla.analysis.CssAnalyzer;
-import com.crawljax.plugins.cilla.analysis.MCssRule;
 import com.crawljax.plugins.cilla.util.CssParser;
 import com.crawljax.plugins.cilla.util.CssToXpathConverter;
 import com.crawljax.util.DomUtils;

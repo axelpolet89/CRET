@@ -2,21 +2,18 @@ package analysis;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 //import se.fishtank.css.selectors.NodeSelector;
 //import se.fishtank.css.selectors.NodeSelectorException;
 //import se.fishtank.css.selectors.dom.DOMNodeSelector;
 
-import com.crawljax.plugins.cilla.analysis.ElementWrapper;
-import com.crawljax.plugins.cilla.analysis.MSelector;
+import com.crawljax.plugins.cilla.data.MSelector;
 import com.crawljax.plugins.cilla.analysis.MatchedElements;
 import com.crawljax.util.DomUtils;
 

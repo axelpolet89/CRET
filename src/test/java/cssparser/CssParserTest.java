@@ -6,7 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.crawljax.plugins.cilla.analysis.MCssRule;
+import com.crawljax.plugins.cilla.data.MCssRule;
 import com.crawljax.plugins.cilla.util.CssParser;
 
 

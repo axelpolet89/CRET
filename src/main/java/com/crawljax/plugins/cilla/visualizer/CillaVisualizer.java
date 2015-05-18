@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.crawljax.plugins.cilla.analysis.ElementWithClass;
-import com.crawljax.plugins.cilla.analysis.MCssRule;
+import com.crawljax.plugins.cilla.data.MCssRule;
 import com.google.common.collect.SetMultimap;
 
 

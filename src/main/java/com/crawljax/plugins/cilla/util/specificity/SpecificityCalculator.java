@@ -88,11 +88,6 @@ public class SpecificityCalculator {
 
 	public Specificity getSpecificity(String selector)
 	{
-		// for some reason, the cssparser implementation displays a * prefix on any selector
-		// in the selector sequence, this is viewed as a 'elementSelector' by the specificity algorithm
-		// so we need to remove those
-		selector = selector.replaceAll("\\*", "");
-
 		// get every selector in the sequence
 		String[] parts = selector.split(" ");
 

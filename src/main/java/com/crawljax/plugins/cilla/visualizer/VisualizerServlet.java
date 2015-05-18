@@ -34,8 +34,8 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.apache.velocity.tools.view.VelocityViewServlet;
 
 import com.crawljax.plugins.cilla.analysis.ElementWithClass;
-import com.crawljax.plugins.cilla.analysis.MCssRule;
-import com.crawljax.plugins.cilla.analysis.MSelector;
+import com.crawljax.plugins.cilla.data.MCssRule;
+import com.crawljax.plugins.cilla.data.MSelector;
 import com.google.common.base.Charsets;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.Files;
@@ -241,7 +241,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 
 							ineffectiveBuffer.append("at line: "
 							        + rule.GetLocator().getLineNumber() + "<br>");
-							ineffectiveBuffer.append(" Selector: " + sel.getSelectorText()
+							ineffectiveBuffer.append(" Selector: " + sel.GetSelectorText()
 							        + "<br><br>");
 
 							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule
@@ -251,7 +251,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 							        + "<br>");
 							effectiveBuffer.append("at line: "
 							        + rule.GetLocator().getLineNumber() + "<br>");
-							effectiveBuffer.append(" Selector: " + sel.getSelectorText()
+							effectiveBuffer.append(" Selector: " + sel.GetSelectorText()
 							        + "<br><br>");
 
 							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule

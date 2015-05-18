@@ -1,10 +1,10 @@
 package com.crawljax.plugins.cilla.analysis;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
+import com.crawljax.plugins.cilla.data.*;
+import com.crawljax.plugins.cilla.interfaces.ICssCrawlPlugin;
+import com.crawljax.plugins.cilla.interfaces.ICssPostCrawlPlugin;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -13,50 +13,104 @@ import org.w3c.dom.Node;
 import se.fishtank.css.selectors.Selectors;
 import se.fishtank.css.selectors.dom.W3CNode;
 
-public class CssAnalyzer {
+public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
+{
 
 	private static final Logger LOGGER = Logger.getLogger(CssAnalyzer.class.getName());
 
-	public static void checkCssSelectorRulesOnDom(String stateName, Document dom, List<MCssRule> mRules) {
-
-		for (MCssRule mRule : mRules)
+	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden)
+	{
+		for (MProperty nextProperty : otherSelector.getProperties())
 		{
-			List<MSelector> mSelectors = mRule.GetSelectors();
-			for (MSelector mSelector : mSelectors)
+			if (property.GetName().equalsIgnoreCase(nextProperty.GetName()))
 			{
-				if(mSelector.IsIgnored())
-					continue;
-
-				String cssSelector = mSelector.getSelectorText();
-
-				Selectors seSelectors = new Selectors(new W3CNode(dom));
-				List<Node> result = seSelectors.querySelectorAll(cssSelector);
-
-				for (Node node : result) {
-
-					//compare selectors containing non-structural pseudo classes on their compatibility with the node they matched
-					if(mSelector.IsNonStructuralPseudo())
-					{
-						if(!mSelector.CheckPseudoCompatibility(node.getNodeName(), node.getAttributes()))
-							continue;
-					}
-
-					if (node instanceof Document) {
-						LOGGER.debug("CSS rule returns the whole document!!!");
-						mSelector.setMatched(true);
-					} else {
-						ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
-						mSelector.addMatchedElement(ew);
-						MatchedElements.SetMatchedElement(ew, mSelector);
-					}
-				}
-
+				nextProperty.SetStatus(overridden);
 			}
-
 		}
 	}
 
-	public static void analyzeCssSelectorEffectiveness()
+	private static void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden)
+	{
+		for (MProperty nextProperty : otherSelector.getProperties())
+		{
+			if (property.GetName().equalsIgnoreCase(nextProperty.GetName())
+					&& property.GetValue().equalsIgnoreCase(nextProperty.GetValue()))
+			{
+				nextProperty.SetStatus(overridden);
+			}
+		}
+	}
+
+	private static void OrderSpecifictity(List<MSelector> selectors) {
+		Collections.sort(selectors, new Comparator<MSelector>() {
+
+			public int compare(MSelector o1, MSelector o2) {
+				int value1 = o1.getSpecificity().getValue();
+				int value2 = o2.getSpecificity().getValue();
+
+				//if two selectors have the same _specificity,
+				//then the one that is defined later (e.g. a higher row number in the css file)
+				//has a higher order
+				if (value1 == value2) {
+					return new Integer(o1.GetRuleNumber()).compareTo(o2.GetRuleNumber());
+				}
+
+				return new Integer(value1).compareTo(new Integer(value2));
+			}
+
+		});
+
+		//we need selectors sorted ascending (from specific to less-specific)
+		Collections.reverse(selectors);
+	}
+
+	@Override
+	public void Transform(String stateName, Document dom, Map<String, List<MCssRule>> cssRules)
+	{
+		for(String file : cssRules.keySet())
+		{
+			for (MCssRule mRule : cssRules.get(file))
+			{
+				List<MSelector> mSelectors = mRule.GetSelectors();
+				for (MSelector mSelector : mSelectors)
+				{
+					if (mSelector.IsIgnored())
+						continue;
+
+					String cssSelector = mSelector.GetFilteredSelectorText();
+
+					Selectors seSelectors = new Selectors(new W3CNode(dom));
+					List<Node> result = seSelectors.querySelectorAll(cssSelector);
+
+					for (Node node : result)
+					{
+						//compare selectors containing non-structural pseudo classes on their compatibility with the node they matched
+						if (mSelector.IsNonStructuralPseudo())
+						{
+							if (!mSelector.CheckPseudoCompatibility(node.getNodeName(), node.getAttributes()))
+								continue;
+						}
+
+						if (node instanceof Document)
+						{
+							LOGGER.debug("CSS rule returns the whole document!!!");
+							mSelector.setMatched(true);
+						} else
+						{
+							ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
+							mSelector.addMatchedElement(ew);
+							MatchedElements.SetMatchedElement(ew, mSelector);
+						}
+					}
+
+				}
+
+			}
+		}
+	}
+
+	@Override
+	public Map<String, List<MCssRule>> Transform(Map<String, List<MCssRule>> cssRules)
 	{
 		Random random = new Random();
 
@@ -118,51 +172,43 @@ public class CssAnalyzer {
 				}
 			}
 		}
-	}
 
-	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden)
-	{
-		for (MProperty nextProperty : otherSelector.getProperties())
+		Map<String, List<MCssRule>> result = new HashMap<>();
+
+		for(String file : cssRules.keySet())
 		{
-			if (property.GetName().equalsIgnoreCase(nextProperty.GetName()))
+			List<MCssRule> newRules = new ArrayList<>();
+
+			for(MCssRule mRule : cssRules.get(file))
 			{
-				nextProperty.SetStatus(overridden);
-			}
-		}
-	}
+				boolean effective = false;
 
-	private static void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden)
-	{
-		for (MProperty nextProperty : otherSelector.getProperties())
-		{
-			if (property.GetName().equalsIgnoreCase(nextProperty.GetName())
-					&& property.GetValue().equalsIgnoreCase(nextProperty.GetValue()))
-			{
-				nextProperty.SetStatus(overridden);
-			}
-		}
-	}
+				List<MSelector> ineffectiveSelectors = new ArrayList<>();
 
-	private static void OrderSpecifictity(List<MSelector> selectors) {
-		Collections.sort(selectors, new Comparator<MSelector>() {
+				ineffectiveSelectors.addAll(mRule.GetUnmatchedSelectors());
 
-			public int compare(MSelector o1, MSelector o2) {
-				int value1 = o1.getSpecificity().getValue();
-				int value2 = o2.getSpecificity().getValue();
-
-				//if two selectors have the same _specificity,
-				//then the one that is defined later (e.g. a higher row number in the css file)
-				//has a higher order
-				if (value1 == value2) {
-					return new Integer(o1.GetRuleNumber()).compareTo(o2.GetRuleNumber());
+				for(MSelector mSelector : mRule.GetMatchedSelectors())
+				{
+					if(mSelector.hasEffectiveProperties())
+					{
+						effective = true;
+						mSelector.RemoveIneffectiveSelectors();
+					}
+					else
+					{
+						ineffectiveSelectors.add(mSelector);
+					}
 				}
 
-				return new Integer(value1).compareTo(new Integer(value2));
+				if(effective) {
+					mRule.RemoveSelectors(ineffectiveSelectors);
+					newRules.add(mRule);
+				}
 			}
 
-		});
+			result.put(file, newRules);
+		}
 
-		//we need selectors sorted ascending (from specific to less-specific)
-		Collections.reverse(selectors);
+		return result;
 	}
 }

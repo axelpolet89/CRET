@@ -6,10 +6,7 @@ import com.crawljax.core.configuration.BrowserConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration.CrawljaxConfigurationBuilder;
 import com.crawljax.plugins.cilla.CillaPlugin;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class CssSuiteRunner {
@@ -37,7 +34,7 @@ public class CssSuiteRunner {
 		CrawljaxRunner crawljax = new CrawljaxRunner(CreateConfig(cillaPlugin));
 		crawljax.call();
 
-		return cillaPlugin.numberofstates;
+		return cillaPlugin._numberOfStates;
 	}
 
 	private static CrawljaxConfiguration CreateConfig(CillaPlugin plugin){

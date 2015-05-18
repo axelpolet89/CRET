@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -23,10 +22,9 @@ import com.crawljax.plugins.cilla.generator.CssWriter;
 import com.crawljax.plugins.cilla.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.cilla.interfaces.ICssPostCrawlPlugin;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
-
-//import se.fishtank.css.selectors.NodeSelectorException;
 
 import com.crawljax.core.CrawlSession;
 import com.crawljax.core.CrawlerContext;
@@ -40,35 +38,26 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
 public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
-	private static final Logger LOGGER = Logger.getLogger(CillaPlugin.class.getName());
+	private static final Logger LOGGER = LogManager.getLogger(CillaPlugin.class.getName());
 
-	private Map<String, List<MCssRule>> cssRules = new HashMap<String, List<MCssRule>>();
+	private final List<String> _processedCssFiles = new ArrayList<>();
+	private int _originalCssLOC;
+	public int _numberOfStates;
 
-	public static final Set<String> cssEffectiveRuntime = new HashSet<String>();
+	private final Map<String, List<MCssRule>> _cssRules;
+	private final SetMultimap<String, ElementWithClass> _elementsWithNoClassDef;
 
-	final SetMultimap<String, ElementWithClass> elementsWithNoClassDef = HashMultimap.create();
+	private final List<ICssCrawlPlugin> _plugins;
+	private final List<ICssPostCrawlPlugin> _postPlugins;
 
-	private final SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy-hhmmss");
-
-	private final File outputDir = new File("output");
-	private final File outputFile = new File("output/cilla"
-	        + String.format("%s", sdf.format(new Date())) + ".txt");
-
-	private final Random random = new Random();
-
-	private int cssLOC;
-	private int ineffectivePropsSize;
-	private int totalCssRulesSize;
-
-	private List<String> _processedCssFiles = new ArrayList<>();
-
-	public int numberofstates = 0;
-
-	private List<ICssCrawlPlugin> _plugins;
-	private List<ICssPostCrawlPlugin> _postPlugins;
+	private final File _outputFile = new File("output/cilla" + String.format("%s", new SimpleDateFormat("ddMMyy-hhmmss").format(new Date())) + ".txt");
 
 	public CillaPlugin()
 	{
+		_originalCssLOC = 0;
+		_numberOfStates = 0;
+
+		_cssRules = new HashMap<>();
 		_plugins = new ArrayList<>();
 		_postPlugins = new ArrayList<>();
 
@@ -76,6 +65,8 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		_plugins.add(analyzer);
 		_postPlugins.add(analyzer);
+
+		_elementsWithNoClassDef = HashMultimap.create();
 	}
 
 	public void onNewState(CrawlerContext context, StateVertex newState) {
@@ -88,7 +79,45 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		checkClassDefinitions(newState);
 
-		numberofstates++;
+		_numberOfStates++;
+	}
+
+
+	private void parseCssRules(CrawlerContext context, StateVertex state) {
+		String url = context.getBrowser().getCurrentUrl();
+
+		try {
+			final Document dom = state.getDocument();
+
+			for (String relPath : CSSDOMHelper.extractCssFilenames(dom)) {
+				String cssUrl = CSSDOMHelper.getAbsPath(url, relPath);
+				if (!_cssRules.containsKey(cssUrl)) {
+					LOGGER.info("CSS URL: " + cssUrl);
+
+					String cssContent = CSSDOMHelper.getURLContent(cssUrl);
+					_originalCssLOC += CountLOC(cssContent);
+					List<MCssRule> rules = CssParser.getMCSSRules(cssContent);
+					if (rules != null && rules.size() > 0) {
+						_cssRules.put(cssUrl, rules);
+					}
+				}
+			}
+
+			// get all the embedded <STYLE> rules, save per HTML page
+			if (!_cssRules.containsKey(url)) {
+				String embeddedRules = CSSDOMHelper.getEmbeddedStyles(dom);
+				_originalCssLOC += CountLOC(embeddedRules);
+
+				List<MCssRule> rules = CssParser.getMCSSRules(embeddedRules);
+				if (rules != null && rules.size() > 0) {
+					_cssRules.put(url, rules);
+				}
+			}
+
+		} catch (IOException e) {
+			LOGGER.error(e.getMessage(), e);
+		}
+
 	}
 
 
@@ -107,14 +136,14 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		{
 			for(ICssCrawlPlugin plugin : _plugins)
 			{
-				plugin.Transform(state.getName(), dom, cssRules);
+				plugin.Transform(state.getName(), dom, _cssRules);
 			}
 		}
 	}
 
 	private Map<String, List<MCssRule>> ExecutePostTransformations()
 	{
-		Map<String, List<MCssRule>> rules = cssRules;
+		Map<String, List<MCssRule>> rules = _cssRules;
 		for(ICssPostCrawlPlugin plugin : _postPlugins)
 		{
 			rules = plugin.Transform(rules);
@@ -134,7 +163,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				for (String classDef : element.GetClassValues()) {
 					boolean matchFound = false;
 
-					search: for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+					search: for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 						for (MCssRule rule : entry.getValue()) {
 							for (MSelector selector : rule.GetSelectors()) {
 								if (selector.GetSelectorText().contains("." + classDef)) {
@@ -150,7 +179,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 					if (!matchFound) {
 						element.AddUnmatchedClass(classDef);
-						elementsWithNoClassDef.put(element.getStateName(), element);
+						_elementsWithNoClassDef.put(element.getStateName(), element);
 
 					}
 				}
@@ -164,22 +193,8 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	}
 
-//	private void checkCssOnDom(StateVertex state) {
-//		LOGGER.info("Checking CSS on DOM...");
-//		// check the rules on the current DOM state.
-//		try {
-//			for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet())
-//			{
-//				CssAnalyzer.checkCssSelectorRulesOnDom(state.getName(), state.getDocument(), entry.getValue());
-//			}
-//		} catch (IOException e) {
-//			LOGGER.error(e.getMessage(), e);
-//		} catch (ParserException e) {
-//			LOGGER.error(e.getMessage(), e);
-//		}
-//	}
 
-	private int countLines(String cssText) {
+	private int CountLOC(String cssText) {
 		int count = 0;
 		cssText = cssText.replaceAll("\\{", "{\n");
 		cssText = cssText.replaceAll("\\}", "}\n");
@@ -199,61 +214,24 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		return count;
 	}
 
-	private void parseCssRules(CrawlerContext context, StateVertex state) {
-		String url = context.getBrowser().getCurrentUrl();
-
-		try {
-			final Document dom = state.getDocument();
-
-			for (String relPath : CSSDOMHelper.extractCssFilenames(dom)) {
-				String cssUrl = CSSDOMHelper.getAbsPath(url, relPath);
-				if (!cssRules.containsKey(cssUrl)) {
-					LOGGER.info("CSS URL: " + cssUrl);
-
-					String cssContent = CSSDOMHelper.getURLContent(cssUrl);
-					cssLOC += countLines(cssContent);
-					List<MCssRule> rules = CssParser.getMCSSRules(cssContent);
-					if (rules != null && rules.size() > 0) {
-						cssRules.put(cssUrl, rules);
-					}
-				}
-			}
-
-			// get all the embedded <STYLE> rules, save per HTML page
-			if (!cssRules.containsKey(url)) {
-				String embeddedRules = CSSDOMHelper.getEmbeddedStyles(dom);
-				cssLOC += countLines(embeddedRules);
-
-				List<MCssRule> rules = CssParser.getMCSSRules(embeddedRules);
-				if (rules != null && rules.size() > 0) {
-					cssRules.put(url, rules);
-				}
-			}
-
-		} catch (IOException e) {
-			LOGGER.error(e.getMessage(), e);
-		}
-
-	}
-
 	@Override
 	public void postCrawling(CrawlSession session, ExitStatus exitReason) {
 
 		List<CloneDetector> cloneDetectors = new ArrayList<>();
 
-		for(String cssFile : cssRules.keySet()){
+		for(String cssFile : _cssRules.keySet()){
 			if(!_processedCssFiles.contains(cssFile))
 			{
 				_processedCssFiles.add(cssFile);
 				CloneDetector cd = new CloneDetector(cssFile);
 				cloneDetectors.add(cd);
-				cd.Detect(cssRules.get(cssFile));
+				cd.Detect(_cssRules.get(cssFile));
 			}
 		}
 
 		int totalCssRules = 0;
 		int totalCssSelectors = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			totalCssRules += entry.getValue().size();
 			for (MCssRule mrule : entry.getValue()) {
 				totalCssSelectors += mrule.GetSelectors().size();
@@ -294,13 +272,13 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		output.append("Analyzed " + session.getConfig().getUrl() + " on "
 		        + new SimpleDateFormat("dd/MM/yy-hh:mm:ss").format(new Date()) + "\n");
 
-		output.append("-> Files with CSS code: " + cssRules.keySet().size() + "\n");
-		for (String address : cssRules.keySet()) {
+		output.append("-> Files with CSS code: " + _cssRules.keySet().size() + "\n");
+		for (String address : _cssRules.keySet()) {
 			output.append("    Address: " + address + "\n");
 		}
 		// output.append("Total CSS Size: " + getTotalCssRulesSize() + " bytes" + "\n");
 
-		output.append("-> LOC (CSS): " + cssLOC + "\n");
+		output.append("-> LOC (CSS): " + _originalCssLOC + "\n");
 		output.append("-> Total Defined CSS rules: " + totalCssRules + "\n");
 		output.append("-> Total Defined CSS selectors: " + totalCssSelectors + " from which: \n");
 		int ignored = totalCssSelectors - (unused + used);
@@ -319,7 +297,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		output.append("->> Undefined Classes: " + undefClasses + "\n");
 		// output.append("->> Duplicate Selectors: " + duplicates + "\n\n");
 		output.append("By deleting unused rules, css size reduced by: "
-		        + Math.ceil((double) reducedSize() / getTotalCssRulesSize() * 100) + " percent"
+		        + Math.ceil((double) NewCssSizeBytes() / OriginalCssSizeBytes() * 100) + " percent"
 		        + "\n");
 
 		/*
@@ -353,7 +331,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		output.append(clones.toString());
 
 		try {
-			FileUtils.writeStringToFile(outputFile, output.toString());
+			FileUtils.writeStringToFile(_outputFile, output.toString());
 
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
@@ -375,7 +353,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	private int countProperties() {
 		int counter = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			List<MCssRule> rules = entry.getValue();
 
 			for (MCssRule rule : rules) {
@@ -390,7 +368,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	private int countIgnoredProperties() {
 		int counter = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			for (MCssRule rule : entry.getValue()) {
 				List<MSelector> selectors = rule.GetSelectors();
 				if (selectors.size() > 0) {
@@ -412,7 +390,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		int counterEffectiveSelectors = 0;
 		buffer.append("\n========== EFFECTIVE CSS SELECTORS ==========\n");
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			List<MCssRule> rules = entry.getValue();
 
 			buffer.append("\n== IN CSS: " + entry.getKey() + "\n");
@@ -447,7 +425,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		int counterIneffectiveSelectors = 0;
 		buffer.append("========== INEFFECTIVE CSS SELECTORS ==========\n");
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			List<MCssRule> rules = entry.getValue();
 
 			buffer.append("== IN CSS: " + entry.getKey() + "\n");
@@ -480,7 +458,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	private int countUnusedProps() {
 
 		int counter = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			List<MCssRule> rules = entry.getValue();
 
 			for (MCssRule rule : rules) {
@@ -511,9 +489,9 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		Set<String> undefinedClasses = new HashSet<String>();
 
 		// for (ElementWithClass el : elementsWithNoClassDef) {
-		for (String key : elementsWithNoClassDef.keySet()) {
+		for (String key : _elementsWithNoClassDef.keySet()) {
 			output.append("State: " + key + "\n");
-			Set<ElementWithClass> set = elementsWithNoClassDef.get(key);
+			Set<ElementWithClass> set = _elementsWithNoClassDef.get(key);
 			for (ElementWithClass e : set) {
 				for (String unmatched : e.GetUnmatchedClasses()) {
 					if (undefinedClasses.add(unmatched)) {
@@ -534,7 +512,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		LOGGER.info("Reporting Unmatched CSS Rules...");
 		buffer.append("========== UNMATCHED CSS RULES ==========\n");
 		int counter = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			List<MCssRule> rules = entry.getValue();
 
 			buffer.append("== UNMATCHED RULES IN: " + entry.getKey() + "\n");
@@ -561,7 +539,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		LOGGER.info("Reporting Matched CSS Rules...");
 		buffer.append("========== MATCHED CSS RULES ==========\n");
 		int counter = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
 			List<MCssRule> rules = entry.getValue();
 
 			buffer.append("== MATCHED RULES IN: " + entry.getKey() + "\n");
@@ -583,78 +561,74 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		return counter;
 	}
 
-	/************************************************************************************/
-	/************************************************************************************/
-	private int countTotalCssRules() {
+	private int OriginalCssSizeBytes() {
+		int result = 0;
 
-		int totalCssRules = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
-			totalCssRules += entry.getValue().size();
-		}
-		return (totalCssRules);
-
-	}
-
-	private int getTotalCssRulesSize() {
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
-
-			for (MCssRule mrule : entry.getValue()) {
-				/*
-				 * for(MSelector selec: mrule.getSelectors()){ totalCssRulesSize+=selec.getSize(); }
-				 * 
-				 * } }
-				 */
-				totalCssRulesSize +=
-				        mrule.GetRule().getCssText().trim().replace("{", "").replace("}", "")
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
+			for (MCssRule mrule : entry.getValue())
+			{
+				result += mrule.GetRule().getCssText().trim().replace("{", "").replace("}", "")
 				                .replace(",", "").replace(" ", "").getBytes().length;
 
 			}
-
 		}
-		return totalCssRulesSize;
 
+		return result;
 	}
 
-	private int reducedSize() {
-		boolean effective = false;
+	private int NewCssSizeBytes() {
+		boolean effective;
 		boolean exit = false;
-		int counter = 0;
-		for (Map.Entry<String, List<MCssRule>> entry : cssRules.entrySet()) {
+		int result = 0;
 
-			for (MCssRule mrule : entry.getValue()) {
-				List<MSelector> selector = mrule.GetSelectors();
-				for (int i = 0; i < selector.size(); i++) {
-					if (!selector.get(i).IsIgnored()) {
+		int counter = 0;
+		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet())
+		{
+			for (MCssRule mRule : entry.getValue())
+			{
+				List<MSelector> selector = mRule.GetSelectors();
+				for (int i = 0; i < selector.size(); i++)
+				{
+					if (!selector.get(i).IsIgnored())
+					{
 						exit = true;
+
 						List<MProperty> property = selector.get(i).getProperties();
-						for (int j = 0; j < property.size(); j++) {
-							if (!property.get(j).IsEffective()) {
+						for (int j = 0; j < property.size(); j++)
+						{
+							if (!property.get(j).IsEffective())
+							{
 								effective = false;
-								for (int k = i + 1; k < selector.size(); k++) {
+								for (int k = i + 1; k < selector.size(); k++)
+								{
 									if (!selector.get(k).IsIgnored()) {
-										if (selector.get(k).getProperties().get(j).IsEffective()) {
+										if (selector.get(k).getProperties().get(j).IsEffective())
+										{
 											effective = true;
 											break;
 										}
 									}
 								}
-								if (!effective) {
+								if (!effective)
+								{
 									counter++;
-									ineffectivePropsSize += property.get(j).GetSize();
+									result += property.get(j).GetSize();
 								}
 							}
 						}
 
 					}
-					if (exit) {
+
+					if (exit)
+					{
 						if (counter == selector.get(i).getProperties().size())
-							ineffectivePropsSize += selector.get(i).getSize();
+							result += selector.get(i).getSize();
 						break;
 					}
 				}
 			}
 		}
-		return ineffectivePropsSize;
-	}
 
+		return result;
+	}
 }

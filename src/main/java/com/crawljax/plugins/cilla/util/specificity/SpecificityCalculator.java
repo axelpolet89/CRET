@@ -34,20 +34,15 @@ public class SpecificityCalculator {
 	 * The number of units representing a single Class Count. This unit represents (c) in the 4
 	 * rules used to calculate com.crawljax.plugins.cilla.util.specificity.
 	 */
-	static final int OTHER_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS =
+	static final int CLASSES_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS =
 	        ELEMENT_NAMES_AND_PSEUDO_ELEMENT_UNITS * BASE;
 
 	/**
 	 * The number of units representing a single ID Count. This unit represents (b) in the 4 rules
 	 * used to calculate com.crawljax.plugins.cilla.util.specificity.
 	 */
-	static final int ID_ATTRIBUTE_UNITS = OTHER_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS * BASE;
+	static final int ID_ATTRIBUTE_UNITS = CLASSES_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS * BASE;
 
-	/**
-	 * The number of units representing a markup specified attribute. This unit represents (a) in
-	 * the 4 rules used to calculate com.crawljax.plugins.cilla.util.specificity.
-	 */
-	static final int STYLE_UNITS = ID_ATTRIBUTE_UNITS * BASE;
 
 	/**
 	 * The com.crawljax.plugins.cilla.util.specificity value.
@@ -63,15 +58,15 @@ public class SpecificityCalculator {
 	}
 
 	public void addClassSelector() {
-		value += OTHER_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS;
+		value += CLASSES_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS;
 	}
 
 	public void addPseudoClassSelector() {
-		value += OTHER_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS;
+		value += CLASSES_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS;
 	}
 
 	public void addAttributeSelector() {
-		value += OTHER_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS;
+		value += CLASSES_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS;
 	}
 
 	public void addIDSelector() {
@@ -91,29 +86,27 @@ public class SpecificityCalculator {
 		// get every selector in the sequence
 		String[] parts = selector.split(" ");
 
-		for (String part : parts) {
+		for (String part : parts)
+		{
 			// CLASS: DIV.news or .news
 			if (part.contains(".")) {
 
 				String[] temp = part.split("\\.");
 
 				if (temp.length > 1 && !temp[0].equals("")) {
-
 					this.addElementSelector();
 				}
+
 				this.addClassSelector();
-			} else {
-				// ID: DIV#news
-				if (part.contains("#")) {
+			} else if (part.contains("#")) {
 					String[] temp = part.split("\\#");
 					if (temp.length > 1 && !temp[0].equals("")) {
 						this.addElementSelector();
 					}
 					this.addIDSelector();
-				} else {
-					// Element: DIV
-					this.addElementSelector();
-				}
+			} else {
+				// Element: DIV
+				this.addElementSelector();
 			}
 		}
 		return getSpecificity();

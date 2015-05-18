@@ -12,6 +12,7 @@ import org.w3c.dom.Node;
 
 import se.fishtank.css.selectors.Selectors;
 import se.fishtank.css.selectors.dom.W3CNode;
+import se.fishtank.css.selectors.parser.ParserException;
 
 public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 {
@@ -80,7 +81,17 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 					String cssSelector = mSelector.GetFilteredSelectorText();
 
 					Selectors seSelectors = new Selectors(new W3CNode(dom));
-					List<Node> result = seSelectors.querySelectorAll(cssSelector);
+
+					List<Node> result;
+					try
+					{
+						result = seSelectors.querySelectorAll(cssSelector);
+					}
+					catch (ParserException ex)
+					{
+						LOGGER.debug("Could not query DOM tree with selector" + cssSelector);
+						continue;
+					}
 
 					for (Node node : result)
 					{

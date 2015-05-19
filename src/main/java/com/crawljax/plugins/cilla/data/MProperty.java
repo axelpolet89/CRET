@@ -5,13 +5,16 @@ public class MProperty
 
 	private String _name;
 	private String _value;
-	private String _status = "notset";
+	private String _status;
 	private boolean _isEffective;
+	private boolean _isImportant;
 
-	public MProperty(String name, String value)
+	public MProperty(String name, String value, boolean isImportant)
 	{
 		_name = name;
 		_value = value;
+		_status = "notset";
+		_isImportant = isImportant;
 	}
 
 	public String GetName()
@@ -23,6 +26,8 @@ public class MProperty
 	{
 		return _value;
 	}
+
+	public boolean IsImportant() { return _isImportant; }
 
 	public boolean IsEffective()
 	{
@@ -47,6 +52,16 @@ public class MProperty
 	public int GetSize()
 	{
 		return (_name.getBytes().length+ _value.getBytes().length);
+	}
+
+	public String Print()
+	{
+		String result = _name + ": " + _value;
+
+		if(_isImportant)
+			return result + " !important;";
+
+		return result + ";";
 	}
 
 	@Override

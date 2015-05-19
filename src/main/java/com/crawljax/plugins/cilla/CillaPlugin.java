@@ -358,7 +358,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 			for (MCssRule rule : rules) {
 				for (int i = 0; i < rule.GetSelectors().size(); i++)
-					counter += rule.GetProperties().size();
+					counter += rule.ParseProperties().size();
 			}
 		}
 
@@ -374,7 +374,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				if (selectors.size() > 0) {
 					for (MSelector selector : selectors) {
 						if (selector.IsIgnored()) {
-							counter += rule.GetProperties().size();
+							counter += rule.ParseProperties().size();
 						}
 
 					}

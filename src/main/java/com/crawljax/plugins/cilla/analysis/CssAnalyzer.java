@@ -25,7 +25,17 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 		{
 			if (property.GetName().equalsIgnoreCase(nextProperty.GetName()))
 			{
-				nextProperty.SetStatus(overridden);
+				// it is possible, due to specificity ordering, that 'this' property was already deemed effective,
+				// but a less specific ('next') selector contained an !important declaration
+				if(nextProperty.IsImportant())
+				{
+					property.SetStatus(overridden);
+					property.SetEffective(false);
+				}
+				else
+				{
+					nextProperty.SetStatus(overridden);
+				}
 			}
 		}
 	}
@@ -37,7 +47,16 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			if (property.GetName().equalsIgnoreCase(nextProperty.GetName())
 					&& property.GetValue().equalsIgnoreCase(nextProperty.GetValue()))
 			{
-				nextProperty.SetStatus(overridden);
+				// it is possible, due to specificity ordering, that 'this' property was already deemed effective,
+				// but a less specific ('next') selector contained an !important declaration
+				if(nextProperty.IsImportant())
+				{
+					property.SetStatus(overridden);
+					property.SetEffective(false);
+				}
+				else {
+					nextProperty.SetStatus(overridden);
+				}
 			}
 		}
 	}
@@ -186,6 +205,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 		Map<String, List<MCssRule>> result = new HashMap<>();
 
+		//filter all unmatched -and ineffective rules -or individual selectors
 		for(String file : cssRules.keySet())
 		{
 			List<MCssRule> newRules = new ArrayList<>();

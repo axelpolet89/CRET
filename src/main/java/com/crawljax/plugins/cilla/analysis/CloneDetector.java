@@ -64,7 +64,7 @@ public class CloneDetector {
 
         for(MCssRule mRule : rules)
         {
-            for(MProperty mProp : mRule.GetProperties())
+            for(MProperty mProp : mRule.ParseProperties())
             {
                 String key = PropertyToString(mProp);
                 if(clones.containsKey(key)) {

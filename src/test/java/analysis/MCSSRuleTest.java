@@ -94,14 +94,14 @@ public class MCSSRuleTest {
 
 		MCssRule mRule = new MCssRule(rule);
 
-		Assert.assertEquals(1, mRule.GetProperties().size());
+		Assert.assertEquals(1, mRule.ParseProperties().size());
 
 		rule = rules.item(1);
 		Assert.assertNotNull(rule);
 
 		mRule = new MCssRule(rule);
 
-		Assert.assertEquals(2, mRule.GetProperties().size());
+		Assert.assertEquals(2, mRule.ParseProperties().size());
 
 		List<MSelector> selectors = mRule.GetSelectors();
 

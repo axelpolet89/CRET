@@ -1,16 +1,17 @@
 package com.crawljax.plugins.cilla.data;
 
-import java.util.*;
-
-import com.steadystate.css.parser.SelectorListImpl;
+import com.steadystate.css.dom.Property;
 import org.w3c.css.sac.Locator;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
-import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.css.CSSStyleRule;
 
 import com.steadystate.css.dom.CSSStyleRuleImpl;
 import com.steadystate.css.userdata.UserDataConstants;
+import com.steadystate.css.dom.CSSStyleDeclarationImpl;
+import com.steadystate.css.parser.SelectorListImpl;
+
+import java.util.*;
 
 public class MCssRule
 {
@@ -30,23 +31,16 @@ public class MCssRule
 		SetSelectors();
 	}
 
-	public void RemoveSelector(MSelector mSelector)
-	{
-		_selectors.remove(mSelector);
-	}
 
-	public void RemoveSelectors(List<MSelector> selectors)
-	{
-		_selectors.removeAll(selectors);
-	}
-
-
+	/**
+	 *
+	 */
 	private void SetSelectors() {
 		if (_rule instanceof CSSStyleRuleImpl)
 		{
 			CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) _rule;
 
-			List<MProperty> props = GetProperties();
+			List<MProperty> props = ParseProperties();
 
 			SelectorListImpl list = (SelectorListImpl)styleRuleImpl.getSelectors();
 
@@ -58,21 +52,33 @@ public class MCssRule
 	}
 
 
+	/**
+	 *
+	 * @param selectors
+	 */
+	public void RemoveSelectors(List<MSelector> selectors)
+	{
+		_selectors.removeAll(selectors);
+	}
+
+
 	//todo: store properties instead of parsing them on every call?
-	public List<MProperty> GetProperties()
+	/**
+	 *
+	 * @return
+	 */
+	public List<MProperty> ParseProperties()
 	{
 		List<MProperty> properties = new ArrayList<>();
 
 		if (_rule instanceof CSSStyleRule)
 		{
 			CSSStyleRule styleRule = (CSSStyleRule) _rule;
-			CSSStyleDeclaration styleDeclaration = styleRule.getStyle();
+			CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
 
-			for (int j = 0; j < styleDeclaration.getLength(); j++)
+			for (Property property : styleDeclaration.getProperties())
 			{
-				String property = styleDeclaration.item(j);
-				String value = styleDeclaration.getPropertyCSSValue(property).getCssText();
-				properties.add(new MProperty(property, value));
+				properties.add(new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant()));
 			}
 		}
 
@@ -195,7 +201,7 @@ public class MCssRule
 			for(MProperty mProp : mProps)
 			{
 				builder.append("\n");
-				builder.append("\t" + mProp.GetName() + ":" + mProp.GetValue() + ";");
+				builder.append("\t" + mProp.Print());
 			}
 			builder.append("\n}\n\n");
 		}

@@ -57,6 +57,7 @@ public class MSelector
 		_nonStructuralPseudoClasses = new LinkedHashMap<>();
 		_structuralPseudoClasses = new LinkedHashMap<>();
 		_keyPseudoClass = "";
+
 		DeterminePseudo();
 
 		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
@@ -220,9 +221,9 @@ public class MSelector
 		}
 	}
 
-	public boolean isEffective() { return _isEffective; }
+	public boolean IsEffective() { return _isEffective; }
 
-	public void setEffective(boolean effective) { _isEffective = effective; }
+	public void SetEffective(boolean effective) { _isEffective = effective; }
 
 
 	/**

@@ -61,9 +61,9 @@ public class CssParser
 	 */
 	public List<MCssRule> ParseCssIntoMCssRules(String cssCode)
 	{
-		CSSRuleList ruleList = ParseCssCode(cssCode);
-
 		List<MCssRule> mCssRules = new ArrayList<>();
+
+		CSSRuleList ruleList = ParseCssCode(cssCode);
 
 		for (int i = 0; i < ruleList.getLength(); i++)
 		{

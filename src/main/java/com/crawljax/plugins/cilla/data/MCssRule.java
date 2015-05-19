@@ -1,9 +1,7 @@
 package com.crawljax.plugins.cilla.data;
 
-import com.steadystate.css.dom.Property;
 import org.w3c.css.sac.Locator;
 import org.w3c.dom.css.CSSRule;
-import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleRule;
 
 import com.steadystate.css.dom.CSSStyleRuleImpl;
@@ -12,6 +10,7 @@ import com.steadystate.css.dom.CSSStyleDeclarationImpl;
 import com.steadystate.css.parser.SelectorListImpl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MCssRule
 {
@@ -35,7 +34,8 @@ public class MCssRule
 	/**
 	 *
 	 */
-	private void SetSelectors() {
+	private void SetSelectors()
+	{
 		if (_rule instanceof CSSStyleRuleImpl)
 		{
 			CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) _rule;
@@ -44,10 +44,7 @@ public class MCssRule
 
 			SelectorListImpl list = (SelectorListImpl)styleRuleImpl.getSelectors();
 
-			for(org.w3c.css.sac.Selector selector : list.getSelectors())
-			{
-				_selectors.add(new MSelector(selector, props, GetLocator().getLineNumber()));
-			}
+			_selectors.addAll(list.getSelectors().stream().map(selector -> new MSelector(selector, props, GetLocator().getLineNumber())).collect(Collectors.toList()));
 		}
 	}
 
@@ -76,10 +73,7 @@ public class MCssRule
 			CSSStyleRule styleRule = (CSSStyleRule) _rule;
 			CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
 
-			for (Property property : styleDeclaration.getProperties())
-			{
-				properties.add(new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant()));
-			}
+			properties.addAll(styleDeclaration.getProperties().stream().map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant())).collect(Collectors.toList()));
 		}
 
 		return properties;
@@ -109,40 +103,25 @@ public class MCssRule
 	/**
 	 * @return the _selectors that are not matched (not associated DOM elements have been detected).
 	 */
-	public List<MSelector> GetUnmatchedSelectors() {
-		List<MSelector> unmatched = new ArrayList<>();
-
-		for (MSelector selector : _selectors) {
-			if (!selector.IsMatched() && !selector.IsIgnored()) {
-				unmatched.add(selector);
-			}
-		}
-
-		return unmatched;
-
+	public List<MSelector> GetUnmatchedSelectors()
+	{
+		return _selectors.stream().filter(selector -> !selector.IsMatched() && !selector.IsIgnored()).collect(Collectors.toList());
 	}
 
 	/**
 	 * @return the _selectors that are effective (associated DOM elements have been detected).
 	 */
-	public List<MSelector> GetMatchedSelectors() {
-		List<MSelector> effective = new ArrayList<MSelector>();
-
-		for (MSelector selector : _selectors) {
-			if (selector.IsMatched() && !selector.IsIgnored()) {
-				effective.add(selector);
-			}
-		}
-
-		return effective;
-
+	public List<MSelector> GetMatchedSelectors()
+	{
+		return _selectors.stream().filter(selector -> selector.IsMatched() && !selector.IsIgnored()).collect(Collectors.toList());
 	}
 
 	/**
 	 * @return the Locator of this _rule (line number, column).
 	 */
 	public Locator GetLocator() {
-		if (_rule instanceof CSSStyleRuleImpl) {
+		if (_rule instanceof CSSStyleRuleImpl)
+		{
 			return (Locator) ((CSSStyleRuleImpl) _rule)
 			        .getUserData(UserDataConstants.KEY_LOCATOR);
 		}

@@ -5,6 +5,7 @@ import java.util.*;
 import com.crawljax.plugins.cilla.data.*;
 import com.crawljax.plugins.cilla.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.cilla.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.cilla.util.specificity.SpecificityHelper;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -59,29 +60,6 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 				}
 			}
 		}
-	}
-
-	private static void OrderSpecifictity(List<MSelector> selectors) {
-		Collections.sort(selectors, new Comparator<MSelector>() {
-
-			public int compare(MSelector o1, MSelector o2) {
-				int value1 = o1.getSpecificity().GetValue();
-				int value2 = o2.getSpecificity().GetValue();
-
-				//if two selectors have the same _specificity,
-				//then the one that is defined later (e.g. a higher row number in the css file)
-				//has a higher order
-				if (value1 == value2) {
-					return new Integer(o1.GetRuleNumber()).compareTo(o2.GetRuleNumber());
-				}
-
-				return new Integer(value1).compareTo(new Integer(value2));
-			}
-
-		});
-
-		//we need selectors sorted ascending (from specific to less-specific)
-		Collections.reverse(selectors);
 	}
 
 	@Override
@@ -152,7 +130,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			List<MSelector> selectors = MatchedElements.elementSelectors.get(keyElement);
 
 			//order the selectors by their specificity and location
-			OrderSpecifictity(selectors);
+			SpecificityHelper.OrderSpecificity(selectors);
 
 			String overridden = "overridden-" + random.nextInt();
 

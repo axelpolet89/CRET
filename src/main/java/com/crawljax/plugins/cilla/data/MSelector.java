@@ -40,18 +40,6 @@ public class MSelector
 	private String _pseudoElement;
 	private int _ruleNumber;
 
-	//todo: only used in test components
-	public MSelector(List<MProperty> properties)
-	{
-		this(null, properties, 1);
-	}
-
-	public MSelector(Selector selector)
-	{
-		this(selector, new ArrayList<>(), 1);
-	}
-
-
 	/**
 	 * Constructor.
 	 * For some reason, the cssparser implementation displays a * prefix on any selector
@@ -78,6 +66,17 @@ public class MSelector
 		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
 				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
 				_hasPseudoElement);
+	}
+
+
+	/**
+	 * Constructor for testing purposes only
+	 * @param selector
+	 * @param ruleNumber
+	 */
+	public MSelector(Selector selector, int ruleNumber)
+	{
+		this(selector, new ArrayList<>(), ruleNumber);
 	}
 
 	/**

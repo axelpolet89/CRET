@@ -11,10 +11,6 @@ import com.crawljax.plugins.cilla.util.specificity.SpecificityCalculator;
 import org.w3c.css.sac.*;
 import org.w3c.dom.NamedNodeMap;
 
-/**
- * POJO class for a CSS selector.
- * 
- */
 public class MSelector
 {
 	private Selector _selector;
@@ -188,14 +184,13 @@ public class MSelector
 	}
 
 
-
 	public int GetRuleNumber() { return _ruleNumber; }
 
 	public boolean IsIgnored() { return _isIgnored; }
 
-	public Specificity getSpecificity() { return _specificity; }
+	public Specificity GetSpecificity() { return _specificity; }
 
-	public List<MProperty> getProperties() { return _properties; }
+	public List<MProperty> GetProperties() { return _properties; }
 
 	public String GetSelectorText() {
 		return _selectorText;
@@ -208,21 +203,20 @@ public class MSelector
 		return _selectorText;
 	}
 
-
 	public boolean IsNonStructuralPseudo() { return _isNonStructuralPseudo; }
 
 	public boolean IsPseudoElement() { return _hasPseudoElement; }
 
 	public String GetPseudoClass() { return _keyPseudoClass; }
 
-	public boolean isMatched() { return _isMatched; }
+	public boolean IsMatched() { return _isMatched; }
 
-	public void setMatched(boolean matched) { _isMatched = matched; }
+	public void SetMatched(boolean matched) { _isMatched = matched; }
 
-	public void addMatchedElement(ElementWrapper element) {
+	public void AddMatchedElement(ElementWrapper element) {
 		if (element != null) {
 			_matchedElements.add(element);
-			setMatched(true);
+			SetMatched(true);
 		}
 	}
 

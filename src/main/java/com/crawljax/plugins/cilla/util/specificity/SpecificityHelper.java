@@ -17,8 +17,8 @@ public class SpecificityHelper
         {
             public int compare(MSelector m1, MSelector m2)
             {
-                int value1 = m1.getSpecificity().GetValue();
-                int value2 = m2.getSpecificity().GetValue();
+                int value1 = m1.GetSpecificity().GetValue();
+                int value2 = m2.GetSpecificity().GetValue();
 
                 //if two selectors have the same _specificity,
                 //then the one that is defined later (e.g. a higher row number in the css file)

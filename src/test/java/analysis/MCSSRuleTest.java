@@ -33,7 +33,7 @@ public class MCSSRuleTest {
 		MSelector selector = selectors.get(0);
 		//Assert.assertEquals("./descendant::H/descendant::P", selector.getXpathSelector());
 
-		Assert.assertFalse(selector.isMatched());
+		Assert.assertFalse(selector.IsMatched());
 
 		// second rule
 		rule = rules.item(1);
@@ -106,10 +106,10 @@ public class MCSSRuleTest {
 		List<MSelector> selectors = mRule.GetSelectors();
 
 		MSelector sel = selectors.get(1);
-		Assert.assertEquals(2, sel.getProperties().size());
+		Assert.assertEquals(2, sel.GetProperties().size());
 
-		Assert.assertEquals("font", sel.getProperties().get(0).GetName());
-		Assert.assertEquals("black", sel.getProperties().get(0).GetValue());
+		Assert.assertEquals("font", sel.GetProperties().get(0).GetName());
+		Assert.assertEquals("black", sel.GetProperties().get(0).GetValue());
 		// Assert.assertEquals("notset", sel.getProperties().get(0).getStatus());
 	}
 }

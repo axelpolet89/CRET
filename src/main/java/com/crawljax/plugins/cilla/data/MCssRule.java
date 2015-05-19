@@ -113,7 +113,7 @@ public class MCssRule
 		List<MSelector> unmatched = new ArrayList<>();
 
 		for (MSelector selector : _selectors) {
-			if (!selector.isMatched() && !selector.IsIgnored()) {
+			if (!selector.IsMatched() && !selector.IsIgnored()) {
 				unmatched.add(selector);
 			}
 		}
@@ -129,7 +129,7 @@ public class MCssRule
 		List<MSelector> effective = new ArrayList<MSelector>();
 
 		for (MSelector selector : _selectors) {
-			if (selector.isMatched() && !selector.IsIgnored()) {
+			if (selector.IsMatched() && !selector.IsIgnored()) {
 				effective.add(selector);
 			}
 		}
@@ -173,7 +173,7 @@ public class MCssRule
 		Map<List<MProperty>, List<MSelector>> combinations = new HashMap<>();
 		for(MSelector mSelector : _selectors)
 		{
-			List<MProperty> mProps = mSelector.getProperties();
+			List<MProperty> mProps = mSelector.GetProperties();
 
 			if(combinations.containsKey(mProps))
 			{

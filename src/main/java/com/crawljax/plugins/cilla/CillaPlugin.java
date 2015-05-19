@@ -408,7 +408,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 							counterEffectiveSelectors++;
 
 							// buffer.append(" has effective properties: \n");
-							for (MProperty prop : selector.getProperties()) {
+							for (MProperty prop : selector.GetProperties()) {
 								buffer.append(" Property " + prop + "\n");
 							}
 						}
@@ -466,7 +466,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				if (selectors.size() > 0) {
 					for (MSelector selector : selectors) {
 						if (!selector.IsIgnored()) {
-							for (MProperty prop : selector.getProperties()) {
+							for (MProperty prop : selector.GetProperties()) {
 								if (!prop.IsEffective()) {
 									counter++;
 									// ineffectivePropsSize+=prop.getsize();
@@ -593,7 +593,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 					{
 						exit = true;
 
-						List<MProperty> property = selector.get(i).getProperties();
+						List<MProperty> property = selector.get(i).GetProperties();
 						for (int j = 0; j < property.size(); j++)
 						{
 							if (!property.get(j).IsEffective())
@@ -602,7 +602,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 								for (int k = i + 1; k < selector.size(); k++)
 								{
 									if (!selector.get(k).IsIgnored()) {
-										if (selector.get(k).getProperties().get(j).IsEffective())
+										if (selector.get(k).GetProperties().get(j).IsEffective())
 										{
 											effective = true;
 											break;
@@ -621,7 +621,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 					if (exit)
 					{
-						if (counter == selector.get(i).getProperties().size())
+						if (counter == selector.get(i).GetProperties().size())
 							result += selector.get(i).getSize();
 						break;
 					}

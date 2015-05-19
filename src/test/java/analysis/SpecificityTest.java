@@ -98,7 +98,7 @@ public class SpecificityTest {
 	private void AssertSpecificity(String selector, int expectedSpecificity) throws IOException
 	{
 		MSelector mSelector = CreateSelector(selector);
-		Specificity sp = mSelector.getSpecificity();
+		Specificity sp = mSelector.GetSpecificity();
 
 		Assert.assertNotNull(sp);
 		Assert.assertEquals(expectedSpecificity, sp.GetValue());

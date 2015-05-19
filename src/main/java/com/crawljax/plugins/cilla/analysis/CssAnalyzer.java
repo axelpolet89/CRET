@@ -22,7 +22,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden)
 	{
-		for (MProperty nextProperty : otherSelector.getProperties())
+		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
 			if (property.GetName().equalsIgnoreCase(nextProperty.GetName()))
 			{
@@ -43,7 +43,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 	private static void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden)
 	{
-		for (MProperty nextProperty : otherSelector.getProperties())
+		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
 			if (property.GetName().equalsIgnoreCase(nextProperty.GetName())
 					&& property.GetValue().equalsIgnoreCase(nextProperty.GetValue()))
@@ -102,11 +102,11 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 						if (node instanceof Document)
 						{
 							LOGGER.debug("CSS rule returns the whole document!!!");
-							mSelector.setMatched(true);
+							mSelector.SetMatched(true);
 						} else
 						{
 							ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
-							mSelector.addMatchedElement(ew);
+							mSelector.AddMatchedElement(ew);
 							MatchedElements.SetMatchedElement(ew, mSelector);
 						}
 					}
@@ -138,7 +138,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 			for (int i = 0; i < selectors.size(); i++) {
 				MSelector selector = selectors.get(i);
-				for (MProperty property : selector.getProperties()) {
+				for (MProperty property : selector.GetProperties()) {
 					if (!property.GetStatus().equals(overridden)) {
 						property.SetEffective(true);
 						LOGGER.debug("SET effective: " + property);

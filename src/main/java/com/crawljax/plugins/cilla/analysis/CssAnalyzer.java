@@ -65,8 +65,8 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 		Collections.sort(selectors, new Comparator<MSelector>() {
 
 			public int compare(MSelector o1, MSelector o2) {
-				int value1 = o1.getSpecificity().getValue();
-				int value2 = o2.getSpecificity().getValue();
+				int value1 = o1.getSpecificity().GetValue();
+				int value2 = o2.getSpecificity().GetValue();
 
 				//if two selectors have the same _specificity,
 				//then the one that is defined later (e.g. a higher row number in the css file)

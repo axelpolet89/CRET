@@ -29,12 +29,13 @@ public class MSelector
 	private List<ElementWrapper> _matchedElements;
 
 	private boolean _isNonStructuralPseudo;
-	private boolean _isPseudoElement;
+	private boolean _hasPseudoElement;
 
 	private int _pseudoLevel;
 	private String _keyPseudoClass;
 	private String _selectorTextWithoutPseudo;
-	private LinkedHashMap<String, String> _pseudoClasses;
+	private LinkedHashMap<String, String> _nonStructuralPseudoClasses;
+	private LinkedHashMap<String, String> _structuralPseudoClasses;
 
 	private String _pseudoElement;
 	private int _ruleNumber;
@@ -62,17 +63,21 @@ public class MSelector
 	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber)
 	{
 		_selector = selector;
+		_properties = properties;
 		_ruleNumber = ruleNumber;
+
 		_selectorText = selector.toString().replaceAll("\\*", "");
 		_isIgnored = _selectorText.contains(":not");
-		_properties = properties;
 
-		_specificity = new SpecificityCalculator().getSpecificity(_selectorText);
 		_matchedElements = new ArrayList<>();
-		_pseudoClasses = new LinkedHashMap<>();
+		_nonStructuralPseudoClasses = new LinkedHashMap<>();
+		_structuralPseudoClasses = new LinkedHashMap<>();
 		_keyPseudoClass = "";
-
 		DeterminePseudo();
+
+		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
+				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
+				_hasPseudoElement);
 	}
 
 	/**
@@ -95,7 +100,7 @@ public class MSelector
 			_pseudoLevel = 0;
 			RecursiveParsePseudoClasses(_selector);
 
-			for(String value : _pseudoClasses.values())
+			for(String value : _nonStructuralPseudoClasses.values())
 			{
 				//escape brackets for regex compare
 				if(value.contains("lang"))
@@ -119,7 +124,7 @@ public class MSelector
 	{
 		if(selector instanceof PseudoElementSelectorImpl)
 		{
-			_isPseudoElement = true;
+			_hasPseudoElement = true;
 			_pseudoElement = ":" + selector.toString();
 		}
 		else if(selector instanceof SimpleSelector)
@@ -163,8 +168,12 @@ public class MSelector
 			if(_pseudoLevel == 0)
 				_keyPseudoClass = pseudo;
 
-			_pseudoClasses.put(parts[0], pseudo);
+			_nonStructuralPseudoClasses.put(parts[0], pseudo);
 			_isNonStructuralPseudo = true;
+		}
+		else
+		{
+			_structuralPseudoClasses.put(parts[0], pseudo);
 		}
 	}
 
@@ -203,7 +212,7 @@ public class MSelector
 
 	public boolean IsNonStructuralPseudo() { return _isNonStructuralPseudo; }
 
-	public boolean IsPseudoElement() { return _isPseudoElement; }
+	public boolean IsPseudoElement() { return _hasPseudoElement; }
 
 	public String GetPseudoClass() { return _keyPseudoClass; }
 

@@ -1,55 +1,47 @@
 package com.crawljax.plugins.cilla.util.specificity;
 
-public class Specificity {
-
-	/**
-	 * The com.crawljax.plugins.cilla.util.specificity.
-	 */
+public class Specificity
+{
 	private final int value;
 
-	/**
-	 * Package restricted initialiser to hide the fact that internally this is treated as an int.
-	 * 
-	 * @param value
-	 *            The com.crawljax.plugins.cilla.util.specificity as an int.
-	 */
-	Specificity(int value) {
+	Specificity(int value)
+	{
 		this.value = value;
 	}
 
-	public int getValue() {
+	public int GetValue()
+	{
 		return value;
 	}
 
+	@Override
 	public boolean equals(Object object) {
 		if (!(object instanceof Specificity)) {
 			return false;
 		}
 
 		Specificity other = (Specificity) object;
-
-		return value == other.value;
+		return value == other.GetValue();
 	}
 
+	@Override
 	public int hashCode() {
 		return value;
 	}
 
-	public int compareTo(Object o) {
-		Specificity other = (Specificity) o;
-		return value - other.value;
-	}
-
+	@Override
 	public String toString() {
 		int v = value;
+		final int base = 100;
 
-		int d = v % SpecificityCalculator.BASE;
-		v = v / SpecificityCalculator.BASE;
-		int c = v % SpecificityCalculator.BASE;
-		v = v / SpecificityCalculator.BASE;
-		int b = v % SpecificityCalculator.BASE;
-		v = v / SpecificityCalculator.BASE;
-		int a = v % SpecificityCalculator.BASE;
+
+		int d = v % base;
+		v = v / base;
+		int c = v % base;
+		v = v / base;
+		int b = v % base;
+		v = v / base;
+		int a = v % base;
 
 		return "{" + a + ", " + b + ", " + c + ", " + d + "}";
 	}

@@ -151,23 +151,6 @@ public class MCssRule
 	}
 
 
-	/**
-	 *
-	 * @param ruleList
-	 * @return
-	 */
-	public static List<MCssRule> ConvertToMCssRules(CSSRuleList ruleList)
-	{
-		List<MCssRule> mCssRules = new ArrayList<>();
-
-		for (int i = 0; i < ruleList.getLength(); i++) {
-			mCssRules.add(new MCssRule(ruleList.item(i)));
-		}
-
-		return mCssRules;
-	}
-
-
 	public String Print()
 	{
 		Map<List<MProperty>, List<MSelector>> combinations = new HashMap<>();

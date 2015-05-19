@@ -33,7 +33,7 @@ import com.crawljax.core.plugin.OnNewStatePlugin;
 import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.cilla.util.CSSDOMHelper;
-import com.crawljax.plugins.cilla.util.CssParser;
+import com.crawljax.plugins.cilla.parser.CssParser;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
@@ -44,6 +44,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	private int _originalCssLOC;
 	public int _numberOfStates;
 
+	private final Map<String, CssParser> _cssFiles;
 	private final Map<String, List<MCssRule>> _cssRules;
 	private final SetMultimap<String, ElementWithClass> _elementsWithNoClassDef;
 
@@ -57,7 +58,10 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		_originalCssLOC = 0;
 		_numberOfStates = 0;
 
+		_cssFiles = new HashMap<>();
 		_cssRules = new HashMap<>();
+		_elementsWithNoClassDef = HashMultimap.create();
+
 		_plugins = new ArrayList<>();
 		_postPlugins = new ArrayList<>();
 
@@ -65,13 +69,11 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		_plugins.add(analyzer);
 		_postPlugins.add(analyzer);
-
-		_elementsWithNoClassDef = HashMultimap.create();
 	}
 
 	public void onNewState(CrawlerContext context, StateVertex newState) {
 		// if the external CSS files are not parsed yet, do so
-		parseCssRules(context, newState);
+		ParseCssRulesForState(context, newState);
 
 		// now we have all the CSS rules neatly parsed in "rules"
 		//checkCssOnDom(newState);
@@ -83,41 +85,55 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	}
 
 
-	private void parseCssRules(CrawlerContext context, StateVertex state) {
+	private void ParseCssRulesForState(CrawlerContext context, StateVertex state)
+	{
 		String url = context.getBrowser().getCurrentUrl();
 
-		try {
+		try
+		{
 			final Document dom = state.getDocument();
 
-			for (String relPath : CSSDOMHelper.extractCssFilenames(dom)) {
+			for (String relPath : CSSDOMHelper.extractCssFilenames(dom))
+			{
 				String cssUrl = CSSDOMHelper.getAbsPath(url, relPath);
-				if (!_cssRules.containsKey(cssUrl)) {
+
+				if (!_cssRules.containsKey(cssUrl))
+				{
 					LOGGER.info("CSS URL: " + cssUrl);
 
-					String cssContent = CSSDOMHelper.getURLContent(cssUrl);
-					_originalCssLOC += CountLOC(cssContent);
-					List<MCssRule> rules = CssParser.getMCSSRules(cssContent);
-					if (rules != null && rules.size() > 0) {
-						_cssRules.put(cssUrl, rules);
-					}
+					String cssCode = CSSDOMHelper.getURLContent(cssUrl);
+					_originalCssLOC += CountLOC(cssCode);
+
+					ParseCssRules(url, cssCode);
 				}
 			}
 
 			// get all the embedded <STYLE> rules, save per HTML page
-			if (!_cssRules.containsKey(url)) {
+			if (!_cssRules.containsKey(url))
+			{
 				String embeddedRules = CSSDOMHelper.getEmbeddedStyles(dom);
 				_originalCssLOC += CountLOC(embeddedRules);
-
-				List<MCssRule> rules = CssParser.getMCSSRules(embeddedRules);
-				if (rules != null && rules.size() > 0) {
-					_cssRules.put(url, rules);
-				}
+				ParseCssRules(url, embeddedRules);
 			}
 
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
 		}
+	}
 
+
+	private void ParseCssRules(String url, String code)
+	{
+		//store parser for later readout on parse warnings, errors and fatalErrors;
+		CssParser parser = new CssParser();
+		_cssFiles.put(url, parser);
+
+		List<MCssRule> rules = parser.ParseCssIntoMCssRules(code);
+		if (rules != null && rules.size() > 0)
+		{
+			_cssRules.put(url, rules);
+		}
 	}
 
 

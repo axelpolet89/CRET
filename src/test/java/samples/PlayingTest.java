@@ -11,7 +11,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -26,7 +25,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import com.crawljax.plugins.cilla.util.CssParser;
 import com.crawljax.plugins.cilla.util.CssToXpathConverter;
 import com.crawljax.util.DomUtils;
 import com.crawljax.util.XPathHelper;
@@ -134,42 +132,42 @@ public class PlayingTest {
 //		rules = CssAnalyzer.checkCssRulesOnDom("state2", dom, mRules);
 	}
 
-	@Test
-	@Ignore
-	public void endtoendTest() throws SAXException, IOException {
-		String html =
-		        "<html><body><span><div width='56' id='div1' class='news plusnews votebutton medium green'>"
-		                + "<p id='24'>this is just a test</p></div>"
-		                + "<span id='span1' class='news'/><p>bla</p></span></body></html>";
-
-		Document dom = DomUtils.asDocument(html);
-
-		// CssToXpathConverter converter = new CssToXpathConverter();
-
-		CssParser parser = new CssParser();
-		List<String> selectors =
-		        parser.getSelectorsFromFile("//Users//amesbah//workspace//CSS-Evolver//src//main//resources//basic.css");
-
-		for (String cssSelector : selectors) {
-			System.out.println("SEL: " + cssSelector);
-			String xpath = CssToXpathConverter.convert(cssSelector);
-			System.out.println("Xpath: " + xpath);
-
-			try {
-				NodeList nodeList = XPathHelper.evaluateXpathExpression(dom, xpath);
-
-				for (int i = 0; i < nodeList.getLength(); i++) {
-					Element e = (Element) nodeList.item(i);
-					System.out.println("Matched Element: " + e.toString() + " with attributes: "
-					        + DomUtils.getAllElementAttributes(e));
-				}
-			} catch (XPathExpressionException e) {
-				fail(e.getMessage());
-			}
-
-		}
-
-	}
+//	@Test
+//	@Ignore
+//	public void endtoendTest() throws SAXException, IOException {
+//		String html =
+//		        "<html><body><span><div width='56' id='div1' class='news plusnews votebutton medium green'>"
+//		                + "<p id='24'>this is just a test</p></div>"
+//		                + "<span id='span1' class='news'/><p>bla</p></span></body></html>";
+//
+//		Document dom = DomUtils.asDocument(html);
+//
+//		// CssToXpathConverter converter = new CssToXpathConverter();
+//
+//		CssParser parser = new CssParser();
+//		List<String> selectors =
+//		        parser.getSelectorsFromFile("//Users//amesbah//workspace//CSS-Evolver//src//main//resources//basic.css");
+//
+//		for (String cssSelector : selectors) {
+//			System.out.println("SEL: " + cssSelector);
+//			String xpath = CssToXpathConverter.convert(cssSelector);
+//			System.out.println("Xpath: " + xpath);
+//
+//			try {
+//				NodeList nodeList = XPathHelper.evaluateXpathExpression(dom, xpath);
+//
+//				for (int i = 0; i < nodeList.getLength(); i++) {
+//					Element e = (Element) nodeList.item(i);
+//					System.out.println("Matched Element: " + e.toString() + " with attributes: "
+//					        + DomUtils.getAllElementAttributes(e));
+//				}
+//			} catch (XPathExpressionException e) {
+//				fail(e.getMessage());
+//			}
+//
+//		}
+//
+//	}
 
 	@Test
 	@Ignore

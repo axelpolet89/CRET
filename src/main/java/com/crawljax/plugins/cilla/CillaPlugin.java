@@ -93,15 +93,15 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		{
 			final Document dom = state.getDocument();
 
-			for (String relPath : CSSDOMHelper.extractCssFilenames(dom))
+			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
 			{
-				String cssUrl = CSSDOMHelper.getAbsPath(url, relPath);
+				String cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
 
 				if (!_cssRules.containsKey(cssUrl))
 				{
 					LOGGER.info("CSS URL: " + cssUrl);
 
-					String cssCode = CSSDOMHelper.getURLContent(cssUrl);
+					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
 					_originalCssLOC += CountLOC(cssCode);
 
 					ParseCssRules(url, cssCode);
@@ -111,7 +111,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			// get all the embedded <STYLE> rules, save per HTML page
 			if (!_cssRules.containsKey(url))
 			{
-				String embeddedRules = CSSDOMHelper.getEmbeddedStyles(dom);
+				String embeddedRules = CSSDOMHelper.ParseEmbeddedStyles(dom);
 				_originalCssLOC += CountLOC(embeddedRules);
 				ParseCssRules(url, embeddedRules);
 			}
@@ -172,7 +172,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		try {
 
 			List<ElementWithClass> elementsWithClass =
-			        CSSDOMHelper.getElementWithClass(state.getName(), state.getDocument());
+			        CSSDOMHelper.GetElementWithClass(state.getName(), state.getDocument());
 
 			for (ElementWithClass element : elementsWithClass) {
 

@@ -2,6 +2,7 @@ package com.crawljax.plugins.cilla.util;
 
 /**
  * Created by axel on 5/19/2015.
+ * Extension of the StringBuilder, by providing a appendLine() function
  */
 public class SuiteStringBuilder
 {

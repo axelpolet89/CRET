@@ -1,5 +1,6 @@
 package com.crawljax.plugins.cilla.data;
 
+import com.crawljax.plugins.cilla.util.SuiteStringBuilder;
 import org.w3c.css.sac.Locator;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSStyleRule;
@@ -147,7 +148,7 @@ public class MCssRule
 			}
 		}
 
-		StringBuilder builder = new StringBuilder();
+		SuiteStringBuilder builder = new SuiteStringBuilder();
 		for(List<MProperty> mProps : combinations.keySet())
 		{
 			List<MSelector> mSelectors = combinations.get(mProps);
@@ -162,10 +163,9 @@ public class MCssRule
 			builder.append(" {");
 			for(MProperty mProp : mProps)
 			{
-				builder.append("\n");
-				builder.append("\t" + mProp.Print());
+				builder.appendLine("\t" + mProp.Print());
 			}
-			builder.append("\n}\n\n");
+			builder.appendLine("}\n\n");
 		}
 
 		return builder.toString();
@@ -174,12 +174,11 @@ public class MCssRule
 	@Override
 	public String toString() {
 
-		StringBuffer buffer = new StringBuffer();
+		SuiteStringBuilder buffer = new SuiteStringBuilder();
 		Locator locator = GetLocator();
 
-		buffer.append("locator: line=" + locator.getLineNumber() + " col="
-				+ locator.getColumnNumber() + "\n");
-		buffer.append("Rule: " + _rule.getCssText() + "\n");
+		buffer.append("locator: line=" + locator.getLineNumber() + " col=" + locator.getColumnNumber());
+		buffer.appendLine("Rule: " + _rule.getCssText() + "\n");
 
 		for (MSelector selector : _selectors) {
 			buffer.append(selector.toString());
@@ -187,5 +186,4 @@ public class MCssRule
 
 		return buffer.toString();
 	}
-
 }

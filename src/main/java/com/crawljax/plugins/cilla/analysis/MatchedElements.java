@@ -1,5 +1,6 @@
 package com.crawljax.plugins.cilla.analysis;
 
+import com.crawljax.plugins.cilla.data.ElementWrapper;
 import com.crawljax.plugins.cilla.data.MSelector;
 import com.crawljax.util.XPathHelper;
 import com.google.common.collect.ArrayListMultimap;
@@ -12,7 +13,7 @@ public class MatchedElements
 	public static void SetMatchedElement(ElementWrapper element, MSelector selector)
 	{
 		// Use state name and the XPath of the element as key for the element
-		String key = element.getStateName() + XPathHelper.getXPathExpression(element.getElement());
+		String key = element.GetStateName() + XPathHelper.getXPathExpression(element.GetElement());
 		elementSelectors.put(key, selector);
 	}
 }

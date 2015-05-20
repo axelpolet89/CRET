@@ -1,8 +1,12 @@
 package com.crawljax.plugins.cilla.data;
 
+/**
+ * Represents a style declaration or CSS property that is contained inside a CSS rule
+ * A property has a name, value and may be important
+ * After analysis, a property may be overridden, thereby rendered ineffective
+ */
 public class MProperty
 {
-
 	private String _name;
 	private String _value;
 	private String _status;
@@ -17,31 +21,40 @@ public class MProperty
 		_isImportant = isImportant;
 	}
 
+	/** Getter */
 	public String GetName()
 	{
 		return _name;
 	}
 
+	/** Getter */
 	public String GetValue()
 	{
 		return _value;
 	}
 
-	public boolean IsImportant() { return _isImportant; }
+	/** Getter */
+	public boolean IsImportant()
+	{
+		return _isImportant;
+	}
 
+	/** Getter */
 	public boolean IsEffective()
 	{
 		return _isEffective;
 	}
 
-	public void SetEffective(boolean effective)
-	{
-		_isEffective = effective;
-	}
-
+	/** Getter */
 	public String GetStatus()
 	{
 		return _status;
+	}
+
+
+	public void SetEffective(boolean effective)
+	{
+		_isEffective = effective;
 	}
 
 	public void SetStatus(String status)
@@ -49,11 +62,15 @@ public class MProperty
 		_status = status;
 	}
 
-	public int GetSize()
+	public int ComputeSizeBytes()
 	{
 		return (_name.getBytes().length+ _value.getBytes().length);
 	}
 
+	/**
+	 * Transform this property into valid CSS syntax
+	 * @return
+	 */
 	public String Print()
 	{
 		String result = _name + ": " + _value;
@@ -65,10 +82,8 @@ public class MProperty
 	}
 
 	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-
-		return "{ " + _name + " : " + _value + " " + (_isEffective ? "Effective" : "Ineffective")
-		        + " }";
+	public String toString()
+	{
+		return "{ " + _name + " : " + _value + " " + (_isImportant ? "!important ": "") + (_isEffective ? "Effective" : "Ineffective") + " }";
 	}
 }

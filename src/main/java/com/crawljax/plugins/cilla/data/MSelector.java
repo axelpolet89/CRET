@@ -2,7 +2,6 @@ package com.crawljax.plugins.cilla.data;
 
 import java.util.*;
 
-import com.crawljax.plugins.cilla.analysis.ElementWrapper;
 import com.crawljax.plugins.cilla.util.PseudoHelper;
 import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
 
@@ -13,36 +12,36 @@ import org.w3c.dom.NamedNodeMap;
 
 public class MSelector
 {
-	private Selector _selector;
-	private List<MProperty> _properties;
+	private final  Selector _selector;
+	private final  List<MProperty> _properties;
+	private final String _selectorText;
+	private final int _ruleNumber;
 
-	private String _selectorText;
 	private boolean _isIgnored;
-	private Specificity _specificity;
 	private boolean _isMatched;
-	private boolean _isEffective;
-
-	private List<ElementWrapper> _matchedElements;
-
 	private boolean _isNonStructuralPseudo;
 	private boolean _hasPseudoElement;
 
 	private int _pseudoLevel;
 	private String _keyPseudoClass;
 	private String _selectorTextWithoutPseudo;
-	private LinkedHashMap<String, String> _nonStructuralPseudoClasses;
-	private LinkedHashMap<String, String> _structuralPseudoClasses;
-
 	private String _pseudoElement;
-	private int _ruleNumber;
+
+	private final LinkedHashMap<String, String> _nonStructuralPseudoClasses;
+	private final LinkedHashMap<String, String> _structuralPseudoClasses;
+
+	private final List<ElementWrapper> _matchedElements;
+	private final Specificity _specificity;
 
 	/**
 	 * Constructor.
-	 * For some reason, the cssparser implementation displays a * prefix on any selector
+	 * For some reason, the cssparser implementation puts a universal selector (*) prefix on any selector
 	 * the selector sequence, this is viewed as a 'elementSelector' by the specificity algorithm
 	 * so we need to remove those
 	 * 
 	 * @param selector: the selector text (CSS).
+	 * @param properties: the properties that are contained in this selector
+	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
 	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber)
 	{
@@ -75,6 +74,7 @@ public class MSelector
 	{
 		this(selector, new ArrayList<>(), ruleNumber);
 	}
+
 
 	/**
 	 * Determines whether this selector contains pseudo-selectors
@@ -173,6 +173,7 @@ public class MSelector
 		}
 	}
 
+
 	/**
 	 *
 	 * @param attributes
@@ -185,18 +186,37 @@ public class MSelector
 	}
 
 
+	/** Getter */
 	public int GetRuleNumber() { return _ruleNumber; }
 
-	public boolean IsIgnored() { return _isIgnored; }
-
-	public Specificity GetSpecificity() { return _specificity; }
-
+	/** Getter */
 	public List<MProperty> GetProperties() { return _properties; }
 
-	public String GetSelectorText() {
-		return _selectorText;
-	}
+	/** Getter */
+	public String GetSelectorText() { return _selectorText;	}
 
+	/** Getter */
+	public boolean IsIgnored() { return _isIgnored; }
+
+	/** Getter */
+	public boolean IsNonStructuralPseudo() { return _isNonStructuralPseudo; }
+
+	/** Getter */
+	public boolean HasPseudoElement() { return _hasPseudoElement; }
+
+	/** Getter */
+	public String GetPseudoClass() { return _keyPseudoClass; }
+
+	/** Getter */
+	public boolean IsMatched() { return _isMatched; }
+
+	/** Getter */
+	public Specificity GetSpecificity() { return _specificity; }
+
+
+	/**
+	 * @return css code that is usable to query a DOM
+	 */
 	public String GetFilteredSelectorText(){
 		if(_isNonStructuralPseudo)
 			return _selectorTextWithoutPseudo;
@@ -204,33 +224,36 @@ public class MSelector
 		return _selectorText;
 	}
 
-	public boolean IsNonStructuralPseudo() { return _isNonStructuralPseudo; }
 
-	public boolean IsPseudoElement() { return _hasPseudoElement; }
-
-	public String GetPseudoClass() { return _keyPseudoClass; }
-
-	public boolean IsMatched() { return _isMatched; }
-
-	public void SetMatched(boolean matched) { _isMatched = matched; }
-
-	public void AddMatchedElement(ElementWrapper element) {
-		if (element != null) {
-			_matchedElements.add(element);
-			SetMatched(true);
-		}
+	/**
+	 * Indicate that this selector matches to one or more elements in a DOM
+	 * @param matched
+	 */
+	public void SetMatched(boolean matched)
+	{
+		_isMatched = matched;
 	}
-
-	public boolean IsEffective() { return _isEffective; }
-
-	public void SetEffective(boolean effective) { _isEffective = effective; }
 
 
 	/**
-	 *
+	 * Add a DOM element that matches this selector
+	 * @param element
+	 */
+	public void AddMatchedElement(ElementWrapper element)
+	{
+		if (element != null)
+		{
+			_matchedElements.add(element);
+			_isMatched = true;
+		}
+	}
+
+
+	/**
+	 * Based on the W3C CSS3 specification, some elements are compatible with some pseudo-classes and others not
 	 * @param elementType
 	 * @param attributes
-	 * @return
+	 * @return whether the given element is compatible with the 'key' pseudo-class of this selector
 	 */
 	public boolean CheckPseudoCompatibility(String elementType, NamedNodeMap attributes)
 	{
@@ -269,9 +292,8 @@ public class MSelector
 
 
 	/**
-	 *
 	 * @param otherSelector
-	 * @return
+	 * @return true if the 'key' (right-most) pseudo-class is equal to the key pseudo-class of the other selector
 	 */
 	public boolean CompareKeyPseudoClass(MSelector otherSelector)
 	{
@@ -280,35 +302,32 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @return
+	 * @return true if any property is effective
 	 */
-	public boolean hasEffectiveProperties()
+	public boolean HasEffectiveProperties()
 	{
-		for (MProperty p : _properties) {
-			if (p.IsEffective()) {
-				return true;
-			}
-		}
-
-		return false;
+		return _properties.stream().anyMatch((property) -> property.IsEffective());
 	}
 
+
 	/**
-	 *
-	 * @return
+	 * @return size of the css code without whitespace + property size
 	 */
-	public int getSize()
+	public int ComputeSizeBytes()
 	{
 		int propsSize = 0;
-		for (MProperty prop : _properties) {
-			propsSize += prop.GetSize();
+		for (MProperty prop : _properties)
+		{
+			propsSize += prop.ComputeSizeBytes();
 		}
 		return (propsSize + _selectorText.trim().replace(" ", "").getBytes().length);
 	}
 
 
-	public void RemoveIneffectiveSelectors()
+	/**
+	 * Remove any property that has not been deemed effective
+	 */
+	public void RemoveIneffectiveProperties()
 	{
 		_properties.removeIf((MProperty) -> !MProperty.IsEffective());
 	}

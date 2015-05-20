@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 public class MCssRule
 {
-
 	private CSSRule _rule;
 	private List<MSelector> _selectors;
 
@@ -33,7 +32,7 @@ public class MCssRule
 
 
 	/**
-	 *
+	 * Parse all selectors from this _rule and add them to the _selectors
 	 */
 	private void SetSelectors()
 	{
@@ -41,18 +40,30 @@ public class MCssRule
 		{
 			CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) _rule;
 
-			List<MProperty> props = ParseProperties();
-
-			SelectorListImpl list = (SelectorListImpl)styleRuleImpl.getSelectors();
-
-			_selectors.addAll(list.getSelectors().stream().map(selector -> new MSelector(selector, props, GetLocator().getLineNumber())).collect(Collectors.toList()));
+			_selectors.addAll(((SelectorListImpl) styleRuleImpl.getSelectors())
+					.getSelectors().stream()
+					.map(selector -> new MSelector(selector, ParseProperties(), GetLocator().getLineNumber()))
+					.collect(Collectors.toList()));
 		}
 	}
 
 
+	/** Getter */
+	public CSSRule GetRule()
+	{
+		return _rule;
+	}
+
+	/** Getter */
+	public List<MSelector> GetSelectors()
+	{
+		return _selectors;
+	}
+
+
 	/**
-	 *
-	 * @param selectors
+	 * Remove the given list of selectors from the _selectors
+	 * @param selectors the list of selectors ts to remove
 	 */
 	public void RemoveSelectors(List<MSelector> selectors)
 	{
@@ -82,32 +93,13 @@ public class MCssRule
 
 
 	/**
-	 *
-	 * @return
-	 */
-	public CSSRule GetRule()
-	{
-		return _rule;
-	}
-
-
-	/**
-	 *
-	 * @return
-	 */
-	public List<MSelector> GetSelectors()
-	{
-		return _selectors;
-	}
-
-
-	/**
 	 * @return the _selectors that are not matched (not associated DOM elements have been detected).
 	 */
 	public List<MSelector> GetUnmatchedSelectors()
 	{
 		return _selectors.stream().filter(selector -> !selector.IsMatched() && !selector.IsIgnored()).collect(Collectors.toList());
 	}
+
 
 	/**
 	 * @return the _selectors that are effective (associated DOM elements have been detected).
@@ -117,20 +109,25 @@ public class MCssRule
 		return _selectors.stream().filter(selector -> selector.IsMatched() && !selector.IsIgnored()).collect(Collectors.toList());
 	}
 
+
 	/**
 	 * @return the Locator of this _rule (line number, column).
 	 */
-	public Locator GetLocator() {
+	public Locator GetLocator()
+	{
 		if (_rule instanceof CSSStyleRuleImpl)
 		{
-			return (Locator) ((CSSStyleRuleImpl) _rule)
-			        .getUserData(UserDataConstants.KEY_LOCATOR);
+			return (Locator) ((CSSStyleRuleImpl) _rule).getUserData(UserDataConstants.KEY_LOCATOR);
 		}
 
 		return null;
 	}
 
 
+	/**
+	 * Transform the current rule into valid CSS syntax
+	 * @return
+	 */
 	public String Print()
 	{
 		Map<List<MProperty>, List<MSelector>> combinations = new HashMap<>();
@@ -170,6 +167,7 @@ public class MCssRule
 
 		return builder.toString();
 	}
+
 
 	@Override
 	public String toString() {

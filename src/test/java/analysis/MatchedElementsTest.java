@@ -5,14 +5,16 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.w3c.dom.Document;
-import com.crawljax.plugins.cilla.data.MSelector;
-import com.crawljax.util.DomUtils;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
 import se.fishtank.css.selectors.Selectors;
 import se.fishtank.css.selectors.dom.W3CNode;
 import se.fishtank.css.selectors.parser.ParserException;
+
+import com.crawljax.plugins.cilla.data.MSelector;
+import com.crawljax.util.DomUtils;
 
 public class MatchedElementsTest {
 

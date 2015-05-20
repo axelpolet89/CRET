@@ -195,7 +195,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 					if (!matchFound) {
 						element.AddUnmatchedClass(classDef);
-						_elementsWithNoClassDef.put(element.getStateName(), element);
+						_elementsWithNoClassDef.put(element.GetStateName(), element);
 
 					}
 				}
@@ -417,7 +417,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				if (selectors.size() > 0) {
 
 					for (MSelector selector : selectors) {
-						if (selector.hasEffectiveProperties()) {
+						if (selector.HasEffectiveProperties()) {
 							buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
 							buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
 							buffer.append(" Selector: " + selector.GetSelectorText() + "\n");
@@ -452,7 +452,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 				if (selectors.size() > 0) {
 
 					for (MSelector selector : selectors) {
-						if (!selector.hasEffectiveProperties() && !selector.IsIgnored()) {
+						if (!selector.HasEffectiveProperties() && !selector.IsIgnored()) {
 							buffer.append("Ineffective: ");
 							buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
 
@@ -628,7 +628,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 								if (!effective)
 								{
 									counter++;
-									result += property.get(j).GetSize();
+									result += property.get(j).ComputeSizeBytes();
 								}
 							}
 						}
@@ -638,7 +638,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 					if (exit)
 					{
 						if (counter == selector.get(i).GetProperties().size())
-							result += selector.get(i).getSize();
+							result += selector.get(i).ComputeSizeBytes();
 						break;
 					}
 				}

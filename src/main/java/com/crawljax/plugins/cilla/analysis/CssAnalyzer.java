@@ -150,12 +150,12 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 							// when 'this' selector includes a pseudo-element (as selector-key),
 							// it is always effective and does not affect other selectors, so we can break
-							if(selector.IsPseudoElement())
+							if(selector.HasPseudoElement())
 								break;
 
 							// if 'the other' selector includes a pseudo-element (as selector-key),
 							// it is always effective and does not affect 'this' selector
-							if(nextSelector.IsPseudoElement())
+							if(nextSelector.HasPseudoElement())
 								continue;
 
 							if(selector.IsNonStructuralPseudo() || nextSelector.IsNonStructuralPseudo())
@@ -198,10 +198,10 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 				for(MSelector mSelector : mRule.GetMatchedSelectors())
 				{
-					if(mSelector.hasEffectiveProperties())
+					if(mSelector.HasEffectiveProperties())
 					{
 						effective = true;
-						mSelector.RemoveIneffectiveSelectors();
+						mSelector.RemoveIneffectiveProperties();
 					}
 					else
 					{

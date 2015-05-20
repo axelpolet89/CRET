@@ -1,9 +1,13 @@
-package com.crawljax.plugins.cilla.analysis;
+package com.crawljax.plugins.cilla.data;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.w3c.dom.Element;
 
+/**
+ * Extension of ElementWrapper, which holds any classes and unmatched classes for this Element
+ */
 public class ElementWithClass extends ElementWrapper
 {
 	private List<String> _classValues;
@@ -17,25 +21,24 @@ public class ElementWithClass extends ElementWrapper
 		_unmatchedClasses = new ArrayList<>();
 	}
 
-	public void AddUnmatchedClass(String unmatchedClass)
-	{
-		_unmatchedClasses.add(unmatchedClass);
-	}
-
+	/** Getter */
 	public List<String> GetUnmatchedClasses()
 	{
 		return _unmatchedClasses;
 	}
 
+	/** Getter */
 	public List<String> GetClassValues()
 	{
 		return _classValues;
 	}
 
-	//todo: remove?
-	@Override
-	public String toString()
+	/**
+	 * Add a class that doesn't match with any CSS selector
+	 * @param unmatchedClass the classname that doesn't match
+	 */
+	public void AddUnmatchedClass(String unmatchedClass)
 	{
-		return super.toString();
+		_unmatchedClasses.add(unmatchedClass);
 	}
 }

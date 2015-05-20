@@ -33,7 +33,7 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.apache.velocity.tools.view.VelocityViewServlet;
 
-import com.crawljax.plugins.cilla.analysis.ElementWithClass;
+import com.crawljax.plugins.cilla.data.ElementWithClass;
 import com.crawljax.plugins.cilla.data.MCssRule;
 import com.crawljax.plugins.cilla.data.MSelector;
 import com.google.common.base.Charsets;
@@ -235,7 +235,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 				List<MSelector> matched = rule.GetMatchedSelectors();
 				if (matched.size() > 0) {
 					for (MSelector sel : matched) {
-						if (!sel.hasEffectiveProperties() && !sel.IsIgnored()) {
+						if (!sel.HasEffectiveProperties() && !sel.IsIgnored()) {
 							ineffectiveBuffer.append("CSS rule: " + rule.GetRule().getCssText()
 							        + "<br>");
 
@@ -246,7 +246,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 
 							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule
 							        .GetRule().getCssText(), HighlightColor.INEFFECTIVE);
-						} else if (sel.hasEffectiveProperties()) {
+						} else if (sel.HasEffectiveProperties()) {
 							effectiveBuffer.append("CSS rule: " + rule.GetRule().getCssText()
 							        + "<br>");
 							effectiveBuffer.append("at line: "

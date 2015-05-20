@@ -15,7 +15,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.crawljax.plugins.cilla.analysis.ElementWithClass;
+import com.crawljax.plugins.cilla.data.ElementWithClass;
 import com.crawljax.util.UrlUtils;
 import com.crawljax.util.XPathHelper;
 

@@ -100,9 +100,8 @@ public class CssParserTest {
 		MSelector selector = selectors.get(0);
 		Assert.assertEquals("h p", selector.GetSelectorText());
 		Assert.assertFalse(selector.IsMatched());
-		Assert.assertFalse(selector.IsEffective());
 		Assert.assertFalse(selector.IsNonStructuralPseudo());
-		Assert.assertFalse(selector.IsPseudoElement());
+		Assert.assertFalse(selector.HasPseudoElement());
 		Assert.assertFalse(selector.IsIgnored());
 
 		//second rule
@@ -122,7 +121,7 @@ public class CssParserTest {
 
 		selector = selectors.get(0);
 		Assert.assertTrue(selector.IsNonStructuralPseudo());
-		Assert.assertFalse(selector.IsPseudoElement());
+		Assert.assertFalse(selector.HasPseudoElement());
 		Assert.assertEquals(".class:hover", selector.GetSelectorText());
 		Assert.assertEquals(".class", selector.GetFilteredSelectorText()); // special variant for querying DOM
 
@@ -134,7 +133,7 @@ public class CssParserTest {
 
 		selector = selectors.get(0);
 		Assert.assertFalse(selector.IsNonStructuralPseudo());
-		Assert.assertTrue(selector.IsPseudoElement());
+		Assert.assertTrue(selector.HasPseudoElement());
 		Assert.assertEquals("div .class:before", selector.GetSelectorText());
 		Assert.assertEquals("div .class:before", selector.GetFilteredSelectorText()); // should be the same, pseudo-elements are always detected
 

@@ -69,7 +69,7 @@ public class MProperty
 
 	/**
 	 * Transform this property into valid CSS syntax
-	 * @return
+	 * @return valid CSS syntax
 	 */
 	public String Print()
 	{
@@ -79,6 +79,19 @@ public class MProperty
 			return result + " !important;";
 
 		return result + ";";
+	}
+
+
+	/**
+	 * @return a short string that may be used as a key in HashMap comparisons
+	 */
+	public String AsKey()
+	{
+		String result = _name + "-" + _value;
+		if(_isImportant)
+			return result + "-" + "!";
+
+		return result;
 	}
 
 	@Override

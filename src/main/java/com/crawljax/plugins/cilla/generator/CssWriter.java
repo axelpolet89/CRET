@@ -16,16 +16,22 @@ import java.util.List;
  */
 public class CssWriter
 {
-
     public void Generate(String fileName, List<MCssRule> rules) throws IOException, URISyntaxException
     {
-        if(fileName.contains(".html"))
+        if(!fileName.contains(".css"))
             return;
 
         URI uri = new URI(fileName);
-        String name = new File(uri.getPath()).getName();
 
-        File file = new File("output\\cssfiles\\" + name);
+        String root = "output\\cssfiles\\" + uri.getAuthority().replace(uri.getScheme(), "");
+        File file = new File(root + uri.getPath());
+        File dir = new File((root + uri.getPath()).replace(file.getName(), ""));
+
+        if(!dir.exists())
+            dir.mkdirs();
+
+        if(!file.exists())
+            file.createNewFile();
 
         FileWriter writer = new FileWriter(file);
 

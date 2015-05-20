@@ -1,6 +1,7 @@
 package com.crawljax.plugins.cilla.data;
 
 import com.crawljax.plugins.cilla.util.SuiteStringBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.css.sac.Locator;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSStyleRule;
@@ -130,25 +131,30 @@ public class MCssRule
 	 */
 	public String Print()
 	{
-		Map<List<MProperty>, List<MSelector>> combinations = new HashMap<>();
+		Map<String, MTuple> combinations = new HashMap<>();
 		for(MSelector mSelector : _selectors)
 		{
 			List<MProperty> mProps = mSelector.GetProperties();
 
-			if(combinations.containsKey(mProps))
+			final String[] key = {""};
+			mProps.forEach(mProp -> key[0] += "|" + mProp.AsKey());
+
+			if(combinations.containsKey(key[0]))
 			{
-				combinations.get(mProps).add(mSelector);
+				combinations.get(key[0]).AddSelector(mSelector);
 			}
 			else
 			{
-				combinations.put(mProps, new ArrayList<>(Arrays.asList(mSelector)));
+				combinations.put(key[0], new MTuple(mSelector, mProps));
 			}
 		}
 
 		SuiteStringBuilder builder = new SuiteStringBuilder();
-		for(List<MProperty> mProps : combinations.keySet())
+		for(String key : combinations.keySet())
 		{
-			List<MSelector> mSelectors = combinations.get(mProps);
+			MTuple mTuple = combinations.get(key);
+			List<MSelector> mSelectors = mTuple.GetSelectors();
+
 			int size = mSelectors.size();
 			for(int i = 0; i < size; i++)
 			{
@@ -158,7 +164,7 @@ public class MCssRule
 			}
 
 			builder.append(" {");
-			for(MProperty mProp : mProps)
+			for(MProperty mProp : mTuple.GetProperties())
 			{
 				builder.appendLine("\t" + mProp.Print());
 			}

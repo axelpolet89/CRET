@@ -104,7 +104,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
 					_originalCssLOC += CountLOC(cssCode);
 
-					ParseCssRules(url, cssCode);
+					ParseCssRules(cssUrl, cssCode);
 				}
 			}
 

@@ -73,14 +73,14 @@ public class SpecificityTest {
 	public void TestOrderSpecificity() throws IOException {
 		List<MSelector> list = new ArrayList<>();
 
-		list.add(CreateSelector("p#242", 1));
-		list.add(CreateSelector("p p#news", 2));
-		list.add(CreateSelector("p.algo", 3));
-		list.add(CreateSelector("span div#aha #cal1", 4));
-		list.add(CreateSelector("a", 5) );
-		list.add(CreateSelector("span div#aha #cal2", 6));
-		list.add(CreateSelector("span", 7));
-		list.add(CreateSelector("A", 8));
+		list.add(TestHelper.CreateSelector("p#242", 1));
+		list.add(TestHelper.CreateSelector("p p#news", 2));
+		list.add(TestHelper.CreateSelector("p.algo", 3));
+		list.add(TestHelper.CreateSelector("span div#aha #cal1", 4));
+		list.add(TestHelper.CreateSelector("a", 5) );
+		list.add(TestHelper.CreateSelector("span div#aha #cal2", 6));
+		list.add(TestHelper.CreateSelector("span", 7));
+		list.add(TestHelper.CreateSelector("A", 8));
 
 		SpecificityHelper.OrderSpecificity(list);
 
@@ -97,27 +97,10 @@ public class SpecificityTest {
 
 	private void AssertSpecificity(String selector, int expectedSpecificity) throws IOException
 	{
-		MSelector mSelector = CreateSelector(selector);
+		MSelector mSelector = TestHelper.CreateSelector(selector);
 		Specificity sp = mSelector.GetSpecificity();
 
 		Assert.assertNotNull(sp);
 		Assert.assertEquals(expectedSpecificity, sp.GetValue());
-	}
-
-    private MSelector CreateSelector(String selector) throws IOException
-    {
-        return new MSelector(ParseSelector(selector), 1);
-    }
-
-	private MSelector CreateSelector(String selector, int ruleNumber) throws IOException
-	{
-		return new MSelector(ParseSelector(selector), ruleNumber);
-	}
-
-	private Selector ParseSelector(String selector) throws IOException
-	{
-		InputSource source = new InputSource(new StringReader(selector));
-		CSSOMParser cssomParser = new CSSOMParser(new SACParserCSS3());
-		return cssomParser.parseSelectors(source).item(0);
 	}
 }

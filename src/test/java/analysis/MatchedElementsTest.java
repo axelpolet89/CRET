@@ -3,91 +3,99 @@ package analysis;
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-//import se.fishtank.css.selectors.NodeSelector;
-//import se.fishtank.css.selectors.NodeSelectorException;
-//import se.fishtank.css.selectors.dom.DOMNodeSelector;
-
 import com.crawljax.plugins.cilla.data.MSelector;
-import com.crawljax.plugins.cilla.analysis.MatchedElements;
 import com.crawljax.util.DomUtils;
+
+import org.w3c.dom.Node;
+import se.fishtank.css.selectors.Selectors;
+import se.fishtank.css.selectors.dom.W3CNode;
+import se.fishtank.css.selectors.parser.ParserException;
 
 public class MatchedElementsTest {
 
 	@Test
-	public void testMatchedElements() {
+	public void testCssSelectors() throws IOException {
 
 		String html =
-		        "<html>" + "<head><title>example</title> \n"
+		        "<html>"
+		                + "<head><title>example</title> \n"
 		                + "<link href='basic.css' rel='stylesheet' type='text/css'>"
-		                + "<style> \n" + ".newsletter { color: bla;} #world {dec: 234 }"
-		                + "</style>" + "<style>" + ".nrc { font: bold;}" + "</style>" + "</head>"
+		                + "<style> \n"
+		                + ".newsletter { color: bla;} #world {dec: 234 }"
+		                + "</style>"
+		                + "<style>"
+		                + ".nrc { font: bold;}"
+		                + "</style>"
+		                + "</head>"
 		                +
 
-		                "<body><span><div width='56' id='div1' class='news plusnews votebutton medium green'>"
-		                + "<p id='24' class=''>this is just a test</p></div>"
-		                + "<span id='span1' class='news'/><p>bla</p></span></body></html>";
+		                "<body>"
+		                + "  <div width='56' id='div1' class='votebutton medium green'>"
+		                + "  <a href=`google.com'>googooli</a>"
+		                + "  <p id='24' class=''>this is just a test</p>"
+						+ "</div>"
+		                + "  <span id='span1' class='news'/>"
+						+ "<div id='div2'> <p>bla</p> <p>blabla</p> </div>"
+						+ "</body>" +
+				"</html>";
 
-		try {
-			Document dom = DomUtils.asDocument(html);
-			//MSelector selector = new MSelector("#div1", null); todo:resolve
-			Element e = dom.getElementById("div1");
+		//use crawljax utility class to get a Document object
+		Document dom = DomUtils.asDocument(html);
 
-			//MatchedElements.setMatchedElement(new ElementWrapper("index", e), selector);
-			//selector = new MSelector("div", null); todo:resolve
-			//MatchedElements.setMatchedElement(new ElementWrapper("index", e), selector);
+		//selectors class, allows us to query DOM
+		Selectors seSelectors = new Selectors(new W3CNode(dom));
 
-			Assert.assertEquals(2, MatchedElements.elementSelectors.size());
+		List<Node> result = seSelectors.querySelectorAll("div");
+		Assert.assertEquals(2, result.size());
 
-			for (String key : MatchedElements.elementSelectors.keySet()) {
-				System.out.println("key: " + key);
-				List<MSelector> selectors = MatchedElements.elementSelectors.get(key);
-				for (MSelector s : selectors) {
-					// System.out.println("Selector: " + s);
-				}
-			}
+		result = seSelectors.querySelectorAll("#div1");
+		Assert.assertEquals(1, result.size());
 
-		} catch (IOException e) {
-			Assert.fail(e.getMessage());
+		result = seSelectors.querySelectorAll( ".votebutton.medium.green");
+		Assert.assertEquals(1, result.size());
+
+		result = seSelectors.querySelectorAll("#div1 a, #div1 p");
+		Assert.assertEquals(2, result.size());
+
+		// does not exist
+		result = seSelectors.querySelectorAll("#div3");
+		Assert.assertEquals(0, result.size());
+
+		// structural pseudo-selector
+		result = seSelectors.querySelectorAll("#div2 p:first-child");
+		Assert.assertEquals(1, result.size());
+
+		// pseudo-element
+		result = seSelectors.querySelectorAll("#div2 p::first-letter");
+		Assert.assertEquals(2, result.size());
+
+		// non-structural pseudo-selector
+		result = seSelectors.querySelectorAll("#div2:hover");
+		Assert.assertEquals(0, result.size());
+
+		// non-structural pseudo-selector via MSelector (used in CssAnalyzer)
+		MSelector mSelector = TestHelper.CreateSelector("#div2:hover");
+		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
+		Assert.assertEquals(1, result.size());																					// it will match
+		Assert.assertTrue(mSelector.CheckPseudoCompatibility(result.get(0).getNodeName(), result.get(0).getAttributes()));		// it will be compatible
+
+		// non-structural pseudo-selector via MSelector, but not compatible (div with visited)
+		mSelector = TestHelper.CreateSelector("#div2:visited");
+		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
+		Assert.assertEquals(1, result.size());																					// it will match
+		Assert.assertFalse(mSelector.CheckPseudoCompatibility(result.get(0).getNodeName(), result.get(0).getAttributes()));		// it will not be compatible
+
+		//todo: fix :not handling
+		try
+		{
+			result = seSelectors.querySelectorAll("div:not(#div2)");
 		}
-
+		catch (ParserException ex)
+		{
+			Assert.fail(ex.getMessage());
+		}
 	}
-
-//	@Test
-//	public void testCssSelectors() throws IOException, NodeSelectorException {
-//
-//		String html =
-//		        "<html>"
-//		                + "<head><title>example</title> \n"
-//		                + "<link href='basic.css' rel='stylesheet' type='text/css'>"
-//		                + "<style> \n"
-//		                + ".newsletter { color: bla;} #world {dec: 234 }"
-//		                + "</style>"
-//		                + "<style>"
-//		                + ".nrc { font: bold;}"
-//		                + "</style>"
-//		                + "</head>"
-//		                +
-//
-//		                "<body>"
-//		                + "<span>"
-//		                + "  <div width='56' id='div1' class='news plusnews votebutton medium green'>"
-//		                + "  <a href=`google.com'>googooli</a>"
-//		                + "  <p id='24' class=''>this is just a test</p>" + "</div>"
-//		                + "  <span id='span1' class='news'/>" + "  <div>" + "    <p>bla</p>"
-//		                + "  </div>" + "</span></body></html>";
-//
-//		Document dom = DomUtils.asDocument(html);
-//		NodeSelector selector = new DOMNodeSelector(dom);
-//		Set<Node> result = selector.querySelectorAll(":indeterminate");
-//
-//		for (Node node : result) {
-//			System.out.println("Node:" + node);
-//		}
-//	}
 }

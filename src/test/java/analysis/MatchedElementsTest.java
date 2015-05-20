@@ -39,8 +39,12 @@ public class MatchedElementsTest {
 		                + "  <a href=`google.com'>googooli</a>"
 		                + "  <p id='24' class=''>this is just a test</p>"
 						+ "</div>"
-		                + "  <span id='span1' class='news'/>"
+
 						+ "<div id='div2'> <p>bla</p> <p>blabla</p> </div>"
+
+						+ "<div id='div3'> <img>direct-child</img>  <span><img>indirect child (descendant)</img></span> </div>"
+						+ "<span>direct sibling</span>"
+						+ "<span>indirect sibling</span>"
 						+ "</body>" +
 				"</html>";
 
@@ -50,8 +54,8 @@ public class MatchedElementsTest {
 		//selectors class, allows us to query DOM
 		Selectors seSelectors = new Selectors(new W3CNode(dom));
 
-		List<Node> result = seSelectors.querySelectorAll("div");
-		Assert.assertEquals(2, result.size());
+		List result = seSelectors.querySelectorAll("div");
+		Assert.assertEquals(3, result.size());
 
 		result = seSelectors.querySelectorAll("#div1");
 		Assert.assertEquals(1, result.size());
@@ -62,8 +66,24 @@ public class MatchedElementsTest {
 		result = seSelectors.querySelectorAll("#div1 a, #div1 p");
 		Assert.assertEquals(2, result.size());
 
+		// descendant combinator
+		result = seSelectors.querySelectorAll("#div3 img");
+		Assert.assertEquals(2, result.size());
+
+		// direct-child combinator
+		result = seSelectors.querySelectorAll("#div3 > img");
+		Assert.assertEquals(1, result.size());
+
+		// sibling combinator
+		result = seSelectors.querySelectorAll("#div3 ~ span");
+		Assert.assertEquals(2, result.size());
+
+		// direct sibling combinator
+		result = seSelectors.querySelectorAll("#div3 + span");
+		Assert.assertEquals(1, result.size());
+
 		// does not exist
-		result = seSelectors.querySelectorAll("#div3");
+		result = seSelectors.querySelectorAll("#div4");
 		Assert.assertEquals(0, result.size());
 
 		// structural pseudo-selector
@@ -82,13 +102,15 @@ public class MatchedElementsTest {
 		MSelector mSelector = TestHelper.CreateSelector("#div2:hover");
 		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
 		Assert.assertEquals(1, result.size());																					// it will match
-		Assert.assertTrue(mSelector.CheckPseudoCompatibility(result.get(0).getNodeName(), result.get(0).getAttributes()));		// it will be compatible
+		List<Node> nodes = (List<Node>)result;
+		Assert.assertTrue(mSelector.CheckPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will be compatible
 
 		// non-structural pseudo-selector via MSelector, but not compatible (div with visited)
 		mSelector = TestHelper.CreateSelector("#div2:visited");
 		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
 		Assert.assertEquals(1, result.size());																					// it will match
-		Assert.assertFalse(mSelector.CheckPseudoCompatibility(result.get(0).getNodeName(), result.get(0).getAttributes()));		// it will not be compatible
+		nodes = (List<Node>)result;
+		Assert.assertFalse(mSelector.CheckPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will not be compatible
 
 		//todo: fix :not handling
 		try

@@ -1,6 +1,6 @@
 package analysis;
 
-import com.crawljax.plugins.cilla.data.MSelector;
+import com.crawljax.plugins.csssuite.data.MSelector;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 import org.w3c.css.sac.InputSource;

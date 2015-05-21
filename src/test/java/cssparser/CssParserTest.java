@@ -2,14 +2,14 @@ package cssparser;
 
 import java.util.List;
 
-import com.crawljax.plugins.cilla.data.MProperty;
-import com.crawljax.plugins.cilla.data.MSelector;
+import com.crawljax.plugins.csssuite.data.MProperty;
+import com.crawljax.plugins.csssuite.data.MSelector;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.crawljax.plugins.cilla.data.MCssRule;
-import com.crawljax.plugins.cilla.parser.CssParser;
+import com.crawljax.plugins.csssuite.data.MCssRule;
+import com.crawljax.plugins.csssuite.parser.CssParser;
 
 public class CssParserTest {
 

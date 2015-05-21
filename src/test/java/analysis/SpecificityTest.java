@@ -7,9 +7,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.crawljax.plugins.cilla.data.MSelector;
-import com.crawljax.plugins.cilla.util.specificity.Specificity;
-import com.crawljax.plugins.cilla.util.specificity.SpecificityHelper;
+import com.crawljax.plugins.csssuite.data.MSelector;
+import com.crawljax.plugins.csssuite.util.specificity.Specificity;
+import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
 
 public class SpecificityTest {
 

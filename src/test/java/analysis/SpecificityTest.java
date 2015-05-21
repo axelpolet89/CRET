@@ -57,6 +57,16 @@ public class SpecificityTest {
 		AssertSpecificity("#test::before", 10001);
 		AssertSpecificity(".test::after", 101);
 
+		// direct-child combinator
+		AssertSpecificity("div:hover > img:focus", 202);
+
+		// sibling combinator
+		AssertSpecificity("div:hover ~ span:focus", 202);
+
+		// direct sibling combinator
+		AssertSpecificity("div:hover + span:focus", 202);
+
+
 		// complex selector
 		AssertSpecificity("#test:hover div.class:first-child span[attr=\"test\"]::first-line", 10503);
 

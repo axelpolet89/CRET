@@ -85,7 +85,11 @@ public class CssParserTest {
 		List<MCssRule> rules = parser.ParseCssIntoMCssRules("h p { color: red;}\n" +
 				"div, a, span { font: black}\n" +
 				".class:hover {font-size:20px;}\n" +
+				".class:first-child {font-size:20px;}\n" +
 				"div .class::before {color:white;}\n" +
+				"div > .class::before {color:white;}\n" +
+				"div + .class::before {color:white;}\n" +
+				"div ~ .class::before {color:white;}\n" +
 				"div .class:not(:hover) { color:pink;}" +
 				".class:hover div:focus #id:visited { color: purple; }\n" );
 
@@ -133,13 +137,61 @@ public class CssParserTest {
 		Assert.assertEquals(1, selectors.size());
 
 		selector = selectors.get(0);
+		Assert.assertFalse(selector.IsNonStructuralPseudo()); // this is structural
+		Assert.assertFalse(selector.HasPseudoElement());
+		Assert.assertEquals(".class:first-child", selector.GetSelectorText());
+		Assert.assertEquals(".class:first-child", selector.GetFilteredSelectorText()); // no special query required for querying DOM
+
+		//fifth rule
+		mRule = rules.get(4);
+
+		selectors = mRule.GetSelectors();
+		Assert.assertEquals(1, selectors.size());
+
+		selector = selectors.get(0);
 		Assert.assertFalse(selector.IsNonStructuralPseudo());
 		Assert.assertTrue(selector.HasPseudoElement());
 		Assert.assertEquals("div .class:before", selector.GetSelectorText());
-		Assert.assertEquals("div .class:before", selector.GetFilteredSelectorText()); // should be the same, pseudo-elements are always detected
+		Assert.assertEquals("div .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
 
-		//fitfh rule
-		mRule = rules.get(4);
+		//sixth rule
+		mRule = rules.get(5);
+
+		selectors = mRule.GetSelectors();
+		Assert.assertEquals(1, selectors.size());
+
+		selector = selectors.get(0);
+		Assert.assertFalse(selector.IsNonStructuralPseudo());
+		Assert.assertTrue(selector.HasPseudoElement());
+		Assert.assertEquals("div > .class:before", selector.GetSelectorText());
+		Assert.assertEquals("div > .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
+
+		//seventh rule
+		mRule = rules.get(6);
+
+		selectors = mRule.GetSelectors();
+		Assert.assertEquals(1, selectors.size());
+
+		selector = selectors.get(0);
+		Assert.assertFalse(selector.IsNonStructuralPseudo());
+		Assert.assertTrue(selector.HasPseudoElement());
+		Assert.assertEquals("div + .class:before", selector.GetSelectorText());
+		Assert.assertEquals("div + .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
+
+		//eight rule
+		mRule = rules.get(7);
+
+		selectors = mRule.GetSelectors();
+		Assert.assertEquals(1, selectors.size());
+
+		selector = selectors.get(0);
+		Assert.assertFalse(selector.IsNonStructuralPseudo());
+		Assert.assertTrue(selector.HasPseudoElement());
+		Assert.assertEquals("div ~ .class:before", selector.GetSelectorText());
+		Assert.assertEquals("div ~ .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
+
+		//ninth rule
+		mRule = rules.get(8);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -147,8 +199,8 @@ public class CssParserTest {
 		selector = selectors.get(0);
 		Assert.assertTrue(selector.IsIgnored()); //should be ignored because of :not
 
-		//sixth rule
-		mRule = rules.get(5);
+		//tenth rule
+		mRule = rules.get(9);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());

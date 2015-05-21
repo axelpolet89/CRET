@@ -19,8 +19,6 @@ import java.util.List;
  */
 public class CssWriter
 {
-    private final static Logger LOGGER = LogManager.getLogger("css.suite.logger");
-
     public void Generate(String fileName, List<MCssRule> rules) throws IOException, URISyntaxException
     {
         int totalSelectors = 0;

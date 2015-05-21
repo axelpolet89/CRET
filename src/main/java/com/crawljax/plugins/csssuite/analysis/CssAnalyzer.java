@@ -19,8 +19,13 @@ import se.fishtank.css.selectors.parser.ParserException;
 
 public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 {
-	private final static Logger LOGGER = LogManager.getLogger("css.suite.logger");
-
+	/**
+	 * Compare properties of a (less specific) selector with a given property on ONLY their name
+	 * set the other (less specific) properties overridden or set 'this' property overridden due to !important
+	 * @param property
+	 * @param otherSelector
+	 * @param overridden
+	 */
 	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
@@ -42,6 +47,14 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 		}
 	}
 
+
+	/**
+	 * Compare properties of a (less specific) selector with a given property on their name AND value
+	 * set the other (less specific) properties overridden or set 'this' property overridden due to !important
+	 * @param property
+	 * @param otherSelector
+	 * @param overridden
+	 */
 	private static void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
@@ -61,6 +74,46 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 				}
 			}
 		}
+	}
+
+
+	/**
+	 * Filter all ineffective rules or individual selectors within those rules by their (in)effective properties
+	 * @param rules
+	 * @return
+	 */
+	private static List<MCssRule> FilterIneffectiveRules(List<MCssRule> rules)
+	{
+		List<MCssRule> newRules = new ArrayList<>();
+
+		for(MCssRule mRule : rules)
+		{
+			boolean effective = false;
+
+			List<MSelector> ineffectiveSelectors = new ArrayList<>();
+
+			ineffectiveSelectors.addAll(mRule.GetUnmatchedSelectors());
+
+			for(MSelector mSelector : mRule.GetMatchedSelectors())
+			{
+				if(mSelector.HasEffectiveProperties())
+				{
+					effective = true;
+					mSelector.RemoveIneffectiveProperties();
+				}
+				else
+				{
+					ineffectiveSelectors.add(mSelector);
+				}
+			}
+
+			if(effective) {
+				mRule.RemoveSelectors(ineffectiveSelectors);
+				newRules.add(mRule);
+			}
+		}
+
+		return newRules;
 	}
 
 	@Override
@@ -130,8 +183,6 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 		for (String keyElement : MatchedElements.elementSelectors.keySet()) {
 
-			LOGGER.debug("keyElement: " + keyElement);
-
 			//get selectors that matched the keyElement
 			List<MSelector> selectors = MatchedElements.elementSelectors.get(keyElement);
 
@@ -140,14 +191,12 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 			String overridden = "overridden-" + random.nextInt();
 
-			LOGGER.debug("RANDOM: " + overridden);
-
 			for (int i = 0; i < selectors.size(); i++) {
 				MSelector selector = selectors.get(i);
 				for (MProperty property : selector.GetProperties()) {
-					if (!property.GetStatus().equals(overridden)) {
+					if (!property.GetStatus().equals(overridden))
+					{
 						property.SetEffective(true);
-						LOGGER.debug("SET effective: " + property);
 
 						// not set all the similar properties in other selectors to overridden
 
@@ -180,8 +229,6 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 								CompareProperties(property, nextSelector, overridden);
 							}
 						}
-					} else {
-						LOGGER.debug("OVRRIDDEN: " + property);
 					}
 				}
 			}
@@ -189,39 +236,9 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 		Map<String, List<MCssRule>> result = new HashMap<>();
 
-		//filter all unmatched -and ineffective rules -or individual selectors
 		for(String file : cssRules.keySet())
 		{
-			List<MCssRule> newRules = new ArrayList<>();
-
-			for(MCssRule mRule : cssRules.get(file))
-			{
-				boolean effective = false;
-
-				List<MSelector> ineffectiveSelectors = new ArrayList<>();
-
-				ineffectiveSelectors.addAll(mRule.GetUnmatchedSelectors());
-
-				for(MSelector mSelector : mRule.GetMatchedSelectors())
-				{
-					if(mSelector.HasEffectiveProperties())
-					{
-						effective = true;
-						//mSelector.RemoveIneffectiveProperties();
-					}
-					else
-					{
-						ineffectiveSelectors.add(mSelector);
-					}
-				}
-
-				if(effective) {
-					mRule.RemoveSelectors(ineffectiveSelectors);
-					newRules.add(mRule);
-				}
-			}
-
-			result.put(file, newRules);
+			result.put(file, FilterIneffectiveRules(cssRules.get(file)));
 		}
 
 		return result;

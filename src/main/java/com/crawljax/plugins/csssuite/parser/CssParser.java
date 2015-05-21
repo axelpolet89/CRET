@@ -5,24 +5,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.crawljax.plugins.csssuite.data.MCssRule;
+
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleSheet;
 
-import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 
-import org.apache.log4j.Logger;
-
 public class CssParser
 {
-	private static final Logger LOGGER = Logger.getLogger(CssParser.class.getName());
-
 	private final ParserErrorHandler _errorHandler;
 
 	/**
-	 *
+	 * Constructor
 	 */
 	public CssParser()
 	{

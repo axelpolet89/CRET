@@ -23,8 +23,24 @@ public class CssWriter
 
     public void Generate(String fileName, List<MCssRule> rules) throws IOException, URISyntaxException
     {
+        int totalSelectors = 0;
+        final int[] totalProperties = {0};
+
+        for (MCssRule rule : rules)
+        {
+            totalSelectors += rule.GetSelectors().size();
+            rule.GetSelectors().forEach((s) -> totalProperties[0] += s.GetProperties().size());
+        }
+
+        LogHandler.info("[CssWriter] File: " + fileName);
+        LogHandler.info("[CssWriter] # Selectors: %d", totalSelectors);
+        LogHandler.info("[CssWriter] # Properties: %d", totalProperties[0]);
+
         if(!fileName.contains(".css"))
+        {
+            LogHandler.info("[CssWriter] Styles not contained in a CSS file, so will not be written to output");
             return;
+        }
 
         URI uri = new URI(fileName);
 
@@ -47,19 +63,13 @@ public class CssWriter
             }
         });
 
-        int totalSelectors = 0;
-        final int[] totalProperties = {0};
 
         for (MCssRule rule : rules)
         {
-            totalSelectors += rule.GetSelectors().size();
-             rule.GetSelectors().forEach((s) -> totalProperties[0] += s.GetProperties().size());
             writer.write(rule.Print());
         }
 
-        LogHandler.info("File: " + fileName);
-        LogHandler.info("# Selectors: %d", totalSelectors);
-        LogHandler.info("# Properties: %d", totalProperties[0]);
+        LogHandler.info("[CssWriter] New rules written to output");
 
         writer.flush();
         writer.close();

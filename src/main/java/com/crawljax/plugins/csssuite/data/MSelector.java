@@ -106,7 +106,7 @@ public class MSelector
 		else if(selector instanceof SimpleSelector)
 		{
 			String selectorText = selector.toString();
-			if(selectorText.contains("*") && !selectorText.equals("*") && !selectorText.contains("\\["))
+			if(selectorText.contains("*") && !selectorText.equals("*") && !selectorText.contains("["))
 			{
 				UpdateSelectorSequence(selectorText);
 			}

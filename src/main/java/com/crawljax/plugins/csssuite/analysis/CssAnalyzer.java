@@ -207,7 +207,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 					if(mSelector.HasEffectiveProperties())
 					{
 						effective = true;
-						mSelector.RemoveIneffectiveProperties();
+						//mSelector.RemoveIneffectiveProperties();
 					}
 					else
 					{

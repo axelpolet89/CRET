@@ -36,6 +36,7 @@ import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import com.crawljax.plugins.csssuite.parser.CssParser;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import sun.rmi.runtime.Log;
 
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
@@ -355,32 +356,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		} catch (IOException e) {
 			LogHandler.error(e.getMessage(), e);
-		}
-
-		for(String key : rules.keySet())
-		{
-			List<MCssRule> otherRules = _cssRules.get(key);
-
-			for(MCssRule rule : rules.get(key))
-			{
-				for(MCssRule otherRule : otherRules)
-				{
-					if(rule.GetRule() == otherRule.GetRule())
-					{
-						List<MSelector> otherSelectors = otherRule.GetSelectors().stream().filter(MSelector::HasEffectiveProperties).collect(Collectors.toList());
-						if(otherSelectors.size() != rule.GetSelectors().size())
-						{
-							System.out.println("\nTransformed:\n");
-							for(MSelector selector : rule.GetSelectors())
-								System.out.println(selector.GetSelectorText());
-
-							System.out.println("\nNOT Transformed:\n");
-							for(MSelector selector : otherSelectors)
-								System.out.println(selector.GetSelectorText());
-						}
-					}
-				}
-			}
 		}
 	}
 

@@ -89,6 +89,11 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 						LOGGER.debug("Could not query DOM tree with selector" + cssSelector);
 						continue;
 					}
+					catch (Exception ex)
+					{
+						LOGGER.debug("Could not query DOM tree with selector" + cssSelector);
+						continue;
+					}
 
 					for (Node node : result)
 					{

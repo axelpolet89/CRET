@@ -77,7 +77,7 @@ public class SpecificityCalculator
 		else
 		{
 			temp = part.split("\\[");
-			if(temp.length > 1 && !temp[0].isEmpty())
+			if(temp.length > 1 && !temp[0].isEmpty()&& !temp[0].equals("*"))
 			{
 				this.AddElementSelector();
 			}
@@ -93,7 +93,7 @@ public class SpecificityCalculator
 	 */
 	private static boolean IgnorePart(String part)
 	{
-		return part.isEmpty() || part.equals("+") || part.equals(">") || part.equals("~");
+		return part.isEmpty() || part.equals("+") || part.equals(">") || part.equals("~") || part.equals("*");
 	}
 
 	public Specificity ComputeSpecificity(String selector, int pseudoClassCount, boolean isPseudoElement)
@@ -130,7 +130,7 @@ public class SpecificityCalculator
 			if (part.contains(".")) {
 				String[] temp = part.split("\\.");
 
-				if(!temp[0].isEmpty())
+				if(!temp[0].isEmpty() && !temp[0].equals("*"))
 				{
 					this.AddElementSelector();
 				}
@@ -143,7 +143,7 @@ public class SpecificityCalculator
 			else if (part.contains("#"))
 			{
 				String[] temp = part.split("\\#");
-				if (temp.length > 1 && !temp[0].isEmpty())
+				if (temp.length > 1 && !temp[0].isEmpty() && !temp[0].equals("*"))
 				{
 					this.AddElementSelector();
 				}

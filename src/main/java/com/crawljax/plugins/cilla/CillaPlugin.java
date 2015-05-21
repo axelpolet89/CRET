@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPathExpressionException;
 
@@ -21,6 +22,7 @@ import com.crawljax.plugins.cilla.data.*;
 import com.crawljax.plugins.cilla.generator.CssWriter;
 import com.crawljax.plugins.cilla.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.cilla.interfaces.ICssPostCrawlPlugin;
+import com.sun.org.apache.xpath.internal.SourceTree;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -351,6 +353,32 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(), e);
+		}
+
+		for(String key : rules.keySet())
+		{
+			List<MCssRule> otherRules = _cssRules.get(key);
+
+			for(MCssRule rule : rules.get(key))
+			{
+				for(MCssRule otherRule : otherRules)
+				{
+					if(rule.GetRule() == otherRule.GetRule())
+					{
+						List<MSelector> otherSelectors = otherRule.GetSelectors().stream().filter(MSelector::HasEffectiveProperties).collect(Collectors.toList());
+						if(otherSelectors.size() != rule.GetSelectors().size())
+						{
+							System.out.println("\nTransformed:\n");
+							for(MSelector selector : rule.GetSelectors())
+								System.out.println(selector.GetSelectorText());
+
+							System.out.println("\nNOT Transformed:\n");
+							for(MSelector selector : otherSelectors)
+								System.out.println(selector.GetSelectorText());
+						}
+					}
+				}
+			}
 		}
 	}
 

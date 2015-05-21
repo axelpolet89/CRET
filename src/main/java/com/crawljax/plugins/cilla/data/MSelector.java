@@ -34,11 +34,7 @@ public class MSelector
 	private final Specificity _specificity;
 
 	/**
-	 * Constructor.
-	 * For some reason, the cssparser implementation puts a universal selector (*) prefix on any selector
-	 * the selector sequence, this is viewed as a 'elementSelector' by the specificity algorithm
-	 * so we need to remove those
-	 * 
+	 * Constructor
 	 * @param selector: the selector text (CSS).
 	 * @param properties: the properties that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
@@ -49,7 +45,7 @@ public class MSelector
 		_properties = properties;
 		_ruleNumber = ruleNumber;
 
-		_selectorText = selector.toString().replaceAll("\\*", "");
+		_selectorText = selector.toString().trim();
 		_isIgnored = _selectorText.contains(":not");
 
 		_matchedElements = new ArrayList<>();

@@ -86,7 +86,8 @@ public class CssParserTest {
 				"div, a, span { font: black}\n" +
 				".class:hover {font-size:20px;}\n" +
 				"div .class::before {color:white;}\n" +
-				"div .class:not(:hover) { color:pink;}");
+				"div .class:not(:hover) { color:pink;}" +
+				".class:hover div:focus #id:visited { color: purple; }\n" );
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
@@ -122,8 +123,8 @@ public class CssParserTest {
 		selector = selectors.get(0);
 		Assert.assertTrue(selector.IsNonStructuralPseudo());
 		Assert.assertFalse(selector.HasPseudoElement());
-		Assert.assertEquals(".class:hover", selector.GetSelectorText());
-		Assert.assertEquals(".class", selector.GetFilteredSelectorText()); // special variant for querying DOM
+		Assert.assertEquals("*.class:hover", selector.GetSelectorText());
+		Assert.assertEquals("*.class", selector.GetFilteredSelectorText()); // special variant for querying DOM
 
 		//fourth rule
 		mRule = rules.get(3);
@@ -134,10 +135,10 @@ public class CssParserTest {
 		selector = selectors.get(0);
 		Assert.assertFalse(selector.IsNonStructuralPseudo());
 		Assert.assertTrue(selector.HasPseudoElement());
-		Assert.assertEquals("div .class:before", selector.GetSelectorText());
-		Assert.assertEquals("div .class:before", selector.GetFilteredSelectorText()); // should be the same, pseudo-elements are always detected
+		Assert.assertEquals("div *.class:before", selector.GetSelectorText());
+		Assert.assertEquals("div *.class:before", selector.GetFilteredSelectorText()); // should be the same, pseudo-elements are always detected
 
-		//fourth rule
+		//fitfh rule
 		mRule = rules.get(4);
 
 		selectors = mRule.GetSelectors();
@@ -145,6 +146,18 @@ public class CssParserTest {
 
 		selector = selectors.get(0);
 		Assert.assertTrue(selector.IsIgnored()); //should be ignored because of :not
+
+		//sixth rule
+		mRule = rules.get(5);
+
+		selectors = mRule.GetSelectors();
+		Assert.assertEquals(1, selectors.size());
+
+		selector = selectors.get(0);
+		Assert.assertTrue(selector.IsNonStructuralPseudo());
+		Assert.assertFalse(selector.HasPseudoElement());
+		Assert.assertEquals("*.class:hover div:focus *#id:visited", selector.GetSelectorText());
+		Assert.assertEquals(":visited", selector.GetPseudoClass());
 	}
 
 

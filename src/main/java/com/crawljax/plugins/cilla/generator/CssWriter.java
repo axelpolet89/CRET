@@ -42,10 +42,19 @@ public class CssWriter
             }
         });
 
+        int totalSelectors = 0;
+        final int[] totalProperties = {0};
+
         for (MCssRule rule : rules)
         {
+            totalSelectors += rule.GetSelectors().size();
+             rule.GetSelectors().forEach((s) -> totalProperties[0] += s.GetProperties().size());
             writer.write(rule.Print());
         }
+
+        System.out.println("File: " + fileName);
+        System.out.println(String.format("# Selectors: %d", totalSelectors));
+        System.out.println(String.format("# Properties: %d", totalProperties[0]));
 
         writer.flush();
         writer.close();

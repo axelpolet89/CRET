@@ -78,8 +78,8 @@ public class SpecificityTest {
 
 		SpecificityHelper.OrderSpecificity(list);
 
-		Assert.assertEquals("span div#aha #cal2", list.get(0).GetSelectorText()); 	// defined later than #cal1
-		Assert.assertEquals("span div#aha #cal1", list.get(1).GetSelectorText());
+		Assert.assertEquals("span div#aha *#cal2", list.get(0).GetSelectorText()); 	// defined later than #cal1
+		Assert.assertEquals("span div#aha *#cal1", list.get(1).GetSelectorText());
 		Assert.assertEquals("span", list.get(list.size() - 2).GetSelectorText());
 		Assert.assertEquals("a", list.get(list.size() - 1).GetSelectorText()); 		// defined later than span
 

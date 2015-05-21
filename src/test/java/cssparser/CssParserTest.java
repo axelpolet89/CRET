@@ -123,8 +123,8 @@ public class CssParserTest {
 		selector = selectors.get(0);
 		Assert.assertTrue(selector.IsNonStructuralPseudo());
 		Assert.assertFalse(selector.HasPseudoElement());
-		Assert.assertEquals("*.class:hover", selector.GetSelectorText());
-		Assert.assertEquals("*.class", selector.GetFilteredSelectorText()); // special variant for querying DOM
+		Assert.assertEquals(".class:hover", selector.GetSelectorText());
+		Assert.assertEquals(".class", selector.GetFilteredSelectorText()); // special variant for querying DOM
 
 		//fourth rule
 		mRule = rules.get(3);
@@ -135,8 +135,8 @@ public class CssParserTest {
 		selector = selectors.get(0);
 		Assert.assertFalse(selector.IsNonStructuralPseudo());
 		Assert.assertTrue(selector.HasPseudoElement());
-		Assert.assertEquals("div *.class:before", selector.GetSelectorText());
-		Assert.assertEquals("div *.class:before", selector.GetFilteredSelectorText()); // should be the same, pseudo-elements are always detected
+		Assert.assertEquals("div .class:before", selector.GetSelectorText());
+		Assert.assertEquals("div .class:before", selector.GetFilteredSelectorText()); // should be the same, pseudo-elements are always detected
 
 		//fitfh rule
 		mRule = rules.get(4);
@@ -156,7 +156,7 @@ public class CssParserTest {
 		selector = selectors.get(0);
 		Assert.assertTrue(selector.IsNonStructuralPseudo());
 		Assert.assertFalse(selector.HasPseudoElement());
-		Assert.assertEquals("*.class:hover div:focus *#id:visited", selector.GetSelectorText());
+		Assert.assertEquals(".class:hover div:focus #id:visited", selector.GetSelectorText());
 		Assert.assertEquals(":visited", selector.GetPseudoClass());
 	}
 

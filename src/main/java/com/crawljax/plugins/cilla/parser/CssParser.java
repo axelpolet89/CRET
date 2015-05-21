@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.crawljax.plugins.cilla.LogHandler;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleSheet;
@@ -14,6 +15,7 @@ import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 
 import org.apache.log4j.Logger;
+import sun.rmi.runtime.Log;
 
 public class CssParser
 {
@@ -38,7 +40,6 @@ public class CssParser
 	{
 		InputSource source = new InputSource(new StringReader(cssCode));
 		CSSOMParser cssomParser = new CSSOMParser(new SACParserCSS3());
-
 		cssomParser.setErrorHandler(_errorHandler);
 
 		CSSRuleList rules = null;
@@ -47,9 +48,9 @@ public class CssParser
 			CSSStyleSheet css = cssomParser.parseStyleSheet(source, null, null);
 			rules = css.getCssRules();
 		}
-		catch (IOException e)
+		catch (Exception ex)
 		{
-			LOGGER.error(e.getMessage(), e);
+			LogHandler.error(ex);
 		}
 
 		return rules;
@@ -67,7 +68,14 @@ public class CssParser
 
 		for (int i = 0; i < ruleList.getLength(); i++)
 		{
-			mCssRules.add(new MCssRule(ruleList.item(i)));
+			try
+			{
+				mCssRules.add(new MCssRule(ruleList.item(i)));
+			}
+			catch (Exception ex)
+			{
+				LogHandler.error(ex, "Error occurred while parsing CSSRules into MCssRules on rule '%s'", ruleList.item(i).getCssText());
+			}
 		}
 
 		return mCssRules;

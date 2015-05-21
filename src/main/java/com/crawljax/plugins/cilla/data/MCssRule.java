@@ -181,12 +181,8 @@ public class MCssRule
 		SuiteStringBuilder buffer = new SuiteStringBuilder();
 		Locator locator = GetLocator();
 
-		buffer.append("locator: line=" + locator.getLineNumber() + " col=" + locator.getColumnNumber());
-		buffer.appendLine("Rule: " + _rule.getCssText() + "\n");
-
-		for (MSelector selector : _selectors) {
-			buffer.append(selector.toString());
-		}
+		buffer.append("[McssRule] line=" + locator.getLineNumber() + " col=" + locator.getColumnNumber());
+		buffer.appendLine("rule: " + _rule.getCssText() + "\n");
 
 		return buffer.toString();
 	}

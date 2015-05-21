@@ -1,6 +1,9 @@
 package com.crawljax.plugins.cilla.generator;
 
+import com.crawljax.plugins.cilla.LogHandler;
 import com.crawljax.plugins.cilla.data.MCssRule;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -16,6 +19,8 @@ import java.util.List;
  */
 public class CssWriter
 {
+    private final static Logger LOGGER = LogManager.getLogger("css.suite.logger");
+
     public void Generate(String fileName, List<MCssRule> rules) throws IOException, URISyntaxException
     {
         if(!fileName.contains(".css"))
@@ -52,9 +57,9 @@ public class CssWriter
             writer.write(rule.Print());
         }
 
-        System.out.println("File: " + fileName);
-        System.out.println(String.format("# Selectors: %d", totalSelectors));
-        System.out.println(String.format("# Properties: %d", totalProperties[0]));
+        LogHandler.info("File: " + fileName);
+        LogHandler.info("# Selectors: %d", totalSelectors);
+        LogHandler.info("# Properties: %d", totalProperties[0]);
 
         writer.flush();
         writer.close();

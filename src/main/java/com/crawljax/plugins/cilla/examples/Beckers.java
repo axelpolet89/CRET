@@ -8,6 +8,7 @@ import com.crawljax.core.configuration.BrowserConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration.CrawljaxConfigurationBuilder;
 import com.crawljax.plugins.cilla.CillaPlugin;
+import org.apache.log4j.xml.DOMConfigurator;
 
 public class Beckers {
 

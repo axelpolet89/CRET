@@ -2,6 +2,7 @@ package com.crawljax.plugins.cilla.data;
 
 import java.util.*;
 
+import com.crawljax.plugins.cilla.LogHandler;
 import com.crawljax.plugins.cilla.util.PseudoHelper;
 import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
 
@@ -14,7 +15,7 @@ public class MSelector
 {
 	private final  Selector _selector;
 	private final  List<MProperty> _properties;
-	private final String _selectorText;
+	private String _selectorSequence;
 	private final int _ruleNumber;
 
 	private boolean _isIgnored;
@@ -33,33 +34,6 @@ public class MSelector
 	private final List<ElementWrapper> _matchedElements;
 	private final Specificity _specificity;
 
-	/**
-	 * Constructor
-	 * @param selector: the selector text (CSS).
-	 * @param properties: the properties that are contained in this selector
-	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
-	 */
-	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber)
-	{
-		_selector = selector;
-		_properties = properties;
-		_ruleNumber = ruleNumber;
-
-		_selectorText = selector.toString().trim();
-		_isIgnored = _selectorText.contains(":not");
-
-		_matchedElements = new ArrayList<>();
-		_nonStructuralPseudoClasses = new LinkedHashMap<>();
-		_structuralPseudoClasses = new LinkedHashMap<>();
-		_keyPseudoClass = "";
-
-		DeterminePseudo();
-
-		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
-				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
-				_hasPseudoElement);
-	}
-
 
 	/**
 	 * Constructor for testing purposes only
@@ -73,6 +47,86 @@ public class MSelector
 
 
 	/**
+	 * Constructor
+	 * @param selector: the selector text (CSS).
+	 * @param properties: the properties that are contained in this selector
+	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
+	 */
+	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber) {
+		_selector = selector;
+		_properties = properties;
+		_ruleNumber = ruleNumber;
+
+		_selectorSequence = selector.toString().trim();
+		_isIgnored = _selectorSequence.contains(":not") || _selectorSequence.contains("[disabled]");
+
+		try
+		{
+			RecursiveFilterUniversalSelector(selector);
+		}
+		catch (Exception ex)
+		{
+			LogHandler.error(ex, "Error in filtering universal selectors in selector '%s':", selector);
+		}
+
+		_matchedElements = new ArrayList<>();
+		_nonStructuralPseudoClasses = new LinkedHashMap<>();
+		_structuralPseudoClasses = new LinkedHashMap<>();
+		_keyPseudoClass = "";
+
+		try
+		{
+			DeterminePseudo();
+		}
+		catch(Exception ex)
+		{
+			LogHandler.error(ex, "Error in determining pseudo presence in selector '%s':", selector);
+		}
+
+		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorSequence,
+				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
+				_hasPseudoElement);
+	}
+
+
+	/**
+	 * Recursively filter every selector in the sequence on universal selectors that were added by the CssParser
+	 * @param selector
+	 */
+	private void RecursiveFilterUniversalSelector(Selector selector)
+	{
+		if(selector instanceof PseudoElementSelectorImpl)
+		{
+			String selectorText = selector.toString();
+			if(selectorText.contains("*"))
+			{
+				UpdateSelectorSequence(selectorText);
+			}
+		}
+		else if(selector instanceof SimpleSelector)
+		{
+			String selectorText = selector.toString();
+			if(selectorText.contains("*") && !selectorText.equals("*") && !selectorText.contains("\\["))
+			{
+				UpdateSelectorSequence(selectorText);
+			}
+		}
+		else if (selector instanceof DescendantSelector)
+		{
+			DescendantSelector dSelector = (DescendantSelector)selector;
+			RecursiveFilterUniversalSelector(dSelector.getSimpleSelector());
+			RecursiveFilterUniversalSelector(dSelector.getAncestorSelector());
+		}
+		else if (selector instanceof SiblingSelector)
+		{
+			SiblingSelector dSelector = (SiblingSelector)selector;
+			RecursiveFilterUniversalSelector(dSelector.getSelector());
+			RecursiveFilterUniversalSelector(dSelector.getSiblingSelector());
+		}
+	}
+
+
+	/**
 	 * Determines whether this selector contains pseudo-selectors
 	 * If they do, then find combinations of ancestor selector and pseudo-selector
 	 * Foreach selector that is a non-structural pseudo-selector, we filter the _selectorText with that pseudo-selector,
@@ -81,12 +135,12 @@ public class MSelector
 	private void DeterminePseudo()
 	{
 		//todo: what to do with negation pseudo?
-		if(_selectorText.contains(":not"))
+		if(_selectorSequence.contains(":not"))
 			return;
 
-		if(_selectorText.contains(":"))
+		if(_selectorSequence.contains(":"))
 		{
-			_selectorTextWithoutPseudo = _selectorText;
+			_selectorTextWithoutPseudo = _selectorSequence;
 
 			//find all pseudo selectors in the whole selector
 			_pseudoLevel = 0;
@@ -144,6 +198,17 @@ public class MSelector
 	}
 
 
+	private void UpdateSelectorSequence(String part)
+	{
+		//first escape the selectorText (which will be used as a regular expression below)
+		part = part.replaceAll("\\*", "\\\\*");
+		String replacement = part.replaceAll("\\*", "");
+
+		//replace part of the original selector sequence, by a string without an asterisk
+		_selectorSequence = _selectorSequence.replaceAll(part, replacement);
+	}
+
+
 	/**
 	 *
 	 * @param parts
@@ -189,7 +254,7 @@ public class MSelector
 	public List<MProperty> GetProperties() { return _properties; }
 
 	/** Getter */
-	public String GetSelectorText() { return _selectorText;	}
+	public String GetSelectorText() { return _selectorSequence;	}
 
 	/** Getter */
 	public boolean IsIgnored() { return _isIgnored; }
@@ -217,7 +282,7 @@ public class MSelector
 		if(_isNonStructuralPseudo)
 			return _selectorTextWithoutPseudo;
 
-		return _selectorText;
+		return _selectorSequence;
 	}
 
 
@@ -316,7 +381,7 @@ public class MSelector
 		{
 			propsSize += prop.ComputeSizeBytes();
 		}
-		return (propsSize + _selectorText.trim().replace(" ", "").getBytes().length);
+		return (propsSize + _selectorSequence.trim().replace(" ", "").getBytes().length);
 	}
 
 
@@ -334,7 +399,7 @@ public class MSelector
 	{
 		StringBuffer buffer = new StringBuffer();
 
-		buffer.append("Selector: " + _selectorText + "\n");
+		buffer.append("Selector: " + _selectorSequence + "\n");
 		buffer.append(" Matched?: " + _isMatched + "\n");
 
 		if (_matchedElements.size() > 0) {

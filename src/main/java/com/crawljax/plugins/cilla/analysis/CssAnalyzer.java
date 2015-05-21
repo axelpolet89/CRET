@@ -2,10 +2,12 @@ package com.crawljax.plugins.cilla.analysis;
 
 import java.util.*;
 
+import com.crawljax.plugins.cilla.LogHandler;
 import com.crawljax.plugins.cilla.data.*;
 import com.crawljax.plugins.cilla.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.cilla.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.cilla.util.specificity.SpecificityHelper;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -17,8 +19,7 @@ import se.fishtank.css.selectors.parser.ParserException;
 
 public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 {
-
-	private static final Logger LOGGER = Logger.getLogger(CssAnalyzer.class.getName());
+	private final static Logger LOGGER = LogManager.getLogger("css.suite.logger");
 
 	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden)
 	{
@@ -86,12 +87,12 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 					}
 					catch (ParserException ex)
 					{
-						LOGGER.debug("Could not query DOM tree with selector" + cssSelector);
+						LogHandler.warn("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'", cssSelector, mRule, file);
 						continue;
 					}
 					catch (Exception ex)
 					{
-						LOGGER.debug("Could not query DOM tree with selector" + cssSelector);
+						LogHandler.error("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'" + cssSelector, mRule, file);
 						continue;
 					}
 
@@ -106,7 +107,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 						if (node instanceof Document)
 						{
-							LOGGER.debug("CSS rule returns the whole document!!!");
+							LogHandler.warn("CSS rule returns the whole document, rule '%s", mRule);
 							mSelector.SetMatched(true);
 						} else
 						{

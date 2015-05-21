@@ -22,10 +22,8 @@ import com.crawljax.plugins.cilla.data.*;
 import com.crawljax.plugins.cilla.generator.CssWriter;
 import com.crawljax.plugins.cilla.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.cilla.interfaces.ICssPostCrawlPlugin;
-import com.sun.org.apache.xpath.internal.SourceTree;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.dom.Document;
 
 import com.crawljax.core.CrawlSession;
@@ -39,9 +37,8 @@ import com.crawljax.plugins.cilla.parser.CssParser;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
-public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
-	private static final Logger LOGGER = LogManager.getLogger(CillaPlugin.class.getName());
-
+public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin
+{
 	private final List<String> _processedCssFiles = new ArrayList<>();
 	private int _originalCssLOC;
 	public int _numberOfStates;
@@ -57,6 +54,10 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	public CillaPlugin()
 	{
+		DOMConfigurator.configure("log4j.xml");
+		LogHandler.info("");
+		LogHandler.info("==================================START NEW CSS-SUITE RUN=====================================");
+
 		_originalCssLOC = 0;
 		_numberOfStates = 0;
 
@@ -101,7 +102,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 				if (!_cssRules.containsKey(cssUrl))
 				{
-					LOGGER.info("CSS URL: " + cssUrl);
+					LogHandler.info("CSS URL: " + cssUrl);
 
 					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
 					_originalCssLOC += CountLOC(cssCode);
@@ -120,7 +121,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 		}
 		catch (IOException e) {
-			LOGGER.error(e.getMessage(), e);
+			LogHandler.error(e.getMessage(), e);
 		}
 	}
 
@@ -148,7 +149,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 		}
 		catch (IOException ex)
 		{
-			LOGGER.debug(ex.toString());
+			LogHandler.warn(ex.toString());
 		}
 		finally
 		{
@@ -170,7 +171,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	}
 
 	private void checkClassDefinitions(StateVertex state) {
-		LOGGER.info("Checking CSS class definitions...");
+		LogHandler.info("Checking CSS class definitions...");
 		try {
 
 			List<ElementWithClass> elementsWithClass =
@@ -204,9 +205,10 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			}
 
 		} catch (IOException e) {
-			LOGGER.error(e.getMessage(), e);
-		} catch (XPathExpressionException e) {
-			LOGGER.error(e.getMessage(), e);
+			LogHandler.error(e.getMessage(), e);
+		} catch (XPathExpressionException e)
+		{
+			LogHandler.error(e.getMessage(), e);
 		}
 
 	}
@@ -226,7 +228,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 					count++;
 				}
 			} catch (IOException e) {
-				LOGGER.error(e.getMessage(), e);
+				LogHandler.error(e.getMessage(), e);
 			}
 		}
 		return count;
@@ -352,7 +354,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 			FileUtils.writeStringToFile(_outputFile, output.toString());
 
 		} catch (IOException e) {
-			LOGGER.error(e.getMessage(), e);
+			LogHandler.error(e.getMessage(), e);
 		}
 
 		for(String key : rules.keySet())
@@ -553,7 +555,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 
 	private int getUnmatchedRules(StringBuffer buffer) {
 
-		LOGGER.info("Reporting Unmatched CSS Rules...");
+		LogHandler.info("Reporting Unmatched CSS Rules...");
 		buffer.append("========== UNMATCHED CSS RULES ==========\n");
 		int counter = 0;
 		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {
@@ -580,7 +582,7 @@ public class CillaPlugin implements OnNewStatePlugin, PostCrawlingPlugin {
 	}
 
 	private int getUsedRules(StringBuffer buffer) {
-		LOGGER.info("Reporting Matched CSS Rules...");
+		LogHandler.info("Reporting Matched CSS Rules...");
 		buffer.append("========== MATCHED CSS RULES ==========\n");
 		int counter = 0;
 		for (Map.Entry<String, List<MCssRule>> entry : _cssRules.entrySet()) {

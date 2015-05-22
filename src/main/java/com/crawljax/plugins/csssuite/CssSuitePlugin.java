@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -75,14 +76,21 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(analyzer);
 	}
 
-	public void onNewState(CrawlerContext context, StateVertex newState) {
+	public void onNewState(CrawlerContext context, StateVertex newState)
+	{
+		LogHandler.info("[NEW STATE] %s", newState.getUrl());
+
 		// if the external CSS files are not parsed yet, do so
+		LogHandler.info("Parse CSS rules...");
 		ParseCssRulesForState(context, newState);
+
 
 		// now we have all the CSS rules neatly parsed in "rules"
 		//checkCssOnDom(newState);
+		LogHandler.info("Execute crawl-time transformations...");
 		ExecuteCrawlTransformations(newState);
 
+		LogHandler.info("Check class definitions...");
 		checkClassDefinitions(newState);
 
 		_numberOfStates++;
@@ -103,7 +111,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 				if (!_cssRules.containsKey(cssUrl))
 				{
-					LogHandler.info("CSS URL: " + cssUrl);
+					LogHandler.info("[NEW CSS FILE] " + cssUrl);
 
 					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
 					_originalCssLOC += CountLOC(cssCode);
@@ -116,6 +124,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			if (!_cssRules.containsKey(url))
 			{
 				String embeddedRules = CSSDOMHelper.ParseEmbeddedStyles(dom);
+
+				if(!embeddedRules.isEmpty())
+					LogHandler.info("[NEW EMBEDDED RULES] " + url);
+
 				_originalCssLOC += CountLOC(embeddedRules);
 				ParseCssRules(url, embeddedRules);
 			}
@@ -138,6 +150,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			_cssRules.put(url, rules);
 		}
+
+		LogHandler.info("CSS rules parsed into McssRules: %d", rules.size());
 	}
 
 
@@ -171,8 +185,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		return rules;
 	}
 
-	private void checkClassDefinitions(StateVertex state) {
-		LogHandler.info("Checking CSS class definitions...");
+	private void checkClassDefinitions(StateVertex state)
+	{
 		try {
 
 			List<ElementWithClass> elementsWithClass =

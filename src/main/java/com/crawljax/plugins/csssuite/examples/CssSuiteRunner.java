@@ -11,11 +11,12 @@ import java.util.concurrent.TimeUnit;
 
 public class CssSuiteRunner {
 
-	private static final int waitAfterEvent = 400;
-	private static final int waitAfterReload = 400;
+	private static final int waitAfterEvent = 500;
+	private static final int waitAfterReload = 500;
 
 	//private static final String INDEX = "http://www.beckerelectric.com";
-	private static final String INDEX = "http://localhost/test/index.html";
+	//private static final String INDEX = "http://localhost/test/index.html";
+	private static final String INDEX = "http://www.nu.nl";
 
 	public static void main(String[] args) {
 //		try {
@@ -31,7 +32,7 @@ public class CssSuiteRunner {
 	{
 		CssSuitePlugin cillaPlugin = new CssSuitePlugin();
 
-		CrawljaxRunner crawljax = new CrawljaxRunner(CreateConfig(cillaPlugin));
+		CrawljaxRunner crawljax = new CrawljaxRunner(CreateConfig(10, cillaPlugin));
 		crawljax.call();
 
 		return cillaPlugin._numberOfStates;

@@ -79,14 +79,14 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 	/**
 	 * Filter all ineffective rules or individual selectors within those rules by their (in)effective properties
-	 * @param rules
+	 * @param file
 	 * @return
 	 */
-	private static List<MCssRule> FilterIneffectiveRules(List<MCssRule> rules)
+	private static MCssFile FilterIneffectiveRules(MCssFile file)
 	{
 		List<MCssRule> newRules = new ArrayList<>();
 
-		for(MCssRule mRule : rules)
+		for(MCssRule mRule : file.GetRules())
 		{
 			boolean effective = false;
 
@@ -113,15 +113,16 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			}
 		}
 
-		return newRules;
+		file.SetRules(newRules);
+		return file;
 	}
 
 	@Override
-	public void Transform(String stateName, Document dom, Map<String, List<MCssRule>> cssRules)
+	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules)
 	{
 		for(String file : cssRules.keySet())
 		{
-			for (MCssRule mRule : cssRules.get(file))
+			for (MCssRule mRule : cssRules.get(file).GetRules())
 			{
 				List<MSelector> mSelectors = mRule.GetSelectors();
 				for (MSelector mSelector : mSelectors)
@@ -177,7 +178,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	}
 
 	@Override
-	public Map<String, List<MCssRule>> Transform(Map<String, List<MCssRule>> cssRules)
+	public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
 	{
 		Random random = new Random();
 
@@ -234,7 +235,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			}
 		}
 
-		Map<String, List<MCssRule>> result = new HashMap<>();
+		Map<String, MCssFile> result = new HashMap<>();
 
 		for(String file : cssRules.keySet())
 		{

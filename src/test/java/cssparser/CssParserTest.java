@@ -2,6 +2,7 @@ package cssparser;
 
 import java.util.List;
 
+import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 
@@ -18,10 +19,13 @@ public class CssParserTest {
 	{
 		CssParser parser = new CssParser();
 
-		List<MCssRule> mRules = parser.ParseCssIntoMCssRules("h p { color: red; } " +
-																	"div, a, span { font: 20px } " +
-																	"#id, .class, span[attr=\"test\"], a:hover, span::before { color: black; } " +
-																	"#id div.class span { color: pink; }");
+		MCssFile file = new MCssFile("test");
+		parser.ParseCssIntoMCssRules("h p { color: red; } " +
+				"div, a, span { font: 20px } " +
+				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: black; } " +
+				"#id div.class span { color: pink; }", file);
+
+		List <MCssRule> mRules = file.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
@@ -34,11 +38,13 @@ public class CssParserTest {
 		Assert.assertEquals(1, mRule.GetSelectors().size());
 
 		parser = new CssParser();
-
-		mRules = parser.ParseCssIntoMCssRules("h p[att=\"test\" { color: red; } " + //syntax-error, should ignore
+		file = new MCssFile("test");
+		parser.ParseCssIntoMCssRules("h p[att=\"test\" { color: red; } " + //syntax-error, should ignore
 				"div, a, span { font: 20px } " +
 				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: black; } " +
-				"#id div.class span { color: pink; }");
+				"#id div.class span { color: pink; }", file);
+
+		mRules = file.GetRules();
 		Assert.assertEquals(3, mRules.size());
 
 		List<String> parseErrors = parser.GetParseErrors();
@@ -47,11 +53,12 @@ public class CssParserTest {
 		System.out.println(parseErrors.get(0));
 
 		parser = new CssParser();
-
-		mRules = parser.ParseCssIntoMCssRules("h p { color: red; } " +
+		file = new MCssFile("test");
+		parser.ParseCssIntoMCssRules("h p { color: red; } " +
 				"div, a, span { font: black } " + //incorrect property value, should not ignore
 				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: 11px; } " + //incorrect property value, should not ignore
-				"#id div.class span { color: pink; }");
+				"#id div.class span { color: pink; }", file);
+		mRules = file.GetRules();
 		Assert.assertEquals(4, mRules.size());
 
 		parseErrors = parser.GetParseErrors();
@@ -62,8 +69,9 @@ public class CssParserTest {
 	public void TestParseLocator()
 	{
 		CssParser parser = new CssParser();
-
-		List<MCssRule> rules =  parser.ParseCssIntoMCssRules("h p { color: red;} \n\n div { font: black} \n span {color: white}");
+		MCssFile file = new MCssFile("test");
+		parser.ParseCssIntoMCssRules("h p { color: red;} \n\n div { font: black} \n span {color: white}", file);
+		List<MCssRule> rules = file.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
@@ -82,7 +90,8 @@ public class CssParserTest {
 	public void TestParseSelector()
 	{
 		CssParser parser = new CssParser();
-		List<MCssRule> rules = parser.ParseCssIntoMCssRules("h p { color: red;}\n" +
+		MCssFile file = new MCssFile("test");
+		parser.ParseCssIntoMCssRules("h p { color: red;}\n" +
 				"div, a, span { font: black}\n" +
 				".class:hover {font-size:20px;}\n" +
 				".class:first-child {font-size:20px;}\n" +
@@ -91,13 +100,14 @@ public class CssParserTest {
 				"div + .class::before {color:white;}\n" +
 				"div ~ .class::before {color:white;}\n" +
 				"div .class:not(:hover) { color:pink;}" +
-				".class:hover div:focus #id:visited { color: purple; }\n" );
+				".class:hover div:focus #id:visited { color: purple; }\n", file);
+		List<MCssRule> mRules = file.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
 
 		//first rule
-		MCssRule mRule = rules.get(0);
+		MCssRule mRule = mRules.get(0);
 
 		List<MSelector> selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -110,7 +120,7 @@ public class CssParserTest {
 		Assert.assertFalse(selector.IsIgnored());
 
 		//second rule
-		mRule = rules.get(1);
+		mRule = mRules.get(1);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(3, selectors.size());
@@ -119,7 +129,7 @@ public class CssParserTest {
 		Assert.assertEquals("a", selector.GetSelectorText());
 
 		//third rule
-		mRule = rules.get(2);
+		mRule = mRules.get(2);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -131,7 +141,7 @@ public class CssParserTest {
 		Assert.assertEquals(".class", selector.GetFilteredSelectorText()); // special variant for querying DOM
 
 		//fourth rule
-		mRule = rules.get(3);
+		mRule = mRules.get(3);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -143,7 +153,7 @@ public class CssParserTest {
 		Assert.assertEquals(".class:first-child", selector.GetFilteredSelectorText()); // no special query required for querying DOM
 
 		//fifth rule
-		mRule = rules.get(4);
+		mRule = mRules.get(4);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -155,7 +165,7 @@ public class CssParserTest {
 		Assert.assertEquals("div .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
 
 		//sixth rule
-		mRule = rules.get(5);
+		mRule = mRules.get(5);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -167,7 +177,7 @@ public class CssParserTest {
 		Assert.assertEquals("div > .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
 
 		//seventh rule
-		mRule = rules.get(6);
+		mRule = mRules.get(6);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -179,7 +189,7 @@ public class CssParserTest {
 		Assert.assertEquals("div + .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
 
 		//eight rule
-		mRule = rules.get(7);
+		mRule = mRules.get(7);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -191,7 +201,7 @@ public class CssParserTest {
 		Assert.assertEquals("div ~ .class:before", selector.GetFilteredSelectorText()); // no special query required for querying DOM
 
 		//ninth rule
-		mRule = rules.get(8);
+		mRule = mRules.get(8);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -200,7 +210,7 @@ public class CssParserTest {
 		Assert.assertTrue(selector.IsIgnored()); //should be ignored because of :not
 
 		//tenth rule
-		mRule = rules.get(9);
+		mRule = mRules.get(9);
 
 		selectors = mRule.GetSelectors();
 		Assert.assertEquals(1, selectors.size());
@@ -217,16 +227,18 @@ public class CssParserTest {
 	public void TestParseProperties()
 	{
 		CssParser parser = new CssParser();
-		List<MCssRule> rules = parser.ParseCssIntoMCssRules (
+		MCssFile file = new MCssFile("test");
+		parser.ParseCssIntoMCssRules (
 				"div .class { color:white; border: 1px solid black; font-size:10px !important;}\n" +
-				"div, a, span { font-size: black; display:block; }\n" +
-				"div {color: #000; background-color: #ffffff; }");
+						"div, a, span { font-size: black; display:block; }\n" +
+						"div {color: #000; background-color: #ffffff; }", file);
+		List<MCssRule> mRules = file.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
 
 		//first rule
-		MCssRule mRule = rules.get(0);
+		MCssRule mRule = mRules.get(0);
 
 		MSelector mSelector = mRule.GetSelectors().get(0);
 
@@ -249,7 +261,7 @@ public class CssParserTest {
 
 
 		//second rule
-		mRule = rules.get(1);
+		mRule = mRules.get(1);
 
 		for(MSelector mSel : mRule.GetSelectors())
 			Assert.assertEquals(2, mSel.GetProperties().size());
@@ -263,7 +275,7 @@ public class CssParserTest {
 
 
 		//third rule
-		mRule = rules.get(2);
+		mRule = mRules.get(2);
 		mSelector = mRule.GetSelectors().get(0);
 		mProperties = mSelector.GetProperties();
 

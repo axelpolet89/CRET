@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 
 import com.crawljax.plugins.csssuite.data.MMediaRule;
@@ -70,7 +71,7 @@ public class CssParser
 	 * @param cssCode the css code
 	 * @return a list of MCssRule objects, of which each wraps a cssrule
 	 */
-	public List<MCssRule> ParseCssIntoMCssRules(String cssCode)
+	public int ParseCssIntoMCssRules(String cssCode, MCssFile file)
 	{
 		List<MCssRule> mCssRules = new ArrayList<>();
 		List<MMediaRule> mediaRules = new ArrayList<>();
@@ -102,6 +103,9 @@ public class CssParser
 			}
 		}
 
-		return mCssRules;
+		file.SetRules(mCssRules);
+		file.AddMediaRules(mediaRules);
+
+		return mCssRules.size() + mediaRules.size();
 	}
 }

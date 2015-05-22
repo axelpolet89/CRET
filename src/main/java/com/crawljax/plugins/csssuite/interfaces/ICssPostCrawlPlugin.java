@@ -1,8 +1,7 @@
 package com.crawljax.plugins.csssuite.interfaces;
 
-import com.crawljax.plugins.csssuite.data.MCssRule;
+import com.crawljax.plugins.csssuite.data.MCssFile;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -10,5 +9,5 @@ import java.util.Map;
  */
 public interface ICssPostCrawlPlugin
 {
-    public Map<String, List<MCssRule>> Transform(Map<String, List<MCssRule>> cssRules);
+    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules);
 }

@@ -47,6 +47,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private final Map<String, CssParser> _cssFiles;
 	private final Map<String, List<MCssRule>> _cssRules;
+	private final Map<String, MCssFile> _mcssFiles;
 	private final SetMultimap<String, ElementWithClass> _elementsWithNoClassDef;
 
 	private final List<ICssCrawlPlugin> _plugins;
@@ -63,6 +64,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_originalCssLOC = 0;
 		_numberOfStates = 0;
 
+		_mcssFiles = new HashMap<>();
 		_cssFiles = new HashMap<>();
 		_cssRules = new HashMap<>();
 		_elementsWithNoClassDef = HashMultimap.create();
@@ -97,14 +99,16 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	}
 
 
-	private void ParseCssRulesForState(CrawlerContext context, StateVertex state)
+	private Map<String, Integer> ParseCssRulesForState(CrawlerContext context, StateVertex state)
 	{
-		String url = context.getBrowser().getCurrentUrl();
+		final String url = context.getBrowser().getCurrentUrl();
+		final Map<String, Integer> fileOrder = new HashMap<>();
 
 		try
 		{
 			final Document dom = state.getDocument();
 
+			int order = 0;
 			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
 			{
 				String cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
@@ -118,6 +122,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 					ParseCssRules(cssUrl, cssCode);
 				}
+
+				//retain order of css files referenced in DOM
+				fileOrder.put(cssUrl, order);
+				order++;
 			}
 
 			// get all the embedded <STYLE> rules, save per HTML page
@@ -130,12 +138,18 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 				_originalCssLOC += CountLOC(embeddedRules);
 				ParseCssRules(url, embeddedRules);
+
+				// embedded style sheet has higher order
+				order++;
+				fileOrder.put(url, order);
 			}
 
 		}
 		catch (IOException e) {
 			LogHandler.error(e.getMessage(), e);
 		}
+
+		return fileOrder;
 	}
 
 
@@ -145,13 +159,15 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		CssParser parser = new CssParser();
 		_cssFiles.put(url, parser);
 
-		List<MCssRule> rules = parser.ParseCssIntoMCssRules(code);
-		if (rules != null && rules.size() > 0)
+		MCssFile file = new MCssFile(url);
+		int numberOfRules = parser.ParseCssIntoMCssRules(code, file);
+		if (numberOfRules > 0)
 		{
-			_cssRules.put(url, rules);
+			_cssRules.put(url, file.GetRules());
+			_mcssFiles.put(url, file);
 		}
 
-		LogHandler.info("CSS rules parsed into McssRules: %d", rules.size());
+		LogHandler.info("Number of CSS rules parsed into McssRules: %d", numberOfRules);
 	}
 
 
@@ -170,17 +186,17 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			for(ICssCrawlPlugin plugin : _plugins)
 			{
-				plugin.Transform(state.getName(), dom, _cssRules);
+				plugin.Transform(state.getName(), dom, _mcssFiles);
 			}
 		}
 	}
 
-	private Map<String, List<MCssRule>> ExecutePostTransformations()
+	private Map<String, MCssFile> ExecutePostTransformations()
 	{
-		Map<String, List<MCssRule>> rules = _cssRules;
+		Map<String, MCssFile> rules = _mcssFiles;
 		for(ICssPostCrawlPlugin plugin : _postPlugins)
 		{
-			rules = plugin.Transform(rules);
+			rules = plugin.Transform(_mcssFiles);
 		}
 		return rules;
 	}
@@ -281,12 +297,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		int used = getUsedRules(bufferUsed);
 		int unused = getUnmatchedRules(bufferUnused);
 
-		Map<String, List<MCssRule>> rules = ExecutePostTransformations();
+		Map<String, MCssFile> rules = ExecutePostTransformations();
 
 		CssWriter writer = new CssWriter();
 		for(String file : rules.keySet()) {
 			try {
-				writer.Generate(file, rules.get(file));
+				writer.Generate(file, rules.get(file).GetRules());
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (URISyntaxException e) {

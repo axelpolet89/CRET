@@ -36,15 +36,12 @@ public class MCssRule
 	 */
 	private void SetSelectors()
 	{
-		if (_rule instanceof CSSStyleRuleImpl)
-		{
-			CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) _rule;
+		CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) _rule;
 
-			_selectors.addAll(((SelectorListImpl) styleRuleImpl.getSelectors())
-					.getSelectors().stream()
-					.map(selector -> new MSelector(selector, ParseProperties(), GetLocator().getLineNumber()))
-					.collect(Collectors.toList()));
-		}
+		_selectors.addAll(((SelectorListImpl) styleRuleImpl.getSelectors())
+				.getSelectors().stream()
+				.map(selector -> new MSelector(selector, ParseProperties(), GetLocator().getLineNumber()))
+				.collect(Collectors.toList()));
 	}
 
 
@@ -80,13 +77,10 @@ public class MCssRule
 	{
 		List<MProperty> properties = new ArrayList<>();
 
-		if (_rule instanceof CSSStyleRule)
-		{
-			CSSStyleRule styleRule = (CSSStyleRule) _rule;
-			CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
+		CSSStyleRule styleRule = (CSSStyleRule) _rule;
+		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
 
-			properties.addAll(styleDeclaration.getProperties().stream().map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant())).collect(Collectors.toList()));
-		}
+		properties.addAll(styleDeclaration.getProperties().stream().map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant())).collect(Collectors.toList()));
 
 		return properties;
 	}

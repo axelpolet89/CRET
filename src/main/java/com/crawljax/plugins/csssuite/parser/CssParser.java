@@ -7,7 +7,12 @@ import java.util.List;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 
+import com.crawljax.plugins.csssuite.data.MMediaRule;
+import com.steadystate.css.dom.CSSMediaRuleImpl;
+import com.steadystate.css.dom.CSSStyleRuleImpl;
+import org.w3c.css.css.CssStyleRule;
 import org.w3c.css.sac.InputSource;
+import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleSheet;
 
@@ -24,6 +29,16 @@ public class CssParser
 	public CssParser()
 	{
 		_errorHandler = new ParserErrorHandler();
+	}
+
+
+	/**
+	 *
+	 * @return
+	 */
+	public List<String> GetParseErrors()
+	{
+		return _errorHandler.PrintParseErrors();
 	}
 
 	/**
@@ -58,6 +73,7 @@ public class CssParser
 	public List<MCssRule> ParseCssIntoMCssRules(String cssCode)
 	{
 		List<MCssRule> mCssRules = new ArrayList<>();
+		List<MMediaRule> mediaRules = new ArrayList<>();
 
 		CSSRuleList ruleList = ParseCssCode(cssCode);
 
@@ -65,7 +81,20 @@ public class CssParser
 		{
 			try
 			{
-				mCssRules.add(new MCssRule(ruleList.item(i)));
+				CSSRule rule = ruleList.item(i);
+				if(rule instanceof CSSStyleRuleImpl)
+				{
+					mCssRules.add(new MCssRule(rule));
+				}
+				else if (rule instanceof CSSMediaRuleImpl)
+				{
+					mediaRules.add(new MMediaRule(rule));
+				}
+				else
+				{
+					//@import
+					//@page
+				}
 			}
 			catch (Exception ex)
 			{
@@ -74,10 +103,5 @@ public class CssParser
 		}
 
 		return mCssRules;
-	}
-
-	public List<String> GetParseErrors()
-	{
-		return _errorHandler.PrintParseErrors();
 	}
 }

@@ -78,28 +78,29 @@ public class SpecificityTest {
 	@Test
 	public void TestOrderSpecificity() throws IOException
 	{
-		List<Pair<MSelector, Integer>> list = new ArrayList<>();
+		List<MSelector> list = new ArrayList<>();
 
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("p#242", 1), 1));
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("p p#news", 2), 1));
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("p.algo", 3), 1));
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("span div#aha #cal1", 4), 1));
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("a", 5), 1));
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("span div#aha #cal2", 6), 1));
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("span", 7), 1));
-		list.add(new ImmutablePair<>(TestHelper.CreateSelector("A", 8), 1));
+		list.add(TestHelper.CreateSelector("p#242"));
+		list.add(TestHelper.CreateSelector("p p#news", 2));
+		list.add(TestHelper.CreateSelector("p.algo", 3));
+		list.add(TestHelper.CreateSelector("span div#aha #cal1", 4));
+		list.add(TestHelper.CreateSelector("a", 5));
+		list.add(TestHelper.CreateSelector("span div#aha #cal2", 6));
+		list.add(TestHelper.CreateSelector("span", 7));
+		list.add(TestHelper.CreateSelector("A", 8));
 
-		//SpecificityHelper.SortBySpecificity(list);
+		SpecificityHelper.SortBySpecificity(list);
 
-		Assert.assertEquals("span div#aha #cal2", list.get(0).getLeft().GetSelectorText()); 	// defined later than #cal1
-		Assert.assertEquals("span div#aha #cal1", list.get(1).getLeft().GetSelectorText());
-		Assert.assertEquals("span", list.get(list.size() - 2).getLeft().GetSelectorText());
-		Assert.assertEquals("a", list.get(list.size() - 1).getLeft().GetSelectorText()); 		// defined later than span
+		Assert.assertEquals("span div#aha #cal2", list.get(0).GetSelectorText()); 	// defined later than #cal1
+		Assert.assertEquals("span div#aha #cal1", list.get(1).GetSelectorText());
+		Assert.assertEquals("span", list.get(list.size() - 2).GetSelectorText());
+		Assert.assertEquals("a", list.get(list.size() - 1).GetSelectorText()); 		// defined later than span
 
 		System.out.println("[TestOrderSpecificity] Ordering selectors by their specificity passed:");
-		for (Pair<MSelector, Integer> s : list) {
-		System.out.println("Selector: " + s.getLeft().GetSelectorText());
-	}
+		for (MSelector s : list)
+		{
+			System.out.println("Selector: " + s.GetSelectorText());
+		}
 	}
 
 	private void AssertSpecificity(String selector, int expectedSpecificity) throws IOException

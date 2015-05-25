@@ -7,8 +7,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -117,11 +116,14 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 		return file;
 	}
 
+
 	@Override
-	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules)
+	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, Map<String, Integer> cssFileOrder)
 	{
-		for(String file : cssRules.keySet())
+		for(String file : cssFileOrder.keySet())
 		{
+			int order = cssFileOrder.get(file);
+
 			for (MCssRule mRule : cssRules.get(file).GetRules())
 			{
 				List<MSelector> mSelectors = mRule.GetSelectors();
@@ -163,38 +165,40 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 						{
 							LogHandler.warn("CSS rule returns the whole document, rule '%s", mRule);
 							mSelector.SetMatched(true);
-						} else
+						}
+						else
 						{
 							ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
 							mSelector.AddMatchedElement(ew);
-							MatchedElements.SetMatchedElement(ew, mSelector);
+							MatchedElements.SetMatchedElement(ew, mSelector, order);
 						}
 					}
-
 				}
-
 			}
 		}
 	}
+
 
 	@Override
 	public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
 	{
 		Random random = new Random();
 
-		for (String keyElement : MatchedElements.elementSelectors.keySet()) {
-
+		for (String keyElement : MatchedElements.elementSelectors.keySet())
+		{
 			//get selectors that matched the keyElement
 			List<MSelector> selectors = MatchedElements.elementSelectors.get(keyElement);
 
 			//order the selectors by their specificity and location
-			SpecificityHelper.OrderSpecificity(selectors);
+			SpecificityHelper.SortBySpecificity(selectors);
 
 			String overridden = "overridden-" + random.nextInt();
 
-			for (int i = 0; i < selectors.size(); i++) {
-				MSelector selector = selectors.get(i);
-				for (MProperty property : selector.GetProperties()) {
+			for (int i = 0; i < selectors.size(); i++)
+			{
+				MSelector selector = selectors.get(i);//.getLeft();
+				for (MProperty property : selector.GetProperties())
+				{
 					if (!property.GetStatus().equals(overridden))
 					{
 						property.SetEffective(true);
@@ -202,7 +206,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 						// not set all the similar properties in other selectors to overridden
 
 						for (int j = i + 1; j < selectors.size(); j++) {
-							MSelector nextSelector = selectors.get(j);
+							MSelector nextSelector = selectors.get(j);//.getLeft();
 
 							// when 'this' selector includes a pseudo-element (as selector-key),
 							// it is always effective and does not affect other selectors, so we can break

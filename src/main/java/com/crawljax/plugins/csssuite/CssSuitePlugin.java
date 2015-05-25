@@ -76,7 +76,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		// now we have all the CSS rules neatly parsed in "rules"
 		//checkCssOnDom(newState);
 		LogHandler.info("Execute crawl-time transformations...");
-		ExecuteCrawlTransformations(newState);
+		ExecuteCrawlTransformations(newState, stateFileOrder);
 
 		_numberOfStates++;
 	}
@@ -127,12 +127,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 				_originalCssLOC += CountLOC(embeddedRules);
 				ParseCssRules(url, embeddedRules);
-
-				// embedded style sheet has higher order
-				order++;
-				fileOrder.put(url, order);
 			}
 
+			// embedded style sheet has higher order
+			order++;
+			fileOrder.put(url, order);
 		}
 		catch (IOException e) {
 			LogHandler.error(e.getMessage(), e);
@@ -168,22 +167,28 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 *
 	 * @param state
 	 */
-	private void ExecuteCrawlTransformations(StateVertex state)
+	private void ExecuteCrawlTransformations(StateVertex state, Map<String, Integer> order)
 	{
-		Document dom = null;
+		Document dom;
 		try
 		{
 			dom = state.getDocument();
 		}
-		catch (IOException ex)
+		catch (Exception ex)
 		{
-			LogHandler.warn(ex.toString());
+			LogHandler.error(ex.toString());
+			return;
 		}
-		finally
+
+		for(ICssCrawlPlugin plugin : _plugins)
 		{
-			for(ICssCrawlPlugin plugin : _plugins)
+			try
 			{
-				plugin.Transform(state.getName(), dom, _mcssFiles);
+				plugin.Transform(state.getName(), dom, _mcssFiles, order);
+			}
+			catch (Exception ex)
+			{
+				LogHandler.error(ex, "[CRAWL PLUG-IN] Error occurred in plugin %s", plugin);
 			}
 		}
 	}
@@ -441,7 +446,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 						buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
 						buffer.append(" Selector: " + selector.GetSelectorText() + "\n\n");
-						
+
 						counterIneffectiveSelectors++;
 					}
 				}

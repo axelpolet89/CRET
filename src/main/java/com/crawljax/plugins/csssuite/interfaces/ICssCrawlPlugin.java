@@ -10,5 +10,5 @@ import java.util.Map;
  */
 public interface ICssCrawlPlugin
 {
-    public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules);
+    public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, Map<String, Integer> order);
 }

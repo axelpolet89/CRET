@@ -39,7 +39,8 @@ public class MCssFile
     public void SetRules(List<MCssRule> rules){
         _rules = rules;
     }
-    public void AddMediaRules(List<MMediaRule> rules){
+    public void AddMediaRules(List<MMediaRule> rules)
+    {
         _mediaRules.addAll(rules);
     }
     public void AddImportRules(List<CSSImportRule> rules){

@@ -87,7 +87,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private LinkedHashMap<String, Integer> ParseCssRulesForState(CrawlerContext context, StateVertex state)
 	{
 		final String url = context.getBrowser().getCurrentUrl();
-		final LinkedHashMap<String, Integer> fileOrder = new LinkedHashMap<>();
+		final LinkedHashMap<String, Integer> stateFileOrder = new LinkedHashMap<>();
 
 		try
 		{
@@ -109,7 +109,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				}
 
 				//retain order of css files referenced in DOM
-				fileOrder.put(cssUrl, order);
+				stateFileOrder.put(cssUrl, order);
 				order++;
 			}
 
@@ -127,13 +127,14 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			// embedded style sheet has higher order
 			order++;
-			fileOrder.put(url, order);
+			stateFileOrder.put(url, order);
 		}
-		catch (IOException e) {
+		catch (IOException e)
+		{
 			LogHandler.error(e.getMessage(), e);
 		}
 
-		return fileOrder;
+		return stateFileOrder;
 	}
 
 
@@ -163,7 +164,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 *
 	 * @param state
 	 */
-	private void ExecuteCrawlTransformations(StateVertex state, LinkedHashMap<String, Integer> order)
+	private void ExecuteCrawlTransformations(StateVertex state, LinkedHashMap<String, Integer> stateFileOrder)
 	{
 		Document dom;
 		try
@@ -180,7 +181,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			try
 			{
-				plugin.Transform(state.getName(), dom, _mcssFiles, order);
+				plugin.Transform(state.getName(), dom, _mcssFiles, stateFileOrder);
 			}
 			catch (Exception ex)
 			{

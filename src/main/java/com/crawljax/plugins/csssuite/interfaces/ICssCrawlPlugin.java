@@ -11,5 +11,5 @@ import java.util.Map;
  */
 public interface ICssCrawlPlugin
 {
-    public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> order);
+    public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder);
 }

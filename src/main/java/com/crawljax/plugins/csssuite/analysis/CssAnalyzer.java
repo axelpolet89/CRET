@@ -122,11 +122,11 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 
 	@Override
-	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> cssFileOrder)
+	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder)
 	{
-		for(String file : cssFileOrder.keySet())
+		for(String file : stateFileOrder.keySet())
 		{
-			int order = cssFileOrder.get(file);
+			int order = stateFileOrder.get(file);
 
 			for (MCssRule mRule : cssRules.get(file).GetRules())
 			{

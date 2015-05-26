@@ -28,14 +28,12 @@ public class CssSuiteRunner {
 		Run();
 	}
 
-	private static int Run()
+	private static void Run()
 	{
 		CssSuitePlugin cillaPlugin = new CssSuitePlugin();
 
 		CrawljaxRunner crawljax = new CrawljaxRunner(CreateConfig(10, cillaPlugin));
 		crawljax.call();
-
-		return cillaPlugin._numberOfStates;
 	}
 
 	private static CrawljaxConfiguration CreateConfig(CssSuitePlugin plugin){

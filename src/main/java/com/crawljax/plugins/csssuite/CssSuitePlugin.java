@@ -30,9 +30,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
 	private final List<String> _processedCssFiles = new ArrayList<>();
 	private int _originalCssLOC;
-	public int _numberOfStates;
 
-	private final Map<String, CssParser> _cssFiles;
 	private final Map<String, MCssFile> _mcssFiles;
 
 	private final List<ICssCrawlPlugin> _plugins;
@@ -47,10 +45,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		LogHandler.info("==================================START NEW CSS-SUITE RUN=====================================");
 
 		_originalCssLOC = 0;
-		_numberOfStates = 0;
 
 		_mcssFiles = new HashMap<>();
-		_cssFiles = new HashMap<>();
 
 		_plugins = new ArrayList<>();
 		_postPlugins = new ArrayList<>();
@@ -73,8 +69,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		//checkCssOnDom(newState);
 		LogHandler.info("Execute crawl-time transformations...");
 		ExecuteCrawlTransformations(newState, stateFileOrder);
-
-		_numberOfStates++;
 	}
 
 
@@ -145,15 +139,22 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private void ParseCssRules(String url, String code)
 	{
-		//store parser for later readout on parse warnings, errors and fatalErrors;
 		CssParser parser = new CssParser();
-		_cssFiles.put(url, parser);
-
 		MCssFile file = new MCssFile(url);
+
 		int numberOfRules = parser.ParseCssIntoMCssRules(code, file);
 		if (numberOfRules > 0)
 		{
 			_mcssFiles.put(url, file);
+		}
+
+		List<String> parseErrors = parser.GetParseErrors();
+		if(parseErrors.size() > 0)
+		{
+			for(String parseError : parseErrors)
+			{
+				LogHandler.warn("[CSSPARSER] Parse errors occurred while parsing '%s'\n%s", url, parseError);
+			}
 		}
 
 		LogHandler.info("Number of CSS rules parsed into McssRules: %d", numberOfRules);
@@ -268,8 +269,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		output.append("Analyzed " + session.getConfig().getUrl() + " on "
 		        + new SimpleDateFormat("dd/MM/yy-hh:mm:ss").format(new Date()) + "\n");
 
-		output.append("-> Files with CSS code: " + _cssFiles.keySet().size() + "\n");
-		for (String address : _cssFiles.keySet())
+		output.append("-> Files with CSS code: " + _mcssFiles.keySet().size() + "\n");
+		for (String address : _mcssFiles.keySet())
 		{
 			output.append("    Address: " + address + "\n");
 		}

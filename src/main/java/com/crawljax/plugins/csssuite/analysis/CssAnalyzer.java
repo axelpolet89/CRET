@@ -26,7 +26,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	 * @param otherSelector
 	 * @param overridden
 	 */
-	private void CompareProperties(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
@@ -56,7 +56,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	 * @param otherSelector
 	 * @param overridden
 	 */
-	private void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+	private static void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
@@ -190,25 +190,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 		for (String keyElement : MatchedElements.GetMatchedElements())
 		{
-			List<MSelector> matchedSelectors = new ArrayList<>();
-
-			// we need a list of selectors first by their 'file' order and then by their specificity
-			List<Integer> cssFilesOrder = MatchedElements.GetCssFileOrder(keyElement);
-
-			// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations,
-			// just need to reverse it (so we get highest order first)
-			Collections.reverse(cssFilesOrder);
-
-			ListMultimap orderSelectorMap = MatchedElements.GetSelectors(keyElement);
-			for(int order : cssFilesOrder)
-			{
-				List<MSelector> selectorsForFile = orderSelectorMap.get(order);
-
-				//order the selectors by their specificity and location
-				SpecificityHelper.SortBySpecificity(selectorsForFile);
-
-				matchedSelectors.addAll(selectorsForFile);
-			}
+			List<MSelector> matchedSelectors = SortSelectorsForMatchedElem(keyElement);
 
 			String overridden = "overridden-" + random.nextInt();
 
@@ -217,7 +199,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 				MSelector selector = matchedSelectors.get(i);
 				for (MProperty property : selector.GetProperties())
 				{
-					//find out if property was already deemed effective in another matched element
+					// find out if property was already deemed effective in another matched element
 					boolean alreadyEffective = property.IsEffective();
 
 					if (!property.GetStatus().equals(overridden))
@@ -264,6 +246,37 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 		for(String file : cssRules.keySet())
 		{
 			result.put(file, FilterIneffectiveRules(cssRules.get(file)));
+		}
+
+		return result;
+	}
+
+
+	/**
+	 *
+	 * @param element
+	 * @return
+	 */
+	public static List<MSelector> SortSelectorsForMatchedElem(String element)
+	{
+		List<MSelector> result = new ArrayList<>();
+
+		// we need a list of selectors first by their 'file' order and then by their specificity
+		List<Integer> cssFilesOrder = MatchedElements.GetCssFileOrder(element);
+
+		// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations,
+		// just need to reverse it (so we get highest order first)
+		Collections.reverse(cssFilesOrder);
+
+		ListMultimap orderSelectorMap = MatchedElements.GetSelectors(element);
+		for(int order : cssFilesOrder)
+		{
+			List<MSelector> selectorsForFile = orderSelectorMap.get(order);
+
+			//order the selectors by their specificity and location
+			SpecificityHelper.SortBySpecificity(selectorsForFile);
+
+			result.addAll(selectorsForFile);
 		}
 
 		return result;

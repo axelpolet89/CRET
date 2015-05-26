@@ -1,12 +1,14 @@
 package com.crawljax.plugins.csssuite.analysis;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
+import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
 import com.google.common.collect.ListMultimap;
 
 import org.w3c.dom.Document;
@@ -77,6 +79,39 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 				}
 			}
 		}
+	}
+
+
+	/**
+	 * Transform all selectors that match a given element into a list of SpecificitySelector instances
+	 * Use that list to sort the selectors in place, and then return the MSelectors contained by the SpecificitySelectors instances in the sorted list
+	 * @param element
+	 * @return
+	 */
+	private static List<MSelector> SortSelectorsForMatchedElem(String element)
+	{
+		// we need a list of selectors first by their 'file' order and then by their specificity
+		List<Integer> cssFilesOrder = MatchedElements.GetCssFileOrder(element);
+
+		// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations),
+		// just need to reverse it (so we get highest order first), potential sort performance improvement
+		Collections.reverse(cssFilesOrder);
+
+		List<SpecificitySelector> selectorsToSort = new ArrayList<>();
+
+		ListMultimap orderSelectorMap = MatchedElements.GetSelectors(element);
+		for(int order : cssFilesOrder)
+		{
+			List<MSelector> selectorsForFile = orderSelectorMap.get(order);
+
+			//wrap MSelector in SpecificitySelector
+			selectorsToSort.addAll(selectorsForFile.stream().map(selector -> new SpecificitySelector(selector, order)).collect(Collectors.toList()));
+		}
+
+		SpecificityHelper.SortBySpecificity(selectorsToSort);
+
+		// extract the MSelectors from the list of sorted SpecificitySelectors and return
+		return selectorsToSort.stream().map((ss) -> ss.GetSelector()).collect(Collectors.toList());
 	}
 
 
@@ -246,37 +281,6 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 		for(String file : cssRules.keySet())
 		{
 			result.put(file, FilterIneffectiveRules(cssRules.get(file)));
-		}
-
-		return result;
-	}
-
-
-	/**
-	 *
-	 * @param element
-	 * @return
-	 */
-	public static List<MSelector> SortSelectorsForMatchedElem(String element)
-	{
-		List<MSelector> result = new ArrayList<>();
-
-		// we need a list of selectors first by their 'file' order and then by their specificity
-		List<Integer> cssFilesOrder = MatchedElements.GetCssFileOrder(element);
-
-		// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations,
-		// just need to reverse it (so we get highest order first)
-		Collections.reverse(cssFilesOrder);
-
-		ListMultimap orderSelectorMap = MatchedElements.GetSelectors(element);
-		for(int order : cssFilesOrder)
-		{
-			List<MSelector> selectorsForFile = orderSelectorMap.get(order);
-
-			//order the selectors by their specificity and location
-			SpecificityHelper.SortBySpecificity(selectorsForFile);
-
-			result.addAll(selectorsForFile);
 		}
 
 		return result;

@@ -1,0 +1,44 @@
+/* background should be overridden by below, color will be effective because higher specificity */
+div#footer
+{
+	background: #fff;
+	color: #111;
+}
+
+/* color will be overridden below, thus not effective */
+#footer
+{
+	background:#B0AD93 !important;
+	color:#fff;
+}
+#topMenu, #footer{margin: 0; padding: 0px;} /* #topMenu selector will not be matched */
+
+/* background is overridden by !important above, thus not entire selector not effective */
+#footer{
+	background: #444;
+	color: #ececec;
+}
+
+/* second-child ineffective, because !important */
+#wishlist2 li:first-child{ background-color: Pink !important; }
+#wishlist2 li:last-child{ background-color: Black; }
+
+/* second is ineffective, because same pseudo classes + same properties, but !important */
+#wishlist3 li a:hover { border: 1px solid Green !important; }
+#wishlist3 li a:hover { border: 1px solid Red; }
+
+/* second is ineffective, because different pseudo classes + same properties + same values, but !important*/
+#wishlist3 li a:link { border: 1px solid Blue !important; }
+#wishlist3 li a:visited { border: 1px solid Blue; }
+
+/* partly overridden by embedded <style> tag, because embedded style selector has same specificity */
+ul li a{
+	font-size: 20px;			/* overridden */
+	color: black !important;	/* NOT overridden */
+	display: block !important;	/* overridden */
+}
+
+/* NOT overridden by embedded style because this selector has higher specificity */
+div.input-content{
+	color:black;
+}

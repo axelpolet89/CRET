@@ -3,7 +3,10 @@ package analysis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
+import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -78,26 +81,26 @@ public class SpecificityTest {
 	@Test
 	public void TestOrderSpecificity() throws IOException
 	{
-		List<MSelector> list = new ArrayList<>();
+		List<SpecificitySelector> list = new ArrayList<>();
 
-		list.add(TestHelper.CreateSelector("p#242"));
-		list.add(TestHelper.CreateSelector("p p#news", 2));
-		list.add(TestHelper.CreateSelector("p.algo", 3));
-		list.add(TestHelper.CreateSelector("span div#aha #cal1", 4));
-		list.add(TestHelper.CreateSelector("a", 5));
-		list.add(TestHelper.CreateSelector("span div#aha #cal2", 6));
-		list.add(TestHelper.CreateSelector("span", 7));
-		list.add(TestHelper.CreateSelector("A", 8));
+		list.add(TestHelper.CreateSpecificitySelector("p#242", 1));
+		list.add(TestHelper.CreateSpecificitySelector("p p#news", 2));
+		list.add(TestHelper.CreateSpecificitySelector("p.algo", 3));
+		list.add(TestHelper.CreateSpecificitySelector("span div#aha #cal1", 4));
+		list.add(TestHelper.CreateSpecificitySelector("a", 5));
+		list.add(TestHelper.CreateSpecificitySelector("span div#aha #cal2", 6));
+		list.add(TestHelper.CreateSpecificitySelector("span", 7));
+		list.add(TestHelper.CreateSpecificitySelector("A", 8));
 
 		SpecificityHelper.SortBySpecificity(list);
 
-		Assert.assertEquals("span div#aha #cal2", list.get(0).GetSelectorText()); 	// defined later than #cal1
-		Assert.assertEquals("span div#aha #cal1", list.get(1).GetSelectorText());
-		Assert.assertEquals("span", list.get(list.size() - 2).GetSelectorText());
-		Assert.assertEquals("a", list.get(list.size() - 1).GetSelectorText()); 		// defined later than span
+		Assert.assertEquals("span div#aha #cal2", list.get(0).GetSelector().GetSelectorText()); 	// defined later than #cal1
+		Assert.assertEquals("span div#aha #cal1", list.get(1).GetSelector().GetSelectorText());
+		Assert.assertEquals("span", list.get(list.size() - 2).GetSelector().GetSelectorText());
+		Assert.assertEquals("a", list.get(list.size() - 1).GetSelector().GetSelectorText()); 		// defined later than span
 
 		System.out.println("[TestOrderSpecificity] Ordering selectors by their specificity passed:");
-		for (MSelector s : list)
+		for (MSelector s : list.stream().map((ss) -> ss.GetSelector()).collect(Collectors.toList()))
 		{
 			System.out.println("Selector: " + s.GetSelectorText());
 		}

@@ -1,8 +1,5 @@
 package com.crawljax.plugins.csssuite.util.specificity;
 
-import com.crawljax.plugins.csssuite.data.MSelector;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -11,38 +8,35 @@ import java.util.List;
  */
 public class SpecificityHelper
 {
-    public static void SortBySpecificity(List<MSelector> selectors)
+    /**
+     * Sort a list of MSelectors wrapped in SpecificitySelectors by their specificity, rulenumber and fileorder
+     * @param selectors
+     */
+    public static void SortBySpecificity(List<SpecificitySelector> selectors)
     {
         Collections.sort(selectors, (s1, s2) ->
         {
-            MSelector m1 = s1;//.getLeft();
-            MSelector m2 = s2;//.getLeft();
+            int value1 = s1.GetSpecificity();
+            int value2 = s2.GetSpecificity();
 
-            int value1 = m1.GetSpecificity().GetValue();
-            int value2 = m2.GetSpecificity().GetValue();
-
-            //if two selectors have the same _specificity,
-            //then the one that is defined later (e.g. a higher row number in the css file)
-            //has a higher order, so we return the highest rule to be placed first
+            //if two selectors have the same _specificity, we need to verify the position in the file or the position of the file in the DOM document
             if (value1 == value2)
             {
-                return new Integer(m2.GetRuleNumber()).compareTo(m1.GetRuleNumber()); //  -1 if m1 higher, 1 if m2 higher
+                int fileOrder1 = s1.GetOrder();
+                int fileOrder2 = s2.GetOrder();
+
+                // if both selectors occur in same file, we simply check which selector has a higher rule number (placed lower in file)
+                if(fileOrder1 == fileOrder2)
+                {
+                    return new Integer(s2.GetRuleNumber()).compareTo(s1.GetRuleNumber()); //-1 if m1 higher, 1 if m2 higher
+                }
+                else // otherwise we check which file was included later-on in the DOM (embedded/internal styles will always have a higher order than external styles_
+                {
+                    return new Integer(fileOrder2).compareTo(fileOrder1);
+                }
             }
 
             return new Integer(value2).compareTo(value1);
         });
-
-//        Collections.sort(selectors, (s1, s2) ->
-//        {
-//            int value1 = s1.getRight();
-//            int value2 = s2.getRight();
-//
-//            if (value1 == value2)
-//            {
-//                return 0; //do not alter order
-//            }
-//
-//            return new Integer(value2).compareTo(value1);
-//        });
     }
 }

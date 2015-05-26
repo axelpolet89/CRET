@@ -123,9 +123,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			order++;
 			stateFileOrder.put(url, order);
 		}
-		catch (IOException e)
+		catch (Exception ex)
 		{
-			LogHandler.error(e.getMessage(), e);
+			LogHandler.error(ex);
 		}
 
 		return stateFileOrder;
@@ -174,7 +174,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		}
 		catch (Exception ex)
 		{
-			LogHandler.error(ex.toString());
+			LogHandler.error(ex);
 			return;
 		}
 

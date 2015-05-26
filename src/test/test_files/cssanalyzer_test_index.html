@@ -1,0 +1,99 @@
+<?php
+session_start();
+$_SESSION['changed']=1;
+?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>An Ajax Test Site</title>
+<link href="styles.css" rel="stylesheet" type="text/css" />
+ <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" src="js/jquery.treeview.js"></script>
+  <script type="text/javascript" src="js/jquery.listen.js"></script>
+  <script type="text/javascript" src="js/jquery.history_remote.js"></script>
+
+ <script type="text/javascript" src="js/tocview-noframes.js"></script>
+
+<link rel="stylesheet" href="jquery.treeview.css" type="text/css" media="screen" />
+
+ <style type="text/css">
+    ul li a{
+		font-size: 16px;
+		color: Pink;
+		display: inline !important;
+	}
+
+	.input-content
+	{
+		color: white;
+	}
+
+  </style>
+  
+</head>
+
+<body lang="en">
+
+<div id="page">
+<div id="leftPanel">
+<center>
+<h3>Wish Lists</h3>
+	<ul id="wishlist1" class="treeview" align="left">
+		<li id="IDADhtml" class="expandable ">
+			<a class="remoteleft" href="content/A.html">Wish List Bob</a>
+		</li>
+		<li id="IDBDhtml" class="expandable middle">
+			<a class="remoteleft" href="content/B.html">Wish List John</a>
+		</li>
+		<li id="IDBDhtml" class="expandable last">
+			<a class="remoteleft" href="content/B.html">Wish List Paul</a>
+		</li>
+	</ul>  
+</div>
+
+<h3>Wish Lists 2</h3>
+	<ul id="wishlist2" class="treeview" align="left">
+		<li id="IDADhtml" class="expandable ">
+			<a class="remoteleft" href="content/A.html">Wish List Nicole</a>
+		</li>
+	</ul>
+
+<h3>Wish Lists 3</h3>
+	<ul id="wishlist3" class="treeview" align="left">
+		<li id="IDADhtml" class="expandable ">
+			<a class="remoteleft" href="content/A.html">Wish List Laura</a>
+		</li>
+	</ul>
+</div>
+
+<div class="content">
+	<p></p> <!--empty p tag-->
+</div>
+<div class="extra-content">
+	<p>
+		:only child p tag
+		</br>
+		second line
+	</p>
+</div>
+<div class="input-content">
+	<input type="button" value="Press here" class="input-button"></input>
+	<input type="text" value="Type here" class="input-text"></input>
+	<textarea class="input-text">TextArea here</textarea>
+	
+	<input type="checkbox" class="input-ckb" value="Check here">Check here</input>
+	<input type="radio" class="input-rb" value="Mark here">Mark here</input>
+	
+	<input type="radio" disabled="disabled" class="input-rb1">Mark here - Disabled</input>
+	<input type="checkbox" checked="checked" class="input-ckb1">Check here - Checked</input>
+	<a class="input-href">Click link here</a>
+</div>
+
+<div id="footer">
+	<span>footertext</span>
+</div>
+
+</body>
+</html>

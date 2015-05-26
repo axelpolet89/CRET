@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite.interfaces;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import org.w3c.dom.Document;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -10,5 +11,5 @@ import java.util.Map;
  */
 public interface ICssCrawlPlugin
 {
-    public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, Map<String, Integer> order);
+    public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> order);
 }

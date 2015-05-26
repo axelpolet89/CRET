@@ -6,11 +6,7 @@ import java.io.LineNumberReader;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.crawljax.plugins.csssuite.analysis.*;
 import com.crawljax.plugins.csssuite.data.*;
@@ -71,7 +67,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		// if the external CSS files are not parsed yet, do so
 		LogHandler.info("Parse CSS rules...");
-		Map<String, Integer> stateFileOrder = ParseCssRulesForState(context, newState);
+		LinkedHashMap<String, Integer> stateFileOrder = ParseCssRulesForState(context, newState);
 
 		// now we have all the CSS rules neatly parsed in "rules"
 		//checkCssOnDom(newState);
@@ -88,10 +84,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 * @param state
 	 * @return
 	 */
-	private Map<String, Integer> ParseCssRulesForState(CrawlerContext context, StateVertex state)
+	private LinkedHashMap<String, Integer> ParseCssRulesForState(CrawlerContext context, StateVertex state)
 	{
 		final String url = context.getBrowser().getCurrentUrl();
-		final Map<String, Integer> fileOrder = new HashMap<>();
+		final LinkedHashMap<String, Integer> fileOrder = new LinkedHashMap<>();
 
 		try
 		{
@@ -167,7 +163,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 *
 	 * @param state
 	 */
-	private void ExecuteCrawlTransformations(StateVertex state, Map<String, Integer> order)
+	private void ExecuteCrawlTransformations(StateVertex state, LinkedHashMap<String, Integer> order)
 	{
 		Document dom;
 		try

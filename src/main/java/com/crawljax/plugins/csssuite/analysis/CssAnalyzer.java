@@ -7,7 +7,8 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
-import org.apache.commons.lang3.tuple.Pair;
+import com.google.common.collect.ListMultimap;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,7 +26,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	 * @param otherSelector
 	 * @param overridden
 	 */
-	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden)
+	private void CompareProperties(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
@@ -33,7 +34,8 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			{
 				// it is possible, due to specificity ordering, that 'this' property was already deemed effective,
 				// but a less specific ('next') selector contained an !important declaration
-				if(nextProperty.IsImportant())
+				// this property should not be !important or not previously deemed effective
+				if(!alreadyEffective && nextProperty.IsImportant() && !property.IsImportant())
 				{
 					property.SetStatus(overridden);
 					property.SetEffective(false);
@@ -54,7 +56,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	 * @param otherSelector
 	 * @param overridden
 	 */
-	private static void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden)
+	private void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
@@ -63,12 +65,14 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			{
 				// it is possible, due to specificity ordering, that 'this' property was already deemed effective,
 				// but a less specific ('next') selector contained an !important declaration
-				if(nextProperty.IsImportant())
+				// this property should not be !important or not previously deemed effective
+				if(!alreadyEffective && nextProperty.IsImportant() && !property.IsImportant())
 				{
 					property.SetStatus(overridden);
 					property.SetEffective(false);
 				}
-				else {
+				else
+				{
 					nextProperty.SetStatus(overridden);
 				}
 			}
@@ -118,7 +122,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 
 	@Override
-	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, Map<String, Integer> cssFileOrder)
+	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> cssFileOrder)
 	{
 		for(String file : cssFileOrder.keySet())
 		{
@@ -184,29 +188,45 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	{
 		Random random = new Random();
 
-		for (String keyElement : MatchedElements.elementSelectors.keySet())
+		for (String keyElement : MatchedElements.GetMatchedElements())
 		{
-			//get selectors that matched the keyElement
-			List<MSelector> selectors = MatchedElements.elementSelectors.get(keyElement);
+			List<MSelector> matchedSelectors = new ArrayList<>();
 
-			//order the selectors by their specificity and location
-			SpecificityHelper.SortBySpecificity(selectors);
+			// we need a list of selectors first by their 'file' order and then by their specificity
+			List<Integer> cssFilesOrder = MatchedElements.GetCssFileOrder(keyElement);
+
+			// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations,
+			// just need to reverse it (so we get highest order first)
+			Collections.reverse(cssFilesOrder);
+
+			ListMultimap orderSelectorMap = MatchedElements.GetSelectors(keyElement);
+			for(int order : cssFilesOrder)
+			{
+				List<MSelector> selectorsForFile = orderSelectorMap.get(order);
+
+				//order the selectors by their specificity and location
+				SpecificityHelper.SortBySpecificity(selectorsForFile);
+
+				matchedSelectors.addAll(selectorsForFile);
+			}
 
 			String overridden = "overridden-" + random.nextInt();
 
-			for (int i = 0; i < selectors.size(); i++)
+			for (int i = 0; i < matchedSelectors.size(); i++)
 			{
-				MSelector selector = selectors.get(i);//.getLeft();
+				MSelector selector = matchedSelectors.get(i);
 				for (MProperty property : selector.GetProperties())
 				{
+					//find out if property was already deemed effective in another matched element
+					boolean alreadyEffective = property.IsEffective();
+
 					if (!property.GetStatus().equals(overridden))
 					{
 						property.SetEffective(true);
 
-						// not set all the similar properties in other selectors to overridden
-
-						for (int j = i + 1; j < selectors.size(); j++) {
-							MSelector nextSelector = selectors.get(j);//.getLeft();
+						for (int j = i + 1; j < matchedSelectors.size(); j++)
+						{
+							MSelector nextSelector = matchedSelectors.get(j);
 
 							// when 'this' selector includes a pseudo-element (as selector-key),
 							// it is always effective and does not affect other selectors, so we can break
@@ -222,16 +242,16 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 							{
 								if(selector.CompareKeyPseudoClass(nextSelector))
 								{
-									CompareProperties(property, nextSelector, overridden);
+									CompareProperties(property, nextSelector, overridden, alreadyEffective);
 								}
 								else
 								{
-									ComparePropertiesWithValue(property, nextSelector, overridden);
+									ComparePropertiesWithValue(property, nextSelector, overridden, alreadyEffective);
 								}
 							}
 							else
 							{
-								CompareProperties(property, nextSelector, overridden);
+								CompareProperties(property, nextSelector, overridden, alreadyEffective);
 							}
 						}
 					}

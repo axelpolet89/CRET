@@ -8,7 +8,8 @@ package com.crawljax.plugins.csssuite.data;
 public class MProperty
 {
 	private String _name;
-	private String _value;
+	private String _originalValue;
+	private String _normalizedValue;
 	private String _status;
 	private boolean _isEffective;
 	private boolean _isImportant;
@@ -16,7 +17,8 @@ public class MProperty
 	public MProperty(String name, String value, boolean isImportant)
 	{
 		_name = name;
-		_value = value;
+		_originalValue = value.trim();
+		_normalizedValue = value.trim();
 		_status = "notset";
 		_isImportant = isImportant;
 	}
@@ -28,9 +30,15 @@ public class MProperty
 	}
 
 	/** Getter */
+	public String GetOriginalValue()
+	{
+		return _originalValue;
+	}
+
+	/** Getter */
 	public String GetValue()
 	{
-		return _value;
+		return _normalizedValue;
 	}
 
 	/** Getter */
@@ -52,20 +60,45 @@ public class MProperty
 	}
 
 
+	/**
+	 *
+	 * @param value
+	 */
+	public void SetNormalizedValue(String value)
+	{
+		_normalizedValue = value;
+	}
+
+
+	/**
+	 *
+	 * @param effective
+	 */
 	public void SetEffective(boolean effective)
 	{
 		_isEffective = effective;
 	}
 
+
+	/**
+	 *
+	 * @param status
+	 */
 	public void SetStatus(String status)
 	{
 		_status = status;
 	}
 
+
+	/**
+	 *
+	 * @return
+	 */
 	public int ComputeSizeBytes()
 	{
-		return (_name.getBytes().length+ _value.getBytes().length);
+		return (_name.getBytes().length+ _normalizedValue.getBytes().length);
 	}
+
 
 	/**
 	 * Transform this property into valid CSS syntax
@@ -73,7 +106,7 @@ public class MProperty
 	 */
 	public String Print()
 	{
-		String result = _name + ": " + _value;
+		String result = _name + ": " + _normalizedValue;
 
 		if(_isImportant)
 			return result + " !important;";
@@ -87,7 +120,7 @@ public class MProperty
 	 */
 	public String AsKey()
 	{
-		String result = _name + "-" + _value;
+		String result = _name + "-" + _normalizedValue;
 		if(_isImportant)
 			return result + "-" + "!";
 
@@ -97,6 +130,6 @@ public class MProperty
 	@Override
 	public String toString()
 	{
-		return "{ " + _name + " : " + _value + " " + (_isImportant ? "!important ": "") + (_isEffective ? "Effective" : "Ineffective") + " }";
+		return "{ " + _name + " : " + _normalizedValue + " " + (_isImportant ? "!important ": "") + (_isEffective ? "Effective" : "Ineffective") + " }";
 	}
 }

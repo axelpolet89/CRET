@@ -45,7 +45,7 @@ public class LogHandler
         }
 
         String message = String.format(text, VarArgsToArray(arguments));
-        message += String.format("\n[Exception] %s\n[StackTrace] %s", ex.getMessage(), stackTrace);
+        message += String.format("\n[Exception] %s\n[StackTrace] %s", ex, stackTrace);
         LOGGER.error(message);
     }
 
@@ -57,7 +57,7 @@ public class LogHandler
             stackTrace += String.format("%s\n", traceElement);
         }
 
-        LOGGER.error(String.format("\n[Exception] %s\n[StackTrace] %s", ex.getMessage(), stackTrace));
+        LOGGER.error(String.format("\n[Exception] %s\n[StackTrace] %s", ex, stackTrace));
     }
 
     private static Object[] VarArgsToArray(Object... arguments)

@@ -13,6 +13,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.normalization.Normalizer;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.dom.Document;
@@ -54,6 +55,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		CssAnalyzer analyzer = new CssAnalyzer();
 
 		_plugins.add(analyzer);
+		_postPlugins.add(new Normalizer());
 		_postPlugins.add(analyzer);
 	}
 
@@ -67,7 +69,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		// now we have all the CSS rules neatly parsed in "rules"
 		//checkCssOnDom(newState);
-		LogHandler.info("Execute crawl-time transformations...");
 		ExecuteCrawlTransformations(newState, stateFileOrder);
 	}
 
@@ -143,21 +144,18 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		MCssFile file = new MCssFile(url);
 
 		int numberOfRules = parser.ParseCssIntoMCssRules(code, file);
-		if (numberOfRules > 0)
-		{
-			_mcssFiles.put(url, file);
-		}
+		_mcssFiles.put(url, file);
 
 		List<String> parseErrors = parser.GetParseErrors();
 		if(parseErrors.size() > 0)
 		{
 			for(String parseError : parseErrors)
 			{
-				LogHandler.warn("[CSSPARSER] Parse errors occurred while parsing '%s'\n%s", url, parseError);
+				LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
 			}
 		}
 
-		LogHandler.info("Number of CSS rules parsed into McssRules: %d", numberOfRules);
+		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, numberOfRules);
 	}
 
 
@@ -167,6 +165,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private void ExecuteCrawlTransformations(StateVertex state, LinkedHashMap<String, Integer> stateFileOrder)
 	{
+		LogHandler.info("[CSS SUITE PLUGIN] Execute crawl-time transformations...");
+
 		Document dom;
 		try
 		{
@@ -193,6 +193,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private Map<String, MCssFile> ExecutePostTransformations()
 	{
+		LogHandler.info("[CSS SUITE PLUGIN] Execute POST crawl-time transformations...");
+
 		Map<String, MCssFile> rules = _mcssFiles;
 		for(ICssPostCrawlPlugin plugin : _postPlugins)
 		{
@@ -483,7 +485,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 					for (MSelector selector : selectors)
 					{
-						buffer.append(selector.toString() + "\n");
+						buffer.append(selector.Print() + "\n");
 					}
 				}
 			}
@@ -521,7 +523,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 					for (MSelector selector : selectors)
 					{
-						buffer.append(selector.toString() + "\n");
+						buffer.append(selector.Print() + "\n");
 					}
 				}
 			}

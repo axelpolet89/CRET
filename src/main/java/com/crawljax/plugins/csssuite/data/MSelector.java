@@ -278,7 +278,8 @@ public class MSelector
 	/**
 	 * @return css code that is usable to query a DOM
 	 */
-	public String GetFilteredSelectorText(){
+	public String GetFilteredSelectorText()
+	{
 		if(_isNonStructuralPseudo)
 			return _selectorTextWithoutPseudo;
 
@@ -372,6 +373,17 @@ public class MSelector
 
 
 	/**
+	 *
+	 * @param newProps
+	 */
+	public void ReplaceProperties(List<MProperty> newProps)
+	{
+		_properties.clear();
+		_properties.addAll(newProps);
+	}
+
+
+	/**
 	 * @return size of the css code without whitespace + property size
 	 */
 	public int ComputeSizeBytes()
@@ -394,8 +406,11 @@ public class MSelector
 	}
 
 
-	@Override
-	public String toString()
+	/**
+	 *
+	 * @return
+	 */
+	public String Print()
 	{
 		StringBuffer buffer = new StringBuffer();
 
@@ -411,5 +426,12 @@ public class MSelector
 		}
 
 		return buffer.toString();
+	}
+
+
+	@Override
+	public String toString()
+	{
+		return String.format("%s (line '%d')", _selectorSequence, _ruleNumber);
 	}
 }

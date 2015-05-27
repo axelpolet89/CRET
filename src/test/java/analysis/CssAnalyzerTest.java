@@ -6,6 +6,7 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -16,6 +17,12 @@ import java.util.stream.Collectors;
 
 public class CssAnalyzerTest
 {
+	public CssAnalyzerTest()
+	{
+		DOMConfigurator.configure("log4j.xml");
+	}
+
+
 	@Test
 	public void TestCssAnalyzer()
 	{

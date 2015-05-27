@@ -1,0 +1,60 @@
+#zeroes
+{
+	margin: 0 px;
+	padding: 0%;
+}
+
+#border1
+{
+	border: 1px solid #ececec;
+}
+
+#border2
+{
+	border: dotted 2px;
+}
+
+#border3
+{
+	border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+#background1
+{
+	background: rgb(100, 100, 100) 100px 100px fixed none repeat;
+}
+
+#background2
+{
+	background: url("test") #ececec no-repeat left top;
+}
+
+#background3
+{
+	background: url("test") #ececec no-repeat left;
+}
+
+#background4
+{
+	background: url("test") black 75% 75%;
+}
+
+#margin1
+{
+	margin: 5px;
+}
+
+#margin2
+{
+	margin: 5px 10px;
+}
+
+#margin3
+{
+	margin: 5px 10px 20px;
+}
+
+#margin4
+{
+	margin: 5px 10px 20px 30px;
+}

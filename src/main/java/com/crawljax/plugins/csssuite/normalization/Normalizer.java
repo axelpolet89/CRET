@@ -25,7 +25,7 @@ public class Normalizer implements ICssPostCrawlPlugin
         {
             for(MCssRule mRule : cssRules.get(file).GetRules())
             {
-                for(MSelector mSelector : mRule.GetMatchedSelectors())
+                for(MSelector mSelector : mRule.GetSelectors())
                 {
                     NormalizeZeroes(mSelector);
                     NormalizeToShortHand(mSelector);
@@ -175,7 +175,8 @@ public class Normalizer implements ICssPostCrawlPlugin
         String rgbColor = TryParseRgb(value);
         if(!rgbColor.isEmpty())
         {
-            value = value.replaceFirst(rgbColor, "");
+            String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
+            value = value.replaceFirst(replace, "");
             props.add(new MProperty(String.format("%s-color", name), rgbColor, isImportant));
         }
 
@@ -185,10 +186,10 @@ public class Normalizer implements ICssPostCrawlPlugin
         {
             String part = parts[i];
 
-            if(part.equals("none") || part.equals("dashed") || part.equals("solid") || part.equals("double")
-                    || part.equals("groove") || part.equals("ridge") || part.equals("inset") || part.equals("outset"))
+            if(part.equals("none") || part.equals("solid") || part.equals("dotted")  || part.equals("dashed") ||  part.equals("double")
+                || part.equals("groove") || part.equals("ridge") || part.equals("inset") || part.equals("outset"))
             {
-                props.add(new MProperty(String.format("%s-repeat", name), part, isImportant));
+                props.add(new MProperty(String.format("%s-style", name), part, isImportant));
             }
             else if (part.contains("px") || part.contains("pt") || part.contains("em") || part.contains("rem"))
             {
@@ -220,7 +221,8 @@ public class Normalizer implements ICssPostCrawlPlugin
         String rgbColor = TryParseRgb(value);
         if(!rgbColor.isEmpty())
         {
-            value = value.replaceFirst(rgbColor, "");
+            String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
+            value = value.replaceFirst(replace, "");
             props.add(new MProperty("background-color", rgbColor, isImportant));
         }
 
@@ -229,6 +231,10 @@ public class Normalizer implements ICssPostCrawlPlugin
         for(int i = 0; i < parts.length; i++)
         {
             String part = parts[i];
+            if(part.isEmpty())
+            {
+                continue;
+            }
 
             if(part.contains("repeat"))
             {
@@ -245,33 +251,42 @@ public class Normalizer implements ICssPostCrawlPlugin
             else if (part.equals("left") || parts.equals("right") || part.equals("center"))
             {
                 String position = part;
-                String part2 = parts[i+1];
-                if(part2.equals("top") || part2.equals("bottom") || part2.equals("center"))
+                if(i+1 < parts.length)
                 {
-                    position += " " + part2;
-                    i++;
+                    String part2 = parts[i + 1];
+                    if (part2.equals("top") || part2.equals("bottom") || part2.equals("center"))
+                    {
+                        position += " " + part2;
+                        i++;
+                    }
                 }
                 props.add(new MProperty("background-position", position, isImportant));
             }
             else if (part.contains("%"))
             {
                 String position = part;
-                String part2 = parts[i+1];
-                if(part2.contains("%"))
+                if(i+1 < parts.length)
                 {
-                    position += " " + part2;
-                    i++;
+                    String part2 = parts[i + 1];
+                    if (part2.contains("%"))
+                    {
+                        position += " " + part2;
+                        i++;
+                    }
                 }
                 props.add(new MProperty("background-position", position, isImportant));
             }
             else if (part.contains("px") || part.contains("pt") || part.contains("em") || part.contains("rem"))
             {
                 String position = part;
-                String part2 = parts[i+1];
-                if(part2.contains("px") || part2.contains("pt") || part2.contains("em") || part2.contains("rem"))
+                if(i+1 < parts.length)
                 {
-                    position += " " + part2;
-                    i++;
+                    String part2 = parts[i + 1];
+                    if (part2.contains("px") || part2.contains("pt") || part2.contains("em") || part2.contains("rem"))
+                    {
+                        position += " " + part2;
+                        i++;
+                    }
                 }
                 props.add(new MProperty("background-position", position, isImportant));
             }
@@ -292,18 +307,22 @@ public class Normalizer implements ICssPostCrawlPlugin
      */
     private static String TryParseRgb(String value)
     {
-        if(value.contains("rgba"))
+        if(value.contains("rgba("))
         {
-            int s =  value.indexOf("rgba");
-            int e = value.indexOf("\\)");
-            return value.substring(s, e);
+            int s =  value.indexOf("rgba(");
+            int e = value.indexOf(")");
+            if(s > e)
+                e = value.lastIndexOf(")");
+            return value.substring(s, e+1);
         }
 
-        if (value.contains("rgb"))
+        if (value.contains("rgb("))
         {
-            int s =  value.indexOf("rgb");
-            int e = value.indexOf("\\)");
-            return value.substring(s, e);
+            int s =  value.indexOf("rgb(");
+            int e = value.indexOf(")");
+            if(s > e)
+                e = value.lastIndexOf(")");
+            return value.substring(s, e+1);
         }
 
         return "";

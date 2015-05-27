@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,7 +17,12 @@ import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.util.specificity.Specificity;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
 
-public class SpecificityTest {
+public class SpecificityTest
+{
+	public SpecificityTest()
+	{
+		DOMConfigurator.configure("log4j.xml");
+	}
 
 	@Test
 	public void TestSpecificity() throws IOException

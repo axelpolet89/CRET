@@ -3,6 +3,7 @@ package analysis;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,11 +17,16 @@ import se.fishtank.css.selectors.parser.ParserException;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.util.DomUtils;
 
-public class MatchedElementsTest {
+public class MatchedElementsTest
+{
+	public MatchedElementsTest()
+	{
+		DOMConfigurator.configure("log4j.xml");
+	}
 
 	@Test
-	public void testCssSelectors() throws IOException {
-
+	public void testCssSelectors() throws IOException
+	{
 		String html =
 		        "<html>"
 		                + "<head><title>example</title> \n"

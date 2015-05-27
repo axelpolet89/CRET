@@ -7,6 +7,7 @@ import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
 import com.crawljax.util.DomUtils;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.css.sac.InputSource;
 import org.w3c.css.sac.Selector;
 import org.w3c.dom.Document;
@@ -21,6 +22,11 @@ import java.nio.file.Paths;
  */
 public class TestHelper
 {
+    public TestHelper()
+    {
+        DOMConfigurator.configure("log4j.xml");
+    }
+
     public static Document GetDocumentFromFile(String path)
     {
         String contents = GetStringFromFile(path);
@@ -52,7 +58,12 @@ public class TestHelper
         parser.ParseCssIntoMCssRules(contents, mCssFile);
 
         if(parser.GetParseErrors().size() > 0)
+        {
+            for(String parseError : parser.GetParseErrors())
+                System.out.println(String.format("Incorrect CSS in file '%s' -> 's'", path, parseError));
+
             return null;
+        }
 
         return mCssFile;
     }
@@ -65,7 +76,12 @@ public class TestHelper
         parser.ParseCssIntoMCssRules(cssCode, mCssFile);
 
         if(parser.GetParseErrors().size() > 0)
+        {
+            for(String parseError : parser.GetParseErrors())
+                System.out.println(String.format("Incorrect CSS in file '%s' -> 's'", name, parseError));
+
             return null;
+        }
 
         return mCssFile;
     }

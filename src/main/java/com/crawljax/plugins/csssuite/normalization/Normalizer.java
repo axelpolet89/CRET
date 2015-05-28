@@ -29,6 +29,7 @@ public class Normalizer implements ICssPostCrawlPlugin
                 {
                     NormalizeZeroes(mSelector);
                     NormalizeToShortHand(mSelector);
+                    NormalizeZeroes(mSelector);
                 }
             }
         }
@@ -45,11 +46,19 @@ public class Normalizer implements ICssPostCrawlPlugin
     {
         for(MProperty mProperty : mSelector.GetProperties())
         {
-            final String orig = mProperty.GetOriginalValue().replaceAll("\\s","");
-            if(orig.equals("0px") || orig.equals("0pt") || orig.equals("0%"))
+            final String value = mProperty.GetOriginalValue().replaceAll("\\s", "");
+            if (value.contains("0"))
             {
-                mProperty.SetNormalizedValue("0");
-                LogHandler.info("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector,  mProperty.GetOriginalValue(), mProperty.GetValue());
+                if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
+                        value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
+                {
+                    mProperty.SetNormalizedValue("0");
+                    LogHandler.info("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
+                }
+                else if (mProperty.GetOriginalValue().contains("0."))
+                {
+                    mProperty.SetNormalizedValue(mProperty.GetOriginalValue().replaceAll("0\\.", "\\."));
+                }
             }
         }
     }
@@ -187,11 +196,11 @@ public class Normalizer implements ICssPostCrawlPlugin
             String part = parts[i];
 
             if(part.equals("none") || part.equals("solid") || part.equals("dotted")  || part.equals("dashed") ||  part.equals("double")
-                || part.equals("groove") || part.equals("ridge") || part.equals("inset") || part.equals("outset"))
+                    || part.equals("groove") || part.equals("ridge") || part.equals("inset") || part.equals("outset"))
             {
                 props.add(new MProperty(String.format("%s-style", name), part, isImportant));
             }
-            else if (part.contains("px") || part.contains("pt") || part.contains("em") || part.contains("rem"))
+            else if (ContainsUnitLength(part))
             {
                 props.add(new MProperty(String.format("%s-width", name), part, isImportant));
             }
@@ -262,27 +271,13 @@ public class Normalizer implements ICssPostCrawlPlugin
                 }
                 props.add(new MProperty("background-position", position, isImportant));
             }
-            else if (part.contains("%"))
+            else if (ContainsUnitLength(part) || part.contains("%"))
             {
                 String position = part;
                 if(i+1 < parts.length)
                 {
                     String part2 = parts[i + 1];
-                    if (part2.contains("%"))
-                    {
-                        position += " " + part2;
-                        i++;
-                    }
-                }
-                props.add(new MProperty("background-position", position, isImportant));
-            }
-            else if (part.contains("px") || part.contains("pt") || part.contains("em") || part.contains("rem"))
-            {
-                String position = part;
-                if(i+1 < parts.length)
-                {
-                    String part2 = parts[i + 1];
-                    if (part2.contains("px") || part2.contains("pt") || part2.contains("em") || part2.contains("rem"))
+                    if (ContainsUnitLength(part2) || part.contains("%"))
                     {
                         position += " " + part2;
                         i++;
@@ -326,5 +321,12 @@ public class Normalizer implements ICssPostCrawlPlugin
         }
 
         return "";
+    }
+
+
+    private static boolean ContainsUnitLength(String value)
+    {
+        return value.contains("px") || value.equals("pt") || value.equals("pc") || value.equals("in") || value.equals("mm") || value.equals("cm") || //absolute
+                value.equals("em") || value.equals("rem") || value.equals("ex") || value.equals("ch") || value.equals("vw") || value.equals("vh") || value.equals("vmin") || value.equals("vmax"); //relative
     }
 }

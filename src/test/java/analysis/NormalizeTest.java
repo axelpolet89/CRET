@@ -67,7 +67,7 @@ public class NormalizeTest
         properties = selectors.get(3).GetProperties();
         Assert.assertEquals(3, properties.size());
         Assert.assertEquals("border-color", properties.get(0).GetName());
-        Assert.assertEquals("rgba(255, 255, 255, 0.7)", properties.get(0).GetValue());
+        Assert.assertEquals("rgba(255, 255, 255, .7)", properties.get(0).GetValue());
 
         properties = selectors.get(4).GetProperties();
         Assert.assertEquals(5, properties.size());

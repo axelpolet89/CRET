@@ -55,7 +55,7 @@ public class CssParserTest {
 		parser = new CssParser();
 		file = new MCssFile("test");
 		parser.ParseCssIntoMCssRules("h p { color: red; } " +
-				"div, a, span { font: black } " + //incorrect property value, should not ignore
+				"div, a, span { margin: 5 px 10px 20 px 30px } " + //incorrect property value, should not ignore
 				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: 11px; } " + //incorrect property value, should not ignore
 				"#id div.class span { color: pink; }", file);
 		mRules = file.GetRules();

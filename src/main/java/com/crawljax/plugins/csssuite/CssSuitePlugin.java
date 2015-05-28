@@ -14,6 +14,9 @@ import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.normalization.Normalizer;
+import com.jcabi.w3c.Defect;
+import com.jcabi.w3c.ValidationResponse;
+import com.jcabi.w3c.ValidatorBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.dom.Document;
@@ -26,6 +29,7 @@ import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import com.crawljax.plugins.csssuite.parser.CssParser;
+import sun.rmi.runtime.Log;
 
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
@@ -100,6 +104,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
 					_originalCssLOC += CountLOC(cssCode);
 
+					ValidateRules(cssCode);
 					ParseCssRules(cssUrl, cssCode);
 				}
 
@@ -117,6 +122,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					LogHandler.info("[NEW EMBEDDED RULES] " + url);
 
 				_originalCssLOC += CountLOC(embeddedRules);
+
+				ValidateRules(embeddedRules);
 				ParseCssRules(url, embeddedRules);
 			}
 
@@ -131,6 +138,37 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		return stateFileOrder;
 	}
+
+
+	private void ValidateRules(String cssCode) throws IOException
+	{
+		if(cssCode.isEmpty())
+		{
+			LogHandler.info("[W3C Validator] cssCode is empty");
+			return;
+		}
+
+		LogHandler.info("[W3C Validator] start css validation");
+
+		long startTime = System.currentTimeMillis();
+		ValidationResponse response = new ValidatorBuilder().css().validate(cssCode);
+
+		long estimatedTime = System.currentTimeMillis() - startTime;
+		LogHandler.info("[W3C Validator] elapsed time: %d", estimatedTime);
+
+		LogHandler.info("[W3C Validator] # errors found: %d", response.errors().size());
+		LogHandler.info("[W3C Validator] # warnings found: %d", response.warnings().size());
+
+//		for(Defect d : response.errors())
+//		{
+//			LogHandler.warn("[W3C VALIDATOR] Error -> %s", d);
+//		}
+//		for(Defect d : response.warnings())
+//		{
+//			LogHandler.warn("[W3C VALIDATOR] Warning -> %s", d);
+//		}
+	}
+
 
 
 	/**

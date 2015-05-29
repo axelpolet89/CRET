@@ -27,7 +27,6 @@ public class Normalizer implements ICssPostCrawlPlugin
             {
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
-                    NormalizeZeroes(mSelector);
                     NormalizeToShortHand(mSelector);
                     NormalizeZeroes(mSelector);
                 }

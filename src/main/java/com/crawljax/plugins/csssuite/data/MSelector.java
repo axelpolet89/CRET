@@ -4,10 +4,13 @@ import java.util.*;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.util.PseudoHelper;
+import com.steadystate.css.dom.Property;
+import com.steadystate.css.parser.media.MediaQuery;
 import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
 
 import com.crawljax.plugins.csssuite.util.specificity.Specificity;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityCalculator;
+
 import org.w3c.css.sac.*;
 import org.w3c.dom.NamedNodeMap;
 
@@ -17,6 +20,7 @@ public class MSelector
 	private final  List<MProperty> _properties;
 	private String _selectorSequence;
 	private final int _ruleNumber;
+	private final List<MediaQuery> _mediaQueries;
 
 	private boolean _isIgnored;
 	private boolean _isMatched;
@@ -36,28 +40,19 @@ public class MSelector
 
 
 	/**
-	 * Constructor for testing purposes only
-	 * @param selector
-	 * @param ruleNumber
-	 */
-	public MSelector(Selector selector, int ruleNumber)
-	{
-		this(selector, new ArrayList<>(), ruleNumber);
-	}
-
-
-	/**
 	 * Constructor
 	 * @param selector: the selector text (CSS).
 	 * @param properties: the properties that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
-	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber) {
+	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber, List<MediaQuery> queries)
+	{
 		_selector = selector;
 		_properties = properties;
 		_ruleNumber = ruleNumber;
-
 		_selectorSequence = selector.toString().trim();
+		_mediaQueries = queries;
+
 		_isIgnored = _selectorSequence.contains(":not") || _selectorSequence.contains("[disabled]");
 
 		try
@@ -248,13 +243,16 @@ public class MSelector
 
 
 	/** Getter */
-	public int GetRuleNumber() { return _ruleNumber; }
+	public String GetSelectorText() { return _selectorSequence;	}
 
 	/** Getter */
 	public List<MProperty> GetProperties() { return _properties; }
 
 	/** Getter */
-	public String GetSelectorText() { return _selectorSequence;	}
+	public int GetRuleNumber() { return _ruleNumber; }
+
+	/** Getter */
+	public List<MediaQuery> GetMediaQueries() { return _mediaQueries; }
 
 	/** Getter */
 	public boolean IsIgnored() { return _isIgnored; }
@@ -360,6 +358,99 @@ public class MSelector
 	public boolean CompareKeyPseudoClass(MSelector otherSelector)
 	{
 		return _keyPseudoClass.equals(otherSelector.GetPseudoClass());
+	}
+
+
+	/**
+	 *
+	 * @param otherSelector
+	 * @return
+	 */
+	public boolean IsMediaQueryOverwrite(MSelector otherSelector)
+	{
+		if(_mediaQueries.size() > 0 && otherSelector.GetMediaQueries().size() == 0)
+			return true;
+
+		return false;
+	}
+
+
+	/**
+	 *
+	 * @param otherSelector
+	 * @return
+	 */
+	public boolean HasEqualMediaQueries(MSelector otherSelector)
+	{
+		if((_mediaQueries.size() == 0 && otherSelector.GetMediaQueries().size() > 0)
+			|| (_mediaQueries.size() > 0 && otherSelector.GetMediaQueries().size() == 0))
+			return false;
+
+		List<MediaQuery> commonQueries = FindCommonMediaQueries(otherSelector);
+		if(_mediaQueries.containsAll(commonQueries) && commonQueries.containsAll(_mediaQueries))
+			return true;
+
+		return false;
+	}
+
+	public List<MediaQuery> FindCommonMediaQueries(MSelector otherSelector)
+	{
+		List<MediaQuery> result = new ArrayList<>();
+
+		List<MediaQuery> otherQueries = otherSelector.GetMediaQueries();
+
+		if(_mediaQueries.size() == 0 || otherQueries.size() == 0)
+		{
+			return result;
+		}
+
+		for(MediaQuery query : _mediaQueries)
+		{
+			List<Property> properties = query.getProperties();
+
+			for(MediaQuery otherQuery : otherQueries)
+			{
+				// both queries apply to same media type
+				if(query.getMedia().equals(otherQuery.getMedia()))
+				{
+					List<Property> otherProperties = otherQuery.getProperties();
+
+					if(properties.size() == otherProperties.size())
+					{
+						boolean matched = true;
+
+						HashMap<String, String> propertiesToMatch = new HashMap<>();
+
+						for(Property prop : properties)
+						{
+							propertiesToMatch.put(prop.getName(), prop.getValue().getCssText());
+						}
+
+						for (Property otherProp : otherProperties)
+						{
+							if(propertiesToMatch.containsKey(otherProp.getName()))
+							{
+								if(!propertiesToMatch.get(otherProp.getName()).equals(otherProp.getValue().getCssText()))
+								{
+									matched = false;
+								}
+							}
+							else
+							{
+								matched = false;
+							}
+						}
+
+						if(matched)
+						{
+							result.add(query);
+						}
+					}
+				}
+			}
+		}
+
+		return result;
 	}
 
 

@@ -1,27 +1,39 @@
 package com.crawljax.plugins.csssuite.data;
 
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.jcabi.w3c.Defect;
+import com.steadystate.css.dom.CSSMediaRuleImpl;
 import com.steadystate.css.dom.CSSStyleRuleImpl;
-import com.sun.webkit.dom.CSSRuleImpl;
-import org.w3c.dom.css.CSSMediaRule;
+
+import com.steadystate.css.dom.MediaListImpl;
+import com.steadystate.css.parser.media.MediaQuery;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by axel on 5/22/2015.
  */
 public class MMediaRule
 {
-    private final CSSMediaRule _mediaRule;
+    private final CSSMediaRuleImpl _mediaRule;
     private List<MCssRule> _mRules;
+    private List<MediaQuery> _queries;
 
-    public MMediaRule(CSSRule mediaRule)
+    public MMediaRule(CSSRule mediaRule, Set<Defect> w3cErrors)
     {
-        _mediaRule = (CSSMediaRule)mediaRule;
+        _mediaRule = (CSSMediaRuleImpl)mediaRule;
+        _queries = new ArrayList<>();
         _mRules = new ArrayList<>();
+
+        MediaListImpl list = (MediaListImpl)_mediaRule.getMedia();
+        for(int i = 0; i < list.getLength(); i++)
+        {
+            _queries.add(list.mediaQuery(i));
+        }
 
         CSSRuleList ruleList = _mediaRule.getCssRules();
         for (int i = 0; i < ruleList.getLength(); i++)
@@ -31,7 +43,7 @@ public class MMediaRule
                 CSSRule rule = ruleList.item(i);
                 if(rule instanceof CSSStyleRuleImpl)
                 {
-                    _mRules.add(new MCssRule(rule));
+                    _mRules.add(new MCssRule(rule, w3cErrors, _queries));
                 }
                 else
                 {

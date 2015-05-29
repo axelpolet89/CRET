@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite.data;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.jcabi.w3c.Defect;
 import com.steadystate.css.dom.Property;
+import com.steadystate.css.parser.media.MediaQuery;
 import org.w3c.css.sac.Locator;
 import org.w3c.dom.css.CSSRule;
 
@@ -24,7 +25,16 @@ public class MCssRule
 		_rule = rule;
 		_selectors = new ArrayList<>();
 
-		SetSelectors(w3cErrors);
+		SetSelectors(w3cErrors, new ArrayList<>());
+	}
+
+
+	public MCssRule(CSSRule rule, Set<Defect> w3cErrors, List<MediaQuery> queries)
+	{
+		_rule = rule;
+		_selectors = new ArrayList<>();
+
+		SetSelectors(w3cErrors, queries);
 	}
 
 
@@ -41,20 +51,31 @@ public class MCssRule
 	/**
 	 * Parse all selectors from this _rule and add them to the _selectors
 	 */
-	private void SetSelectors(Set<Defect> w3cErrors)
+	private void SetSelectors(Set<Defect> w3cErrors, List<MediaQuery> queries)
 	{
 		CSSStyleRuleImpl styleRule = (CSSStyleRuleImpl) _rule;
-		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
-
-		List<MProperty> properties = styleDeclaration.getProperties().stream()
-										.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cError(property, w3cErrors)))
-										.collect(Collectors.toList());
 
 		_selectors.addAll(((SelectorListImpl) styleRule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, properties, GetLocator().getLineNumber()))
+							.map(selector -> new MSelector(selector, ParseProperties(styleRule, w3cErrors), GetLocator().getLineNumber(), queries))
 							.collect(Collectors.toList()));
 	}
+
+
+	/**
+	 *
+	 * @param styleRule
+	 * @param w3cErrors
+	 * @return
+	 */
+	private static List<MProperty> ParseProperties(CSSStyleRuleImpl styleRule, Set<Defect> w3cErrors)
+	{
+		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
+		return styleDeclaration.getProperties().stream()
+				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cError(property, w3cErrors)))
+				.collect(Collectors.toList());
+	}
+
 
 
 	/**
@@ -63,7 +84,7 @@ public class MCssRule
 	 * @param w3cErrors
 	 * @return
 	 */
-	private String TryFindW3cError(Property property, Set<Defect> w3cErrors)
+	private static String TryFindW3cError(Property property, Set<Defect> w3cErrors)
 	{
 		Locator loc = (Locator)property.getUserData(UserDataConstants.KEY_LOCATOR);
 		Optional<Defect> match = w3cErrors.stream().filter(error -> error.line() == loc.getLineNumber()

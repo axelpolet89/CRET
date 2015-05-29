@@ -130,7 +130,7 @@ public class CssParser
 				}
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
-					mediaRules.add(new MMediaRule(rule));
+					mediaRules.add(new MMediaRule(rule, w3cErrors));
 				}
 				else
 				{
@@ -144,8 +144,8 @@ public class CssParser
 			}
 		}
 
-		mCssFile.SetRules(mCssRules);
-		mCssFile.AddMediaRules(mediaRules);
+		mCssFile.SetRegularRules(mCssRules);
+		mCssFile.SetMediaRules(mediaRules);
 
 		return mCssFile;
 	}

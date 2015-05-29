@@ -13,40 +13,63 @@ public class MCssFile
 {
     private final String _url;
 
-    private List<MCssRule> _rules;
+    private List<MCssRule> _regularRules;
     private List<MMediaRule> _mediaRules;
     private List<CSSImportRule> _importRules;
     private List<CSSPageRule> _pageRules;
+
+    private List<MCssRule> _allRules;
 
     public MCssFile(String url)
     {
         _url = url;
 
-        _rules = new ArrayList<>();
+        _regularRules = new ArrayList<>();
         _mediaRules = new ArrayList<>();
         _importRules = new ArrayList<>();
         _pageRules = new ArrayList<>();
+
+        _allRules = new ArrayList<>();
     }
 
-    public List<MCssRule> GetRules(){
-        return _rules;
+    public List<MCssRule> GetRules()
+    {
+        return _allRules;
     }
 
     public List<MMediaRule> GetMediaRules(){
         return _mediaRules;
     }
 
-    public void SetRules(List<MCssRule> rules){
-        _rules = rules;
-    }
-    public void AddMediaRules(List<MMediaRule> rules)
+    public List<MCssRule> GetRegularRules()
     {
-        _mediaRules.addAll(rules);
+        return _regularRules;
     }
+
+    public void SetRegularRules(List<MCssRule> rules)
+    {
+        _regularRules = rules;
+        _allRules.addAll(rules);
+    }
+
+    public void SetMediaRules(List<MMediaRule> mediaRules)
+    {
+        _mediaRules = mediaRules;
+        mediaRules.stream().forEach(m -> _allRules.addAll(m.GetMcssRules()));
+    }
+
+    public void SetAllRules(List<MCssRule> allRules)
+    {
+        _allRules = allRules;
+    }
+
     public void AddImportRules(List<CSSImportRule> rules){
         _importRules.addAll(rules);
     }
     public void AddPageRules(List<CSSPageRule> rules){
         _pageRules.addAll(rules);
     }
+
+
+
 }

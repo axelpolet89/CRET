@@ -105,14 +105,14 @@ public class MatchedElementsTest
 		Assert.assertEquals(0, result.size());
 
 		// non-structural pseudo-selector via MSelector (used in CssAnalyzer)
-		MSelector mSelector = TestHelper.CreateSelector("#div2:hover");
+		MSelector mSelector = TestHelper.CreateEmptySelector("#div2:hover");
 		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
 		Assert.assertEquals(1, result.size());																					// it will match
 		List<Node> nodes = (List<Node>)result;
 		Assert.assertTrue(mSelector.CheckPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will be compatible
 
 		// non-structural pseudo-selector via MSelector, but not compatible (div with visited)
-		mSelector = TestHelper.CreateSelector("#div2:visited");
+		mSelector = TestHelper.CreateEmptySelector("#div2:visited");
 		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
 		Assert.assertEquals(1, result.size());																					// it will match
 		nodes = (List<Node>)result;

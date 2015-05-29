@@ -34,7 +34,7 @@ import sun.rmi.runtime.Log;
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
 	/* Configuration properties */
-	public boolean _enableW3cValidation = false;
+	public boolean _enableW3cValidation = true;
 
 	private final List<String> _processedCssFiles;
 	private int _originalCssLOC;
@@ -149,7 +149,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private void ParseCssRules(String url, String code)
 	{
-		CssParser parser = new CssParser(_enableW3cValidation);
+		CssParser parser = new CssParser();
 
 		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
 		_mcssFiles.put(url, file);

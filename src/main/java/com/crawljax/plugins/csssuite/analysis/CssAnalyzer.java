@@ -28,7 +28,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	 * @param otherSelector
 	 * @param overridden
 	 */
-	private static void CompareProperties(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+	private static Void CompareProperties(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
@@ -48,6 +48,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 				}
 			}
 		}
+		return null;
 	}
 
 
@@ -151,7 +152,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			}
 		}
 
-		file.SetRules(newRules);
+		file.SetAllRules(newRules);
 		return file;
 	}
 
@@ -245,6 +246,17 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 						{
 							MSelector nextSelector = matchedSelectors.get(j);
 
+							if(selector.IsMediaQueryOverwrite(nextSelector))
+							{
+								continue;
+							}
+
+
+							if(!selector.HasEqualMediaQueries(nextSelector))
+							{
+								continue;
+							}
+
 							// when 'this' selector includes a pseudo-element (as selector-key),
 							// it is always effective and does not affect other selectors, so we can break
 							if(selector.HasPseudoElement())
@@ -257,19 +269,16 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 							if(selector.IsNonStructuralPseudo() || nextSelector.IsNonStructuralPseudo())
 							{
-								if(selector.CompareKeyPseudoClass(nextSelector))
-								{
-									CompareProperties(property, nextSelector, overridden, alreadyEffective);
-								}
-								else
+								if(!selector.CompareKeyPseudoClass(nextSelector))
 								{
 									ComparePropertiesWithValue(property, nextSelector, overridden, alreadyEffective);
+									continue;
 								}
 							}
-							else
-							{
-								CompareProperties(property, nextSelector, overridden, alreadyEffective);
-							}
+
+							// by default: if both selectors apply under the same condition, simply check matching property names
+							// otherwise, the only way for next selector to be ineffective is too have same property name AND value
+							CompareProperties(property, nextSelector, overridden, alreadyEffective);
 						}
 					}
 				}

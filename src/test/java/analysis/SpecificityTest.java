@@ -3,12 +3,9 @@ package analysis;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -114,7 +111,7 @@ public class SpecificityTest
 
 	private void AssertSpecificity(String selector, int expectedSpecificity) throws IOException
 	{
-		MSelector mSelector = TestHelper.CreateSelector(selector);
+		MSelector mSelector = TestHelper.CreateEmptySelector(selector);
 		Specificity sp = mSelector.GetSpecificity();
 
 		Assert.assertNotNull(sp);

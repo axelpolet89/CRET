@@ -12,10 +12,13 @@ import org.w3c.css.sac.InputSource;
 import org.w3c.css.sac.Selector;
 import org.w3c.dom.Document;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.StringReader;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 /**
  * Created by axel on 5/20/2015.
@@ -91,10 +94,6 @@ public class TestHelper
             return new String(encoded, StandardCharsets.UTF_8);
 
         }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
         catch (IOException e)
         {
             e.printStackTrace();
@@ -110,17 +109,17 @@ public class TestHelper
 
     public static SpecificitySelector CreateSpecificitySelector(String selector, int ruleNumber, int order) throws IOException
     {
-        return new SpecificitySelector(CreateSelector(selector, ruleNumber), order);
+        return new SpecificitySelector(CreateEmptySelector(selector, ruleNumber), order);
     }
 
-    public static MSelector CreateSelector(String selector) throws IOException
+    public static MSelector CreateEmptySelector(String selector) throws IOException
     {
-        return new MSelector(ParseSelector(selector), 1);
+        return new MSelector(ParseSelector(selector), new ArrayList<>(), 1, new ArrayList<>());
     }
 
-    public static MSelector CreateSelector(String selector, int ruleNumber) throws IOException
+    public static MSelector CreateEmptySelector(String selector, int ruleNumber) throws IOException
     {
-        return new MSelector(ParseSelector(selector), ruleNumber);
+        return new MSelector(ParseSelector(selector), new ArrayList<>(), ruleNumber, new ArrayList<>());
     }
 
     public static Selector ParseSelector(String selector) throws IOException

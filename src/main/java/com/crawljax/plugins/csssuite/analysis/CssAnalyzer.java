@@ -246,12 +246,14 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 						{
 							MSelector nextSelector = matchedSelectors.get(j);
 
+							// if the next selector is not part of a media query, then it should not be overwritten by this selector
 							if(selector.IsMediaQueryOverwrite(nextSelector))
 							{
 								continue;
 							}
 
 
+							// always accept any different media query as effective, for now...
 							if(!selector.HasEqualMediaQueries(nextSelector))
 							{
 								continue;
@@ -260,12 +262,16 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 							// when 'this' selector includes a pseudo-element (as selector-key),
 							// it is always effective and does not affect other selectors, so we can break
 							if(selector.HasPseudoElement())
+							{
 								break;
+							}
 
 							// if 'the other' selector includes a pseudo-element (as selector-key),
 							// it is always effective and does not affect 'this' selector
 							if(nextSelector.HasPseudoElement())
+							{
 								continue;
+							}
 
 							if(selector.IsNonStructuralPseudo() || nextSelector.IsNonStructuralPseudo())
 							{

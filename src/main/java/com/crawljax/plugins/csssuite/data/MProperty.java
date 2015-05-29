@@ -7,20 +7,44 @@ package com.crawljax.plugins.csssuite.data;
  */
 public class MProperty
 {
-	private String _name;
-	private String _originalValue;
+	private final String _name;
+	private final String _originalValue;
+	private final String _w3cError;
+	private final boolean _isIgnored;
+
 	private String _normalizedValue;
 	private String _status;
 	private boolean _isEffective;
 	private boolean _isImportant;
 
-	public MProperty(String name, String value, boolean isImportant)
+	/**
+	 * Default constructor
+	 * @param name
+	 * @param value
+	 * @param isImportant
+	 * @param w3cError
+	 */
+	public MProperty(String name, String value, boolean isImportant, String w3cError)
 	{
 		_name = name;
 		_originalValue = value.trim();
 		_normalizedValue = value.trim();
 		_status = "notset";
 		_isImportant = isImportant;
+		_w3cError = w3cError;
+		_isIgnored = !w3cError.isEmpty();
+	}
+
+
+	/**
+	 * Constructor for property without error (used in normalizer plug-in and tests)
+	 * @param name
+	 * @param value
+	 * @param isImportant
+	 */
+	public MProperty(String name, String value, boolean isImportant)
+	{
+		this(name, value, isImportant, "");
 	}
 
 	/** Getter */
@@ -36,9 +60,24 @@ public class MProperty
 	}
 
 	/** Getter */
+	public String GetW3cError()
+	{
+		return _w3cError;
+	}
+
+	/** Getter */
+	public boolean IsIgnored() { return _isIgnored; }
+
+	/** Getter */
 	public String GetValue()
 	{
 		return _normalizedValue;
+	}
+
+	/** Getter */
+	public String GetStatus()
+	{
+		return _status;
 	}
 
 	/** Getter */
@@ -51,12 +90,6 @@ public class MProperty
 	public boolean IsEffective()
 	{
 		return _isEffective;
-	}
-
-	/** Getter */
-	public String GetStatus()
-	{
-		return _status;
 	}
 
 

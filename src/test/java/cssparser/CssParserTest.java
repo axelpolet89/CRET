@@ -6,26 +6,31 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 
+import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.parser.CssParser;
 
-public class CssParserTest {
+public class CssParserTest
+{
+	public CssParserTest()
+	{
+		DOMConfigurator.configure("log4j.xml");
+	}
 
 	@Test
 	public void TestParseRules()
 	{
 		CssParser parser = new CssParser();
 
-		MCssFile file = new MCssFile("test");
-		parser.ParseCssIntoMCssRules("h p { color: red; } " +
-				"div, a, span { font: 20px } " +
-				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: black; } " +
-				"#id div.class span { color: pink; }", file);
+		MCssFile mCssFile = parser.ParseCssIntoMCssRules("test", "h p { color: red; } " +
+			"div, a, span { font: 20px } " +
+			"#id, .class, span[attr=\"test\"], a:hover, span::before { color: black; } " +
+			"#id div.class span { color: pink; }");
 
-		List <MCssRule> mRules = file.GetRules();
+		List <MCssRule> mRules = mCssFile.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
@@ -37,28 +42,36 @@ public class CssParserTest {
 		mRule = mRules.get(3);
 		Assert.assertEquals(1, mRule.GetSelectors().size());
 
-		parser = new CssParser();
-		file = new MCssFile("test");
-		parser.ParseCssIntoMCssRules("h p[att=\"test\" { color: red; } " + //syntax-error, should ignore
-				"div, a, span { font: 20px } " +
-				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: black; } " +
-				"#id div.class span { color: pink; }", file);
+		/* filtering rules and properties with incorrect syntax */
+		parser = new CssParser(false);
+		mCssFile = parser.ParseCssIntoMCssRules("test",
+				"h p[att=\"test\" { color: red; } " + //syntax-error, should ignore entire rule
+				"div, h p[att=\"test\", span { color: red; }" + //syntax-error, should ignore entire rule including other selectors
+				"div, a, span { font  20px; margin: 10px; }" + //syntax-error, should ignore property
+				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: black; }" +
+				"#id div.class span { color: pink; }");
 
-		mRules = file.GetRules();
+		mRules = mCssFile.GetRules();
 		Assert.assertEquals(3, mRules.size());
 
-		List<String> parseErrors = parser.GetParseErrors();
-		Assert.assertEquals(parseErrors.size(), 1);
-		System.out.println("Found expected parse syntax error, and parser filtered incorrect rule");
-		System.out.println(parseErrors.get(0));
+		// only 1 property parsed for third rule (first rule in list)
+		Assert.assertEquals(1, mRules.get(0).GetSelectors().get(0).GetProperties().size());
 
+		List<String> parseErrors = parser.GetParseErrors();
+		Assert.assertEquals(parseErrors.size(), 3);
+		System.out.println("Found expected parse errors, and parser filtered incorrect rule and incorrect property");
+		System.out.println(parseErrors.get(0));
+		System.out.println(parseErrors.get(1));
+		System.out.println(parseErrors.get(2));
+
+
+		/* SHOULD parse incorrect properties */
 		parser = new CssParser();
-		file = new MCssFile("test");
-		parser.ParseCssIntoMCssRules("h p { color: red; } " +
+		mCssFile = parser.ParseCssIntoMCssRules("test", "h p { color: red; } " +
 				"div, a, span { margin: 5 px 10px 20 px 30px } " + //incorrect property value, should not ignore
 				"#id, .class, span[attr=\"test\"], a:hover, span::before { color: 11px; } " + //incorrect property value, should not ignore
-				"#id div.class span { color: pink; }", file);
-		mRules = file.GetRules();
+				"#id div.class span { color: pink; }");
+		mRules = mCssFile.GetRules();
 		Assert.assertEquals(4, mRules.size());
 
 		parseErrors = parser.GetParseErrors();
@@ -69,9 +82,8 @@ public class CssParserTest {
 	public void TestParseLocator()
 	{
 		CssParser parser = new CssParser();
-		MCssFile file = new MCssFile("test");
-		parser.ParseCssIntoMCssRules("h p { color: red;} \n\n div { font: black} \n span {color: white}", file);
-		List<MCssRule> rules = file.GetRules();
+		MCssFile mCssFile = parser.ParseCssIntoMCssRules("test", "h p { color: red;} \n\n div { font: black} \n span {color: white}");
+		List<MCssRule> rules = mCssFile.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
@@ -90,8 +102,7 @@ public class CssParserTest {
 	public void TestParseSelector()
 	{
 		CssParser parser = new CssParser();
-		MCssFile file = new MCssFile("test");
-		parser.ParseCssIntoMCssRules("h p { color: red;}\n" +
+		MCssFile mCssFile = parser.ParseCssIntoMCssRules("test", "h p { color: red;}\n" +
 				"div, a, span { font: black}\n" +
 				".class:hover {font-size:20px;}\n" +
 				".class:first-child {font-size:20px;}\n" +
@@ -100,8 +111,9 @@ public class CssParserTest {
 				"div + .class::before {color:white;}\n" +
 				"div ~ .class::before {color:white;}\n" +
 				"div .class:not(:hover) { color:pink;}" +
-				".class:hover div:focus #id:visited { color: purple; }\n", file);
-		List<MCssRule> mRules = file.GetRules();
+				".class:hover div:focus #id:visited { color: purple; }\n");
+
+		List<MCssRule> mRules = mCssFile.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
@@ -227,12 +239,12 @@ public class CssParserTest {
 	public void TestParseProperties()
 	{
 		CssParser parser = new CssParser();
-		MCssFile file = new MCssFile("test");
-		parser.ParseCssIntoMCssRules (
+		MCssFile mCssFile = parser.ParseCssIntoMCssRules("test",
 				"div .class { color:white; border: 1px solid black; font-size:10px !important;}\n" +
-						"div, a, span { font-size: black; display:block; }\n" +
-						"div {color: #000; background-color: #ffffff; }", file);
-		List<MCssRule> mRules = file.GetRules();
+						"div, a, span { font-size:20px; display:block; }\n" +
+						"div {color: #000; background-color: #ffffff; }\n");	//colors transformed in rgb
+
+		List<MCssRule> mRules = mCssFile.GetRules();
 
 		//make sure no parse errors occurred
 		Assert.assertEquals(0, parser.GetParseErrors().size());
@@ -270,7 +282,7 @@ public class CssParserTest {
 		mProperties = mSelector.GetProperties();
 
 		Assert.assertEquals("font-size", mProperties.get(0).GetName());
-		Assert.assertEquals("black", mProperties.get(0).GetValue());
+		Assert.assertEquals("20px", mProperties.get(0).GetValue());
 		Assert.assertFalse(mProperties.get(0).IsImportant());
 
 
@@ -284,5 +296,42 @@ public class CssParserTest {
 
 		Assert.assertEquals("background-color", mProperties.get(1).GetName());
 		Assert.assertEquals("rgb(255, 255, 255)", mProperties.get(1).GetValue());
+	}
+
+	@Test
+	public void TestParseIncorrectProperties()
+	{
+		CssParser parser = new CssParser(true);
+		MCssFile mCssFile = parser.ParseCssIntoMCssRules("test",
+						"div {\nbackground: solid; \n" +  // incorrect value for background
+						"margin: 10 px;}\n" + // incorrect value for margin
+						"div {-moz-box-shadow:10px 5px 5px black; hyphenate: none;}"); //first property warning (unknown vendor), second property error
+
+		List<MCssRule> mRules = mCssFile.GetRules();
+
+		//make sure no parse errors occurred
+		Assert.assertEquals(0, parser.GetParseErrors().size());
+
+		//first rule
+		MCssRule mRule = mRules.get(0);
+		MSelector mSelector = mRule.GetSelectors().get(0);
+		List<MProperty> mProperties = mSelector.GetProperties();
+
+		Assert.assertEquals("background", mProperties.get(0).GetName());
+		Assert.assertTrue(mProperties.get(0).IsIgnored());
+
+		Assert.assertEquals("margin", mProperties.get(1).GetName());
+		Assert.assertTrue(mProperties.get(1).IsIgnored());
+
+		//second rule
+		mRule = mRules.get(1);
+		mSelector = mRule.GetSelectors().get(0);
+		mProperties = mSelector.GetProperties();
+
+		Assert.assertEquals("-moz-box-shadow", mProperties.get(0).GetName());
+		Assert.assertFalse(mProperties.get(0).IsIgnored()); 					// not ignored, because vendor prefix is warning
+
+		Assert.assertEquals("hyphenate", mProperties.get(1).GetName());
+		Assert.assertTrue(mProperties.get(1).IsIgnored());
 	}
 }

@@ -64,18 +64,18 @@ public class CloneDetector {
 
         for(MCssRule mRule : rules)
         {
-            for(MProperty mProp : mRule.ParseProperties())
-            {
-                String key = PropertyToString(mProp);
-                if(clones.containsKey(key)) {
-                    clones.get(key).AddRuleToSet(mRule);
-                }
-                else
-                {
-                    clones.put(key, new CloneSet(mProp));
-                    clones.get(key).AddRuleToSet(mRule);
-                }
-            }
+//            for(MProperty mProp : mRule.ParseProperties())
+//            {
+//                String key = PropertyToString(mProp);
+//                if(clones.containsKey(key)) {
+//                    clones.get(key).AddRuleToSet(mRule);
+//                }
+//                else
+//                {
+//                    clones.put(key, new CloneSet(mProp));
+//                    clones.get(key).AddRuleToSet(mRule);
+//                }
+//            }
         }
 
         _allClones = clones.values().stream().filter(cloneSet -> cloneSet.GetRules().size() > 1).collect(Collectors.toList());

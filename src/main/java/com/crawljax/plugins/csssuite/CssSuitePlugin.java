@@ -33,7 +33,10 @@ import sun.rmi.runtime.Log;
 
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
-	private final List<String> _processedCssFiles = new ArrayList<>();
+	/* Configuration properties */
+	public boolean _enableW3cValidation = false;
+
+	private final List<String> _processedCssFiles;
 	private int _originalCssLOC;
 
 	private final Map<String, MCssFile> _mcssFiles;
@@ -52,6 +55,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_originalCssLOC = 0;
 
 		_mcssFiles = new HashMap<>();
+		_processedCssFiles = new ArrayList<>();
 
 		_plugins = new ArrayList<>();
 		_postPlugins = new ArrayList<>();
@@ -99,12 +103,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 				if (!_mcssFiles.containsKey(cssUrl))
 				{
-					LogHandler.info("[NEW CSS FILE] " + cssUrl);
+					LogHandler.info("[FOUND NEW CSS FILE] " + cssUrl);
 
 					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
 					_originalCssLOC += CountLOC(cssCode);
 
-					ValidateRules(cssCode);
 					ParseCssRules(cssUrl, cssCode);
 				}
 
@@ -119,11 +122,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				String embeddedRules = CSSDOMHelper.ParseEmbeddedStyles(dom);
 
 				if(!embeddedRules.isEmpty())
-					LogHandler.info("[NEW EMBEDDED RULES] " + url);
+					LogHandler.info("[FOUND NEW EMBEDDED RULES] " + url);
 
 				_originalCssLOC += CountLOC(embeddedRules);
 
-				ValidateRules(embeddedRules);
 				ParseCssRules(url, embeddedRules);
 			}
 
@@ -140,37 +142,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	}
 
 
-	private void ValidateRules(String cssCode) throws IOException
-	{
-		if(cssCode.isEmpty())
-		{
-			LogHandler.info("[W3C Validator] cssCode is empty");
-			return;
-		}
-
-		LogHandler.info("[W3C Validator] start css validation");
-
-		long startTime = System.currentTimeMillis();
-		ValidationResponse response = new ValidatorBuilder().css().validate(cssCode);
-
-		long estimatedTime = System.currentTimeMillis() - startTime;
-		LogHandler.info("[W3C Validator] elapsed time: %d", estimatedTime);
-
-		LogHandler.info("[W3C Validator] # errors found: %d", response.errors().size());
-		LogHandler.info("[W3C Validator] # warnings found: %d", response.warnings().size());
-
-//		for(Defect d : response.errors())
-//		{
-//			LogHandler.warn("[W3C VALIDATOR] Error -> %s", d);
-//		}
-//		for(Defect d : response.warnings())
-//		{
-//			LogHandler.warn("[W3C VALIDATOR] Warning -> %s", d);
-//		}
-	}
-
-
-
 	/**
 	 *
 	 * @param url
@@ -178,22 +149,18 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private void ParseCssRules(String url, String code)
 	{
-		CssParser parser = new CssParser();
-		MCssFile file = new MCssFile(url);
+		CssParser parser = new CssParser(_enableW3cValidation);
 
-		int numberOfRules = parser.ParseCssIntoMCssRules(code, file);
+		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
 		_mcssFiles.put(url, file);
 
 		List<String> parseErrors = parser.GetParseErrors();
-		if(parseErrors.size() > 0)
+		for(String parseError : parseErrors)
 		{
-			for(String parseError : parseErrors)
-			{
-				LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
-			}
+			LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
 		}
 
-		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, numberOfRules);
+		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size() + file.GetMediaRules().size());
 	}
 
 
@@ -583,9 +550,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			for (MCssRule rule : entry.getValue().GetRules())
 			{
-				for (int i = 0; i < rule.GetSelectors().size(); i++)
+				for(MSelector selector : rule.GetSelectors())
 				{
-					counter += rule.ParseProperties().size();
+					counter += selector.GetProperties().size();
 				}
 			}
 		}
@@ -644,7 +611,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				{
 					if (selector.IsIgnored())
 					{
-						counter += rule.ParseProperties().size();
+						counter += selector.GetProperties().size();
 					}
 				}
 			}

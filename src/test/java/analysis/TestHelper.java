@@ -52,10 +52,8 @@ public class TestHelper
         if(contents.isEmpty())
             return null;
 
-        MCssFile mCssFile = new MCssFile(path);
-
         CssParser parser = new CssParser();
-        parser.ParseCssIntoMCssRules(contents, mCssFile);
+        MCssFile mCssFile = parser.ParseCssIntoMCssRules(path, contents);
 
         if(parser.GetParseErrors().size() > 0)
         {
@@ -70,10 +68,8 @@ public class TestHelper
 
     public static MCssFile GetCssFromString(String name, String cssCode)
     {
-        MCssFile mCssFile = new MCssFile(name);
-
         CssParser parser = new CssParser();
-        parser.ParseCssIntoMCssRules(cssCode, mCssFile);
+        MCssFile mCssFile  = parser.ParseCssIntoMCssRules(name, cssCode);
 
         if(parser.GetParseErrors().size() > 0)
         {

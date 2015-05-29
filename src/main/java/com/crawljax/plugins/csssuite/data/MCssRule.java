@@ -1,9 +1,10 @@
 package com.crawljax.plugins.csssuite.data;
 
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
+import com.jcabi.w3c.Defect;
+import com.steadystate.css.dom.Property;
 import org.w3c.css.sac.Locator;
 import org.w3c.dom.css.CSSRule;
-import org.w3c.dom.css.CSSStyleRule;
 
 import com.steadystate.css.dom.CSSStyleRuleImpl;
 import com.steadystate.css.userdata.UserDataConstants;
@@ -18,30 +19,61 @@ public class MCssRule
 	private CSSRule _rule;
 	private List<MSelector> _selectors;
 
+	public MCssRule(CSSRule rule, Set<Defect> w3cErrors)
+	{
+		_rule = rule;
+		_selectors = new ArrayList<>();
+
+		SetSelectors(w3cErrors);
+	}
+
+
 	/**
 	 *
 	 * @param rule
 	 */
-	public MCssRule(CSSRule rule) {
-
-		_rule = rule;
-		_selectors = new ArrayList<>();
-
-		SetSelectors();
+	public MCssRule(CSSRule rule)
+	{
+		this(rule, new HashSet<>());
 	}
 
 
 	/**
 	 * Parse all selectors from this _rule and add them to the _selectors
 	 */
-	private void SetSelectors()
+	private void SetSelectors(Set<Defect> w3cErrors)
 	{
-		CSSStyleRuleImpl styleRuleImpl = (CSSStyleRuleImpl) _rule;
+		CSSStyleRuleImpl styleRule = (CSSStyleRuleImpl) _rule;
+		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
 
-		_selectors.addAll(((SelectorListImpl) styleRuleImpl.getSelectors())
-				.getSelectors().stream()
-				.map(selector -> new MSelector(selector, ParseProperties(), GetLocator().getLineNumber()))
-				.collect(Collectors.toList()));
+		List<MProperty> properties = styleDeclaration.getProperties().stream()
+										.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cError(property, w3cErrors)))
+										.collect(Collectors.toList());
+
+		_selectors.addAll(((SelectorListImpl) styleRule.getSelectors())
+							.getSelectors().stream()
+							.map(selector -> new MSelector(selector, properties, GetLocator().getLineNumber()))
+							.collect(Collectors.toList()));
+	}
+
+
+	/**
+	 *
+	 * @param property
+	 * @param w3cErrors
+	 * @return
+	 */
+	private String TryFindW3cError(Property property, Set<Defect> w3cErrors)
+	{
+		Locator loc = (Locator)property.getUserData(UserDataConstants.KEY_LOCATOR);
+		Optional<Defect> match = w3cErrors.stream().filter(error -> error.line() == loc.getLineNumber()
+																&& (error.message().contains(property.getName())
+																|| error.message().contains(property.getValue().getCssText())))
+				                                   .findFirst();
+		if(match.isPresent())
+			return match.get().message();
+
+		return "";
 	}
 
 
@@ -65,24 +97,6 @@ public class MCssRule
 	public void RemoveSelectors(List<MSelector> selectors)
 	{
 		_selectors.removeAll(selectors);
-	}
-
-
-	//todo: store properties instead of parsing them on every call?
-	/**
-	 *
-	 * @return
-	 */
-	public List<MProperty> ParseProperties()
-	{
-		List<MProperty> properties = new ArrayList<>();
-
-		CSSStyleRule styleRule = (CSSStyleRule) _rule;
-		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
-
-		properties.addAll(styleDeclaration.getProperties().stream().map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant())).collect(Collectors.toList()));
-
-		return properties;
 	}
 
 

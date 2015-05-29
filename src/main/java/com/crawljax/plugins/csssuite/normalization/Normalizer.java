@@ -46,6 +46,9 @@ public class Normalizer implements ICssPostCrawlPlugin
     {
         for(MProperty mProperty : mSelector.GetProperties())
         {
+            if(mProperty.IsIgnored())
+                continue;
+
             final String value = mProperty.GetOriginalValue().replaceAll("\\s", "");
             if (value.contains("0"))
             {
@@ -74,6 +77,9 @@ public class Normalizer implements ICssPostCrawlPlugin
 
         for(MProperty mProperty : mSelector.GetProperties())
         {
+            if(mProperty.IsIgnored())
+                continue;
+
             final String name = mProperty.GetName();
             final String value = mProperty.GetValue();
             final boolean isImportant = mProperty.IsImportant();
@@ -216,7 +222,6 @@ public class Normalizer implements ICssPostCrawlPlugin
 
     /**
      *
-     * @param name
      * @param value
      * @param isImportant
      * @return

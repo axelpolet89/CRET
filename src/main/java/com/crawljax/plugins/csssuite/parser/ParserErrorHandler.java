@@ -33,7 +33,10 @@ public class ParserErrorHandler implements ErrorHandler
             builder.append("[Parse Warning] at line " + warning.getLineNumber() + ":");
             builder.append("\t" + warning.getMessage());
 
-            List<CSSParseException> matchedErrors = _errors.stream().filter(error -> error.getLineNumber() == warning.getLineNumber()).collect(Collectors.toList());
+            List<CSSParseException> matchedErrors = _errors.stream()
+                                                            .filter(error -> error.getLineNumber() == warning.getLineNumber() && error.getColumnNumber() == warning.getColumnNumber())
+                                                            .collect(Collectors.toList());
+
             for(CSSParseException error : matchedErrors)
             {
                 builder.appendLine("\t-related error- " + error.getMessage());

@@ -160,7 +160,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
 		}
 
-		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size() + file.GetMediaRules().size());
+		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size());
 	}
 
 

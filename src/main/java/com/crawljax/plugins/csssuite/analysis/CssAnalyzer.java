@@ -152,7 +152,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 			}
 		}
 
-		file.SetAllRules(newRules);
+		file.OverwriteAllRules(newRules);
 		return file;
 	}
 
@@ -244,17 +244,25 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 						for (int j = i + 1; j < matchedSelectors.size(); j++)
 						{
+							boolean compareOnValuesToo = false;
+
 							MSelector nextSelector = matchedSelectors.get(j);
 
-							// if the next selector is not part of a media query, then it should not be overwritten by this selector
-							if(selector.IsMediaQueryOverwrite(nextSelector))
+							// media-query selector is more specific, but regular also applies
+							if(selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() == 0)
 							{
 								continue;
 							}
 
+							// media-query selector is less specific, but it could trigger other properties
+							if(selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
+							{
+								compareOnValuesToo = true;
+							}
 
-							// always accept any different media query as effective, for now...
-							if(!selector.HasEqualMediaQueries(nextSelector))
+							// both selectors have different media-queries
+							if(selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() > 0
+									&& !selector.HasEqualMediaQueries(nextSelector))
 							{
 								continue;
 							}
@@ -277,14 +285,20 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 							{
 								if(!selector.CompareKeyPseudoClass(nextSelector))
 								{
-									ComparePropertiesWithValue(property, nextSelector, overridden, alreadyEffective);
-									continue;
+									compareOnValuesToo = true;
 								}
 							}
 
-							// by default: if both selectors apply under the same condition, simply check matching property names
-							// otherwise, the only way for next selector to be ineffective is too have same property name AND value
-							CompareProperties(property, nextSelector, overridden, alreadyEffective);
+							if(compareOnValuesToo)
+							{
+								ComparePropertiesWithValue(property, nextSelector, overridden, alreadyEffective);
+							}
+							else
+							{
+								// by default: if both selectors apply under the same condition, simply check matching property names
+								// otherwise, the only way for next selector to be ineffective is too have same property name AND value
+								CompareProperties(property, nextSelector, overridden, alreadyEffective);
+							}
 						}
 					}
 				}

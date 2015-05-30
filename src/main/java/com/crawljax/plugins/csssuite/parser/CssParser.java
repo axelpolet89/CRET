@@ -11,13 +11,14 @@ import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 
-import com.crawljax.plugins.csssuite.data.MMediaRule;
 import com.jcabi.w3c.Defect;
 import com.jcabi.w3c.ValidationResponse;
 
 import com.steadystate.css.dom.CSSMediaRuleImpl;
 import com.steadystate.css.dom.CSSStyleRuleImpl;
 
+import com.steadystate.css.dom.MediaListImpl;
+import com.steadystate.css.parser.media.MediaQuery;
 import org.w3c.css.sac.InputSource;
 import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
@@ -60,6 +61,7 @@ public class CssParser
 		return _errorHandler.PrintParseErrors();
 	}
 
+
 	/**
 	 * Parse css code using the CSSOMParser and a SACParserCSS3 to support CSS3 rules
 	 * @param cssCode
@@ -92,9 +94,7 @@ public class CssParser
 	 */
 	public MCssFile ParseCssIntoMCssRules(String url, String cssCode)
 	{
-		MCssFile mCssFile = new MCssFile(url);
 		List<MCssRule> mCssRules = new ArrayList<>();
-		List<MMediaRule> mediaRules = new ArrayList<>();
 
 		Set<Defect> w3cWarnings = new HashSet<>();
 		Set<Defect> w3cErrors = new HashSet<>();
@@ -130,7 +130,7 @@ public class CssParser
 				}
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
-					mediaRules.add(new MMediaRule(rule, w3cErrors));
+					mCssRules.addAll(RecursiveParseMediaRules(rule, w3cErrors));
 				}
 				else
 				{
@@ -144,9 +144,58 @@ public class CssParser
 			}
 		}
 
-		mCssFile.SetRegularRules(mCssRules);
-		mCssFile.SetMediaRules(mediaRules);
+
+		MCssFile mCssFile = new MCssFile(url, mCssRules);
 
 		return mCssFile;
+	}
+
+
+	/**
+	 * Recursively parse a media rule by iterating it's inner rules
+	 * @param rule
+	 * @param w3cErrors
+	 * @return
+	 */
+	private static List<MCssRule> RecursiveParseMediaRules(CSSRule rule, Set<Defect> w3cErrors)
+	{
+		List<MCssRule> result = new ArrayList<>();
+
+		CSSMediaRuleImpl mediaRule = (CSSMediaRuleImpl) rule;
+
+		MediaListImpl list = (MediaListImpl)mediaRule.getMedia();
+		List<MediaQuery> queries = new ArrayList<>();
+		for(int i = 0; i < list.getLength(); i++)
+		{
+			queries.add(list.mediaQuery(i));
+		}
+
+		CSSRuleList ruleList = mediaRule.getCssRules();
+		for (int i = 0; i < ruleList.getLength(); i++)
+		{
+			try
+			{
+				CSSRule innerRule = ruleList.item(i);
+				if(innerRule instanceof CSSStyleRuleImpl)
+				{
+					result.add(new MCssRule(innerRule, w3cErrors, queries));
+				}
+				else if (innerRule instanceof CSSMediaRuleImpl)
+				{
+					result.addAll(RecursiveParseMediaRules(innerRule, w3cErrors));
+				}
+				else
+				{
+					//@import
+					//@page
+				}
+			}
+			catch (Exception ex)
+			{
+				LogHandler.error(ex, "Error occurred while parsing CSSRules into MCssRules on rule '%s'", ruleList.item(i).getCssText());
+			}
+		}
+
+		return result;
 	}
 }

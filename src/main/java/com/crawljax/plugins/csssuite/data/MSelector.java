@@ -4,12 +4,12 @@ import java.util.*;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.util.PseudoHelper;
+import com.crawljax.plugins.csssuite.util.specificity.Specificity;
+import com.crawljax.plugins.csssuite.util.specificity.SpecificityCalculator;
+
 import com.steadystate.css.dom.Property;
 import com.steadystate.css.parser.media.MediaQuery;
 import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
-
-import com.crawljax.plugins.csssuite.util.specificity.Specificity;
-import com.crawljax.plugins.csssuite.util.specificity.SpecificityCalculator;
 
 import org.w3c.css.sac.*;
 import org.w3c.dom.NamedNodeMap;
@@ -27,17 +27,16 @@ public class MSelector
 	private boolean _isNonStructuralPseudo;
 	private boolean _hasPseudoElement;
 
+	private final LinkedHashMap<String, String> _nonStructuralPseudoClasses;
+	private final LinkedHashMap<String, String> _structuralPseudoClasses;
 	private int _pseudoLevel;
 	private String _keyPseudoClass;
 	private String _selectorTextWithoutPseudo;
 	private String _pseudoElement;
 
-	private final LinkedHashMap<String, String> _nonStructuralPseudoClasses;
-	private final LinkedHashMap<String, String> _structuralPseudoClasses;
-
-	private final List<ElementWrapper> _matchedElements;
 	private final Specificity _specificity;
 
+	private final List<ElementWrapper> _matchedElements;
 
 	/**
 	 * Constructor
@@ -84,6 +83,7 @@ public class MSelector
 	}
 
 
+
 	/**
 	 * Recursively filter every selector in the sequence on universal selectors that were added by the CssParser
 	 * @param selector
@@ -95,7 +95,7 @@ public class MSelector
 			String selectorText = selector.toString();
 			if(selectorText.contains("*"))
 			{
-				UpdateSelectorSequence(selectorText);
+				FilterUniversalSelector(selectorText);
 			}
 		}
 		else if(selector instanceof SimpleSelector)
@@ -103,7 +103,7 @@ public class MSelector
 			String selectorText = selector.toString();
 			if(selectorText.contains("*") && !selectorText.equals("*") && !selectorText.contains("["))
 			{
-				UpdateSelectorSequence(selectorText);
+				FilterUniversalSelector(selectorText);
 			}
 		}
 		else if (selector instanceof DescendantSelector)
@@ -119,6 +119,22 @@ public class MSelector
 			RecursiveFilterUniversalSelector(dSelector.getSiblingSelector());
 		}
 	}
+
+
+	/**
+	 * Replace part of the selector sequence from the universal selector
+	 * @param part
+	 */
+	private void FilterUniversalSelector(String part)
+	{
+		//first escape the selectorText (which will be used as a regular expression below)
+		part = part.replaceAll("\\*", "\\\\*");
+		String replacement = part.replaceAll("\\*", "");
+
+		//replace part of the original selector sequence, by a string without an asterisk
+		_selectorSequence = _selectorSequence.replaceAll(part, replacement);
+	}
+
 
 
 	/**
@@ -192,16 +208,6 @@ public class MSelector
 		}
 	}
 
-
-	private void UpdateSelectorSequence(String part)
-	{
-		//first escape the selectorText (which will be used as a regular expression below)
-		part = part.replaceAll("\\*", "\\\\*");
-		String replacement = part.replaceAll("\\*", "");
-
-		//replace part of the original selector sequence, by a string without an asterisk
-		_selectorSequence = _selectorSequence.replaceAll(part, replacement);
-	}
 
 
 	/**
@@ -361,31 +367,14 @@ public class MSelector
 	}
 
 
-	/**
-	 *
-	 * @param otherSelector
-	 * @return
-	 */
-	public boolean IsMediaQueryOverwrite(MSelector otherSelector)
-	{
-		if(_mediaQueries.size() > 0 && otherSelector.GetMediaQueries().size() == 0)
-			return true;
-
-		return false;
-	}
-
 
 	/**
-	 *
-	 * @param otherSelector
+	 * Verifies if the otherSelector applies under the same conditions as this selector
+	 * @param otherSelector the less specific selector in relation to this selector
 	 * @return
 	 */
 	public boolean HasEqualMediaQueries(MSelector otherSelector)
 	{
-		if((_mediaQueries.size() == 0 && otherSelector.GetMediaQueries().size() > 0)
-			|| (_mediaQueries.size() > 0 && otherSelector.GetMediaQueries().size() == 0))
-			return false;
-
 		List<MediaQuery> commonQueries = FindCommonMediaQueries(otherSelector);
 		if(_mediaQueries.containsAll(commonQueries) && commonQueries.containsAll(_mediaQueries))
 			return true;
@@ -393,16 +382,17 @@ public class MSelector
 		return false;
 	}
 
-	public List<MediaQuery> FindCommonMediaQueries(MSelector otherSelector)
+
+	/**
+	 * Find all common media-queries between two selectors
+	 * @param otherSelector
+	 * @return
+	 */
+	private List<MediaQuery> FindCommonMediaQueries(MSelector otherSelector)
 	{
 		List<MediaQuery> result = new ArrayList<>();
 
 		List<MediaQuery> otherQueries = otherSelector.GetMediaQueries();
-
-		if(_mediaQueries.size() == 0 || otherQueries.size() == 0)
-		{
-			return result;
-		}
 
 		for(MediaQuery query : _mediaQueries)
 		{

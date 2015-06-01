@@ -15,8 +15,7 @@ public class MatchedElements
 
 	public static void SetMatchedElement(ElementWrapper element, MSelector selector, int order)
 	{
-		// Use state name and the XPath of the element as key for the element
-		String key = element.GetStateName() + XPathHelper.getXPathExpression(element.GetElement());
+		String key = element.GetKey();
 
 		if(!elementSelectors.containsKey(key))
 		{

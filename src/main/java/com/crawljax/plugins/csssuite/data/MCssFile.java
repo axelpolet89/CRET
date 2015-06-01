@@ -27,6 +27,7 @@ public class MCssFile
         _pageRules = new ArrayList<>();
     }
 
+    public String GetUrl(){ return _url; }
     public List<MCssRule> GetRules()
     {
         return _allRules;

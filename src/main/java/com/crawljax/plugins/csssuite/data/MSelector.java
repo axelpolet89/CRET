@@ -278,6 +278,9 @@ public class MSelector
 	/** Getter */
 	public Specificity GetSpecificity() { return _specificity; }
 
+	/** Getter */
+	public List<ElementWrapper> GetMatchedElements() { return _matchedElements; }
+
 
 	/**
 	 * @return css code that is usable to query a DOM

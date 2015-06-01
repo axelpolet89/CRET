@@ -100,15 +100,35 @@ public class CssNormalizer implements ICssPostCrawlPlugin
 
             try
             {
-                if (name.equals("margin") || name.equals("padding") || name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
+                if (name.equals("margin") || name.equals("padding"))
                 {
-                    newProps.addAll(BoxToProps(name, value, isImportant));
+                    newProps.addAll(BoxToProps(value, isImportant, name + "-%s"));
+                    LogHandler.info("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
+                }
+                else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
+                {
+                    String spec = name.replace("border","");
+                    newProps.addAll(BoxToProps(value, isImportant, "border-%s-" + spec ));
                     LogHandler.info("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
+                    if(name.equals("border-radius"))
+                    {
+                        newProps.add(new MProperty("border-top-left-radius", value, isImportant));
+                        newProps.add(new MProperty("border-top-right-radius", value, isImportant));
+                        newProps.add(new MProperty("border-bottom-right-radius", value, isImportant));
+                        newProps.add(new MProperty("border-bottom-left-radius", value, isImportant));
+                        LogHandler.info("[CssNormalizer] Parsed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    }
+
                     newProps.addAll(BorderToProps(name, value, isImportant));
                     LogHandler.info("[CssNormalizer] Parsed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                }
+                else if(name.equals("outline"))
+                {
+                    newProps.addAll(BorderToProps(name, value, isImportant));
+                    LogHandler.info("[CssNormalizer] Parsed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.equals("background"))
                 {
@@ -139,7 +159,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
      * @return
      * @throws CssSuiteException
      */
-    private static List<MProperty> BoxToProps(String name, String value, boolean isImportant) throws CssSuiteException
+    private static List<MProperty> BoxToProps(String value, boolean isImportant, String formatter) throws CssSuiteException
     {
         String[] parts = value.split("\\s");
 
@@ -175,10 +195,10 @@ public class CssNormalizer implements ICssPostCrawlPlugin
 
         List<MProperty> props = new ArrayList<>();
 
-        props.add(new MProperty(String.format("%s-top", name), top, isImportant));
-        props.add(new MProperty(String.format("%s-right", name), right, isImportant));
-        props.add(new MProperty(String.format("%s-bottom", name), bottom, isImportant));
-        props.add(new MProperty(String.format("%s-left", name), left, isImportant));
+        props.add(new MProperty(String.format(formatter, "top"), top, isImportant));
+        props.add(new MProperty(String.format(formatter, "right"), right, isImportant));
+        props.add(new MProperty(String.format(formatter, "bottom"), bottom, isImportant));
+        props.add(new MProperty(String.format(formatter, "left"), left, isImportant));
 
         return props;
     }
@@ -227,6 +247,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
 
         return props;
     }
+
 
 
     /**

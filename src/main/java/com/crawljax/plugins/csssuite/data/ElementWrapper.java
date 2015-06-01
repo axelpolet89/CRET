@@ -1,6 +1,7 @@
 package com.crawljax.plugins.csssuite.data;
 
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
+import com.crawljax.util.XPathHelper;
 import org.w3c.dom.Element;
 
 import com.crawljax.util.DomUtils;
@@ -10,8 +11,9 @@ import com.crawljax.util.DomUtils;
  */
 public class ElementWrapper 
 {
-	private String _stateName;
-	private Element _element;
+	private final String _stateName;
+	private final Element _element;
+	private final String _key;
 
 
 	/**
@@ -21,8 +23,10 @@ public class ElementWrapper
 	 */
 	public ElementWrapper(String stateName, Element element)
 	{
+
 		_stateName = stateName;
 		_element = element;
+		_key = stateName+ XPathHelper.getXPathExpression(element);
 	}
 
 	/** Getter */
@@ -36,6 +40,9 @@ public class ElementWrapper
 	{
 		return _element;
 	}
+
+	/** Getter */
+	public String GetKey() { return _key; }
 
 
 	@Override

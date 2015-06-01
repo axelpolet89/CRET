@@ -11,11 +11,14 @@ public class MProperty
 	private final String _originalValue;
 	private final String _w3cError;
 	private final boolean _isIgnored;
+	private final boolean _isImportant;
 
 	private String _normalizedValue;
 	private String _status;
+
 	private boolean _isEffective;
-	private boolean _isImportant;
+	private boolean _isInvalidUndo;
+
 
 	/**
 	 * Default constructor
@@ -33,6 +36,7 @@ public class MProperty
 		_isImportant = isImportant;
 		_w3cError = w3cError;
 		_isIgnored = !w3cError.isEmpty();
+		_isInvalidUndo = false;
 	}
 
 
@@ -92,6 +96,12 @@ public class MProperty
 		return _isEffective;
 	}
 
+	/** Getter */
+	public boolean IsInvalidUndo()
+	{
+		return _isInvalidUndo;
+	}
+
 
 	/**
 	 *
@@ -120,6 +130,15 @@ public class MProperty
 	public void SetStatus(String status)
 	{
 		_status = status;
+	}
+
+
+	/**
+	 *
+	 */
+	public void SetInvalidUndo()
+	{
+		_isInvalidUndo = true;
 	}
 
 

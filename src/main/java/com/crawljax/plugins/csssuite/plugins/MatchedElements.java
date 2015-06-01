@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.analysis;
+package com.crawljax.plugins.csssuite.plugins;
 
 import com.crawljax.plugins.csssuite.data.ElementWrapper;
 import com.crawljax.plugins.csssuite.data.MSelector;

@@ -1,6 +1,6 @@
 package analysis;
 
-import com.crawljax.plugins.csssuite.analysis.CssAnalyzer;
+import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MProperty;
@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class CssAnalyzerTest

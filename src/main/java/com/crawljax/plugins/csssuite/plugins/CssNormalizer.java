@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.normalization;
+package com.crawljax.plugins.csssuite.plugins;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
@@ -15,8 +15,12 @@ import java.util.Map;
 
 /**
  * Created by axel on 5/27/2015.
+ * This class is responsible for normalizing property values:
+ * 1) split shorthand declarations into separate parts
+ * 2) normalize zero values
+ * 3) normalize url values
  */
-public class Normalizer implements ICssPostCrawlPlugin
+public class CssNormalizer implements ICssPostCrawlPlugin
 {
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
@@ -27,8 +31,8 @@ public class Normalizer implements ICssPostCrawlPlugin
             {
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
-                    NormalizeToShortHand(mSelector);
-                    NormalizeZeroes(mSelector);
+                    RemoveShortHandDeclarations(mSelector);
+                    Normalize(mSelector);
                 }
             }
         }
@@ -41,14 +45,16 @@ public class Normalizer implements ICssPostCrawlPlugin
      *
      * @param mSelector
      */
-    private static void NormalizeZeroes(MSelector mSelector)
+    private static void Normalize(MSelector mSelector)
     {
         for(MProperty mProperty : mSelector.GetProperties())
         {
             if(mProperty.IsIgnored())
                 continue;
 
+            final String origValue = mProperty.GetOriginalValue();
             final String value = mProperty.GetOriginalValue().replaceAll("\\s", "");
+
             if (value.contains("0"))
             {
                 if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
@@ -59,8 +65,17 @@ public class Normalizer implements ICssPostCrawlPlugin
                 }
                 else if (mProperty.GetOriginalValue().contains("0."))
                 {
-                    mProperty.SetNormalizedValue(mProperty.GetOriginalValue().replaceAll("0\\.", "\\."));
+                    mProperty.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
                 }
+            }
+
+            if(value.contains("http://"))
+            {
+                mProperty.SetNormalizedValue(origValue.replaceAll("http://", ""));
+            }
+            else if(value.contains("https://"))
+            {
+                mProperty.SetNormalizedValue(origValue.replaceAll("https://", ""));
             }
         }
     }
@@ -70,7 +85,7 @@ public class Normalizer implements ICssPostCrawlPlugin
      *
      * @param mSelector
      */
-    private static void NormalizeToShortHand(MSelector mSelector)
+    private static void RemoveShortHandDeclarations(MSelector mSelector)
     {
         List<MProperty> newProps = new ArrayList<>();
 
@@ -85,15 +100,10 @@ public class Normalizer implements ICssPostCrawlPlugin
 
             try
             {
-                if (name.equals("margin"))
+                if (name.equals("margin") || name.equals("padding") || name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
                     newProps.addAll(BoxToProps(name, value, isImportant));
-                    LogHandler.info("[CssNormalizer] Parsed shorthand margin property into parts: '%s' : '%s', important=%s", name, value, isImportant);
-                }
-                else if (name.equals("padding"))
-                {
-                    newProps.addAll(BoxToProps(name, value, isImportant));
-                    LogHandler.info("[CssNormalizer] Parsed shorthand padding property into parts '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.info("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
@@ -122,7 +132,7 @@ public class Normalizer implements ICssPostCrawlPlugin
 
 
     /**
-     *
+     * Split any box declaration into four parts: top, right, bottom, left
      * @param name
      * @param value
      * @param isImportant
@@ -175,7 +185,7 @@ public class Normalizer implements ICssPostCrawlPlugin
 
 
     /**
-     *
+     * Split a shorthand border declaration into separate declarations
      * @param name
      * @param value
      * @param isImportant
@@ -220,7 +230,7 @@ public class Normalizer implements ICssPostCrawlPlugin
 
 
     /**
-     *
+     * Split a shorthand background property into separate declararations
      * @param value
      * @param isImportant
      * @return

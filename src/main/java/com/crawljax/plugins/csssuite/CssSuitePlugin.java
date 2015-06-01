@@ -8,15 +8,14 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import com.crawljax.plugins.csssuite.analysis.*;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
-import com.crawljax.plugins.csssuite.normalization.Normalizer;
-import com.jcabi.w3c.Defect;
-import com.jcabi.w3c.ValidationResponse;
-import com.jcabi.w3c.ValidatorBuilder;
+import com.crawljax.plugins.csssuite.plugins.CloneDetector;
+import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
+import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
+import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.dom.Document;
@@ -29,7 +28,6 @@ import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import com.crawljax.plugins.csssuite.parser.CssParser;
-import sun.rmi.runtime.Log;
 
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
@@ -63,7 +61,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		CssAnalyzer analyzer = new CssAnalyzer();
 
 		_plugins.add(analyzer);
-		_postPlugins.add(new Normalizer());
+		_postPlugins.add(new CssNormalizer());
 		_postPlugins.add(analyzer);
 	}
 
@@ -405,13 +403,18 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					{
 						buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
 						buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
-						buffer.append(" Selector: " + selector.GetSelectorText() + "\n");
+						buffer.append("   Selector: " + selector.GetSelectorText() + "\n");
+
+						for(MediaQuery query : selector.GetMediaQueries())
+						{
+							buffer.append("   Media-query: " + query + "\n");
+						}
 
 						counterEffectiveSelectors++;
 
 						for (MProperty prop : selector.GetProperties())
 						{
-							buffer.append(" Property " + prop + "\n");
+							buffer.append("   Property " + prop + "\n");
 						}
 					}
 

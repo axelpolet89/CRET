@@ -26,12 +26,12 @@
 
 #background2
 {
-	background: url("test") #ececec no-repeat left top;
+	background: url("http://www.google.nl") #ececec no-repeat left top;
 }
 
 #background3
 {
-	background: url("test") #ececec no-repeat left;
+	background: url("https://www.google.nl") #ececec no-repeat left;
 }
 
 #background4
@@ -57,4 +57,19 @@
 #margin4
 {
 	margin: 5px 10px 20px 30px;
+}
+
+#border4
+{
+	border-style: solid dotted;
+}
+
+#border5
+{
+	border-width: 5px 10px 20px 30px;
+}
+
+#border6
+{
+	border-color: black;
 }

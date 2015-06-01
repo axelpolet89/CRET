@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.analysis;
+package com.crawljax.plugins.csssuite.plugins;
 
 import java.util.*;
 import java.util.stream.Collectors;

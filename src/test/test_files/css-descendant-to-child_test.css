@@ -1,0 +1,31 @@
+#page h3
+{
+    background: #fff;
+    color: #111;
+}
+
+body .extra-content
+{
+    font-size: 20px;
+}
+
+.input-content a
+{
+    color: black;
+}
+
+[class="input-content"] a:hover
+{
+    border: 1px solid white;
+}
+
+div#footer
+{
+    color: black;
+}
+
+
+body #page h3
+{
+    font-size: 14px;
+}

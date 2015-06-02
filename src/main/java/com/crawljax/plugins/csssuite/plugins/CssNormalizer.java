@@ -7,7 +7,6 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
-import sun.rmi.runtime.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,13 +106,13 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                 if (name.equals("margin") || name.equals("padding"))
                 {
                     newProps.addAll(BoxToProps(value, isImportant, name + "-%s"));
-                    LogHandler.debug("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
                     String spec = name.replace("border-","");
                     newProps.addAll(BoxToProps(value, isImportant, "border-%s-" + spec ));
-                    LogHandler.debug("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
@@ -123,21 +122,21 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                         newProps.add(new MProperty("border-top-right-radius", value, isImportant));
                         newProps.add(new MProperty("border-bottom-right-radius", value, isImportant));
                         newProps.add(new MProperty("border-bottom-left-radius", value, isImportant));
-                        LogHandler.info("[CssNormalizer] Parsed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                        LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
 
                     newProps.addAll(BorderToProps(name, value, isImportant));
-                    LogHandler.debug("[CssNormalizer] Parsed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("outline"))
                 {
                     newProps.addAll(BorderToProps(name, value, isImportant));
-                    LogHandler.debug("[CssNormalizer] Parsed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.equals("background"))
                 {
                     newProps.addAll(BackgroundToProps(value, isImportant));
-                    LogHandler.debug("[CssNormalizer] Parsed shorthand background property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand background property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else
                 {

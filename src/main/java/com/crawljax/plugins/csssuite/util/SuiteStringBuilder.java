@@ -23,6 +23,24 @@ public class SuiteStringBuilder
         _builder.append("\n" + string);
     }
 
+    public void append(String format, Object... arguments)
+    {
+        _builder.append(String.format(format, VarArgsToArray(arguments)));
+    }
+
+    public void appendLine(String format, Object... arguments)
+    {
+        _builder.append("\n" + String.format(format, VarArgsToArray(arguments)));
+    }
+
+    private static Object[] VarArgsToArray(Object... arguments)
+    {
+        //need to copy varargs to Object[], otherwise String.format fails
+        Object[] args = new Object[arguments.length + 1];
+        System.arraycopy(arguments, 0, args, 0, arguments.length);
+        return args;
+    }
+
     @Override
     public String toString()
     {

@@ -24,6 +24,8 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	@Override
 	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder)
 	{
+		MatchedElements.Clear();
+
 		for(String file : stateFileOrder.keySet())
 		{
 			LogHandler.info("[CssAnalyzer] Matching DOM elements for css file '%s'...", file);
@@ -102,7 +104,7 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 
 		for (String keyElement : MatchedElements.GetMatchedElements())
 		{
-			List<MSelector> matchedSelectors = SortSelectorsForMatchedElem(keyElement);
+			List<MSelector> matchedSelectors = MatchedElements.SortSelectorsForMatchedElem(keyElement);
 
 			// performance
 			if(processedSets.contains(new HashSet<>(matchedSelectors)))
@@ -196,39 +198,6 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 		}
 
 		return result;
-	}
-
-
-	/**
-	 * Transform all selectors that match a given element into a list of SpecificitySelector instances
-	 * Use that list to sort the selectors in place, and then return the MSelectors contained by the SpecificitySelectors instances in the sorted list
-	 * @param element
-	 * @return
-	 */
-	public static List<MSelector> SortSelectorsForMatchedElem(String element)
-	{
-		// we need a list of selectors first by their 'file' order and then by their specificity
-		List<Integer> cssFilesOrder = MatchedElements.GetCssFileOrder(element);
-
-		// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations),
-		// just need to reverse it (so we get highest order first), potential sort performance improvement
-		Collections.reverse(cssFilesOrder);
-
-		List<SpecificitySelector> selectorsToSort = new ArrayList<>();
-
-		ListMultimap orderSelectorMap = MatchedElements.GetSelectors(element);
-		for(int order : cssFilesOrder)
-		{
-			List<MSelector> selectorsForFile = orderSelectorMap.get(order);
-
-			//wrap MSelector in SpecificitySelector
-			selectorsToSort.addAll(selectorsForFile.stream().map(selector -> new SpecificitySelector(selector, order)).collect(Collectors.toList()));
-		}
-
-		SpecificityHelper.SortBySpecificity(selectorsToSort);
-
-		// extract the MSelectors from the list of sorted SpecificitySelectors and return
-		return selectorsToSort.stream().map((ss) -> ss.GetSelector()).collect(Collectors.toList());
 	}
 
 

@@ -110,17 +110,6 @@ public class MCssRule
 		return _selectors;
 	}
 
-
-	/**
-	 * Remove the given list of selectors from the _selectors
-	 * @param selectors the list of selectors ts to remove
-	 */
-	public void RemoveSelectors(List<MSelector> selectors)
-	{
-		_selectors.removeAll(selectors);
-	}
-
-
 	/**
 	 * @return the _selectors that are not matched (not associated DOM elements have been detected).
 	 */
@@ -136,6 +125,26 @@ public class MCssRule
 	public List<MSelector> GetMatchedSelectors()
 	{
 		return _selectors.stream().filter(selector -> selector.IsMatched() && !selector.IsIgnored()).collect(Collectors.toList());
+	}
+
+
+	/**
+	 * Remove the given list of selectors from the _selectors
+	 * @param selectors the list of selectors ts to remove
+	 */
+	public void RemoveSelectors(List<MSelector> selectors)
+	{
+		_selectors.removeAll(selectors);
+	}
+
+
+	/**
+	 *
+	 */
+	public void ReplaceSelector(MSelector oldS, MSelector newS)
+	{
+		_selectors.remove(oldS);
+		_selectors.add(newS);
 	}
 
 

@@ -32,7 +32,7 @@ public class CssUndoDetector implements ICssPostCrawlPlugin
 
         for (String keyElement : MatchedElements.GetMatchedElements())
         {
-            List<MSelector> matchedSelectors = CssAnalyzer.SortSelectorsForMatchedElem(keyElement);
+            List<MSelector> matchedSelectors = MatchedElements.SortSelectorsForMatchedElem(keyElement);
             List<MSelector> effectiveSelectors = matchedSelectors.stream().filter(s -> s.HasEffectiveProperties()).collect(Collectors.toList());
 
             // performance

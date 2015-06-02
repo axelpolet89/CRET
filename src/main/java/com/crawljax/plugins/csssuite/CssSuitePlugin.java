@@ -12,10 +12,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
-import com.crawljax.plugins.csssuite.plugins.CloneDetector;
-import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
-import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
-import com.crawljax.plugins.csssuite.plugins.CssUndoDetector;
+import com.crawljax.plugins.csssuite.plugins.*;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
@@ -68,6 +65,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(new CssNormalizer());
 		_postPlugins.add(analyzer);
 		_postPlugins.add(new CssUndoDetector());
+		_postPlugins.add(new DescendantToChild());
 	}
 
 	public void EnableDebug()

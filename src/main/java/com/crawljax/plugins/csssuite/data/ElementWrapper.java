@@ -23,7 +23,6 @@ public class ElementWrapper
 	 */
 	public ElementWrapper(String stateName, Element element)
 	{
-
 		_stateName = stateName;
 		_element = element;
 		_key = stateName+ XPathHelper.getXPathExpression(element);

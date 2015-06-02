@@ -13,6 +13,7 @@ import com.steadystate.css.parser.selectors.PseudoElementSelectorImpl;
 
 import org.w3c.css.sac.*;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 public class MSelector
 {
@@ -245,9 +246,17 @@ public class MSelector
 	 */
 	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
 	{
-		return attributes.getNamedItem(attributeName).getNodeValue();
+		Node node = attributes.getNamedItem(attributeName);
+
+		if(node != null)
+			return node.getNodeValue();
+
+		return null;
 	}
 
+
+	/** Getter */
+	public Selector GetW3cSelector() { return _selector; }
 
 	/** Getter */
 	public String GetSelectorText() { return _selectorSequence;	}

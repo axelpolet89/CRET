@@ -1,0 +1,26 @@
+h3, li {
+    padding: 0;
+    margin: 0;
+    background: none;
+}
+
+ul li
+{
+    padding: 10px;
+}
+
+#wishlist1 li
+{
+    padding: 0px;
+}
+
+h3
+{
+    background-image: #fff;
+    color: #111;
+}
+
+#page h3
+{
+    background: none;
+}

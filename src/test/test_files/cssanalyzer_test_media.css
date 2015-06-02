@@ -1,0 +1,53 @@
+div#footer
+{
+    background: #fff;
+    color: #111;
+}
+
+@media screen and (max-width: 400px) and (min-width: 200px)
+{
+    div#footer
+    {
+        background: #333;
+        color: #111;
+    }
+}
+
+/* should not overwrite 1st rule, 'should overwrite 2nd rule' */
+@media (max-width: 800px)
+{
+    div#footer
+    {
+        background: #aaa;
+        color: #111;
+    }
+}
+
+/* should actually make below properties inefficient */
+body .extra-content
+{
+    font-size: 20px;
+}
+
+@media screen and (max-width: 400px) and (min-width: 200px)
+{
+    .extra-content
+    {
+        font-size: 18px
+    }
+}
+
+/* should overwrite 2nd rule */
+@media screen and (max-width: 400px) and (min-width: 200px)
+{
+    body .extra-content
+    {
+        font-size: 17px;
+    }
+
+    .extra-content
+    {
+        font-size: 16px;
+        color: black;
+    }
+}

@@ -159,4 +159,69 @@ public class CssAnalyzerTest
 		Assert.assertEquals(properties.get(0).GetName(), "font-size");
 		Assert.assertEquals(properties.get(1).GetName(), "display");
 	}
+
+
+	@Test
+	public void TestMediaQueries()
+	{
+		Document dom = TestHelper.GetDocumentFromFile("./src/test/test_files/cssanalyzer_test_index.html");
+		Assert.assertNotNull(dom);
+
+		MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/cssanalyzer_test_media.css");
+		Assert.assertNotNull(externalFile);
+
+		HashMap files = new HashMap();
+		files.put("external", externalFile);
+
+		LinkedHashMap order = new LinkedHashMap();
+		order.put("external", 0);
+
+		CssAnalyzer analyzer = new CssAnalyzer();
+		analyzer.Transform("", dom, files, order);
+
+		List<MSelector> matchedExternal = new ArrayList<>();
+
+		for(MCssRule rule : externalFile.GetRules())
+		{
+			matchedExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.IsMatched()).collect(Collectors.toList()));
+		}
+
+		// assert correct amount of external matched rules
+		Assert.assertEquals(7, matchedExternal.size());
+
+		Assert.assertArrayEquals(Arrays.asList("div#footer", "div#footer", "div#footer", "body .extra-content", ".extra-content", "body .extra-content", ".extra-content").toArray(),
+				matchedExternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+
+		Map<String, MCssFile> postResult = analyzer.Transform(files);
+
+		List<MSelector> effectiveExternal = new ArrayList<>();
+		for(MCssRule rule : postResult.get("external").GetRules())
+		{
+			effectiveExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveProperties()).collect(Collectors.toList()));
+		}
+
+		//assert correct amount of internal and external effective selectors
+		Assert.assertEquals(6, effectiveExternal.size());
+
+		Assert.assertArrayEquals(Arrays.asList("div#footer", "div#footer", "div#footer", "body .extra-content", "body .extra-content", ".extra-content").toArray(),
+				effectiveExternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+
+		for(int i = 0; i < effectiveExternal.size(); i++)
+		{
+			MSelector sel = effectiveExternal.get(i);
+
+			if (i == 5)
+			{
+				Assert.assertEquals(1, sel.GetProperties().size());
+				Assert.assertEquals("color", sel.GetProperties().get(0).GetName());
+			}
+			else
+			{
+				for (MProperty prop : sel.GetProperties())
+				{
+					Assert.assertTrue(prop.IsEffective());
+				}
+			}
+		}
+	}
 }

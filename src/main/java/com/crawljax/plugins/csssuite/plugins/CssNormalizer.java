@@ -107,7 +107,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                 }
                 else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
-                    String spec = name.replace("border","");
+                    String spec = name.replace("border-","");
                     newProps.addAll(BoxToProps(value, isImportant, "border-%s-" + spec ));
                     LogHandler.info("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }

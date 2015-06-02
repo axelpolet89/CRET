@@ -32,7 +32,7 @@ public class MSelector
 	private int _pseudoLevel;
 	private String _keyPseudoClass;
 	private String _selectorTextWithoutPseudo;
-	private String _pseudoElement;
+	private String _keyPseudoElement;
 
 	private final Specificity _specificity;
 
@@ -67,6 +67,7 @@ public class MSelector
 		_nonStructuralPseudoClasses = new LinkedHashMap<>();
 		_structuralPseudoClasses = new LinkedHashMap<>();
 		_keyPseudoClass = "";
+		_keyPseudoElement = "";
 
 		try
 		{
@@ -182,7 +183,7 @@ public class MSelector
 		if(selector instanceof PseudoElementSelectorImpl)
 		{
 			_hasPseudoElement = true;
-			_pseudoElement = ":" + selector.toString();
+			_keyPseudoElement = ":" + selector.toString();
 		}
 		else if(selector instanceof SimpleSelector)
 		{
@@ -268,6 +269,9 @@ public class MSelector
 
 	/** Getter */
 	public boolean HasPseudoElement() { return _hasPseudoElement; }
+
+	/** Getter */
+	public String GetPseudoElement() { return _keyPseudoElement; }
 
 	/** Getter */
 	public String GetPseudoClass() { return _keyPseudoClass; }
@@ -364,7 +368,18 @@ public class MSelector
 	 * @param otherSelector
 	 * @return true if the 'key' (right-most) pseudo-class is equal to the key pseudo-class of the other selector
 	 */
-	public boolean CompareKeyPseudoClass(MSelector otherSelector)
+	public boolean HasEqualPseudoElement(MSelector otherSelector)
+	{
+		return _keyPseudoElement.equals(otherSelector.GetPseudoElement());
+	}
+
+
+
+	/**
+	 * @param otherSelector
+	 * @return true if the 'key' (right-most) pseudo-class is equal to the key pseudo-class of the other selector
+	 */
+	public boolean HasEqualPseudoClass(MSelector otherSelector)
 	{
 		return _keyPseudoClass.equals(otherSelector.GetPseudoClass());
 	}

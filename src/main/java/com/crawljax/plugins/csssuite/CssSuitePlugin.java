@@ -15,8 +15,11 @@ import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.CloneDetector;
 import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
 import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
+import com.crawljax.plugins.csssuite.plugins.CssUndoDetector;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.dom.Document;
 
@@ -47,6 +50,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	public CssSuitePlugin()
 	{
 		DOMConfigurator.configure("log4j.xml");
+
 		LogHandler.info("");
 		LogHandler.info("==================================START NEW CSS-SUITE RUN=====================================");
 
@@ -63,6 +67,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_plugins.add(analyzer);
 		_postPlugins.add(new CssNormalizer());
 		_postPlugins.add(analyzer);
+		_postPlugins.add(new CssUndoDetector());
+	}
+
+	public void EnableDebug()
+	{
+		LogManager.getLogger("css.suite.logger").setLevel(Level.DEBUG);
 	}
 
 	public void onNewState(CrawlerContext context, StateVertex newState)

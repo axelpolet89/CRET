@@ -506,6 +506,15 @@ public class MSelector
 
 
 	/**
+	 * Remove any property that performs an invalid undo
+	 */
+	public void RemoveInvalidUndoProperties()
+	{
+		_properties.removeIf((MProperty) -> MProperty.IsInvalidUndo());
+	}
+
+
+	/**
 	 *
 	 * @return
 	 */

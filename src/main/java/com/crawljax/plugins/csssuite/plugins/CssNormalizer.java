@@ -7,6 +7,7 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import sun.rmi.runtime.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Map;
 
 /**
  * Created by axel on 5/27/2015.
+ *
  * This class is responsible for normalizing property values:
  * 1) split shorthand declarations into separate parts
  * 2) normalize zero values
@@ -27,6 +29,8 @@ public class CssNormalizer implements ICssPostCrawlPlugin
     {
         for (String file : cssRules.keySet())
         {
+            LogHandler.info("[CssNormalizer] Start normalization of properties for file '%s'", file);
+
             for(MCssRule mRule : cssRules.get(file).GetRules())
             {
                 for(MSelector mSelector : mRule.GetSelectors())
@@ -61,7 +65,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                         value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
                 {
                     mProperty.SetNormalizedValue("0");
-                    LogHandler.info("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
+                    LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
                 }
                 else if (mProperty.GetOriginalValue().contains("0."))
                 {
@@ -103,13 +107,13 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                 if (name.equals("margin") || name.equals("padding"))
                 {
                     newProps.addAll(BoxToProps(value, isImportant, name + "-%s"));
-                    LogHandler.info("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
                     String spec = name.replace("border-","");
                     newProps.addAll(BoxToProps(value, isImportant, "border-%s-" + spec ));
-                    LogHandler.info("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Parsed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
@@ -123,17 +127,17 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                     }
 
                     newProps.addAll(BorderToProps(name, value, isImportant));
-                    LogHandler.info("[CssNormalizer] Parsed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Parsed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("outline"))
                 {
                     newProps.addAll(BorderToProps(name, value, isImportant));
-                    LogHandler.info("[CssNormalizer] Parsed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Parsed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.equals("background"))
                 {
                     newProps.addAll(BackgroundToProps(value, isImportant));
-                    LogHandler.info("[CssNormalizer] Parsed shorthand background property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[CssNormalizer] Parsed shorthand background property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else
                 {
@@ -359,6 +363,11 @@ public class CssNormalizer implements ICssPostCrawlPlugin
     }
 
 
+    /**
+     *
+     * @param value
+     * @return
+     */
     private static boolean ContainsUnitLength(String value)
     {
         return value.contains("px") || value.equals("pt") || value.equals("pc") || value.equals("in") || value.equals("mm") || value.equals("cm") || //absolute

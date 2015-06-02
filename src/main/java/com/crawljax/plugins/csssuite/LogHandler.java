@@ -11,6 +11,16 @@ public class LogHandler
 {
     private final static Logger LOGGER = LogManager.getLogger("css.suite.logger");
 
+    public static void debug(String text)
+    {
+        LOGGER.debug(text);
+    }
+
+    public static void debug(String text, Object... arguments)
+    {
+        LOGGER.debug(String.format(text, VarArgsToArray(arguments)));
+    }
+
     public static void info(String text)
     {
         LOGGER.info(text);

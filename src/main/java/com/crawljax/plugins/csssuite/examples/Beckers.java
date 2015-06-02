@@ -32,7 +32,10 @@ public class Beckers {
 
 		builder.setBrowserConfig(new BrowserConfiguration(BrowserType.FIREFOX, 1));
 
-		builder.addPlugin(new CssSuitePlugin());
+		CssSuitePlugin cssSuite = new CssSuitePlugin();
+		//cssSuite.EnableDebug();
+
+		builder.addPlugin(cssSuite);
 
 		CrawljaxRunner crawljax = new CrawljaxRunner(builder.build());
 		crawljax.call();

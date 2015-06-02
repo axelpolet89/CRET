@@ -31,6 +31,7 @@ public class CssSuiteRunner {
 	private static void Run()
 	{
 		CssSuitePlugin cillaPlugin = new CssSuitePlugin();
+		//cillaPlugin.EnableDebug();
 
 		CrawljaxRunner crawljax = new CrawljaxRunner(CreateConfig(10, cillaPlugin));
 		crawljax.call();

@@ -70,7 +70,7 @@ public class DescendantToChildTest
 
         // assert correct amount of valid selectors
         Assert.assertEquals(6, validSelectors.size());
-        Assert.assertArrayEquals(Arrays.asList("#page h3", "body > .extra-content", ".input-content > a", "*[class=\"input-content\"] > a:hover", "div#footer", "body #page h3").toArray(),
+        Assert.assertArrayEquals(Arrays.asList("#page h3", "body > .extra-content", ".input-content > a", "*[class=\"input-content\"] > a:hover", "div#footer", "body > #page h3").toArray(),
                 validSelectors.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
 
         // verify re-match of selectors by performing run-time analysis again

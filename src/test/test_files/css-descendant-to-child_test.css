@@ -1,12 +1,6 @@
-#page h3
+div#footer
 {
-    background: #fff;
-    color: #111;
-}
-
-body .extra-content
-{
-    font-size: 20px;
+    color: black;
 }
 
 .input-content a
@@ -14,16 +8,31 @@ body .extra-content
     color: black;
 }
 
+#page h3
+{
+    background: #fff;
+    color: #111;
+}
+
+body .extra-content:after
+{
+    font-size: 20px;
+}
+
+body.page .content
+{
+    background-color: gray;
+}
+
 [class="input-content"] a:hover
 {
     border: 1px solid white;
 }
 
-div#footer
+.input-content [checked]
 {
-    color: black;
+    background-color: gray;
 }
-
 
 body #page h3
 {

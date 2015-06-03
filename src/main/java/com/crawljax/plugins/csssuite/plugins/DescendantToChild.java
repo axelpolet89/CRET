@@ -7,18 +7,16 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
-import com.steadystate.css.dom.CSSStyleRuleImpl;
-import com.steadystate.css.parser.CSSOMParser;
-import com.steadystate.css.parser.SACParserCSS3;
+
 import com.steadystate.css.parser.selectors.*;
 
 import org.w3c.css.sac.*;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import java.io.StringReader;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,11 +25,11 @@ import java.util.Map;
  */
 public class DescendantToChild implements ICssPostCrawlPlugin
 {
-    private final CSSOMParser _parser;
+    private final Map<DescendantSelectorImpl, Boolean> _descendants;
 
     public DescendantToChild()
     {
-        _parser = new CSSOMParser(new SACParserCSS3());
+        _descendants = new HashMap<>();
     }
 
     @Override
@@ -44,63 +42,48 @@ public class DescendantToChild implements ICssPostCrawlPlugin
 
             for(MCssRule mRule : cssRules.get(fileName).GetRules())
             {
+                Map<MSelector, MSelector> newSelectors = new HashMap<>();
+
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
+                    _descendants.clear();
+
                     Selector w3cSelector = mSelector.GetW3cSelector();
-                    List<Selector> descendants = new ArrayList<>();
 
-                    RecursiveCheck(w3cSelector, descendants);
+                    LogHandler.debug("[DescToChild] [%s] Selector sequence may transformed using a child-combinator instead of a descendant-combinator", mSelector);
 
-                    if(descendants.size() == 2)
+                    List<ElementWrapper> matchedElements = mSelector.GetMatchedElements();
+
+                    for (ElementWrapper ew : matchedElements)
                     {
-                        LogHandler.debug("[DescToChild] [%s] Selector sequence may transformed using a child-combinator instead of a descendant-combinator", mSelector);
+                        Element element = ew.GetElement();
 
-                        List<ElementWrapper> matchedElements = mSelector.GetMatchedElements();
-
-                        boolean allowChild = true;
-
-                        for (ElementWrapper ew : matchedElements)
-                        {
-                            Element element = ew.GetElement();
-
-                            // get direct parent of matched element
-                            Node parentNode = element.getParentNode();
-
-                            // get previous selector in sequence
-                            Selector prev = descendants.get(1);
-
-                            LogHandler.debug("[DescToChild] [%s] Try match direct parent node '%s' with the parent selector '%s'", mSelector, parentNode, prev);
-
-                            if (!TrySelectNode(element.getParentNode(), descendants.get(1)))
-                            {
-                                allowChild = false;
-                                LogHandler.debug("[DescToChild] [%s] Direct parent node '%s' can not be selected by selector '%s', direct child not allowed", mSelector, PrintNode(parentNode), prev);
-                                break;
-                            }
-                            else
-                            {
-                                LogHandler.debug("[DescToChild] [%s] Direct parent node '%s' is selectable by selector '%s', direct child may be allowed", mSelector, PrintNode(parentNode), prev);
-                            }
-                        }
-
-                        if(allowChild)
-                        {
-                            LogHandler.debug("[DescToChild] [%s] Selector sequence can be replaced by a child selector, because all matched elements adhere to direct-child relation", mSelector);
-
-                            Selector newW3cSelector = CreateW3cSelector(descendants);
-                            if(newW3cSelector == null)
-                            {
-                                LogHandler.warn("[DescToChild] [%s] Error while creating new selector, skip");
-                                continue;
-                            }
-
-                            MSelector newSelector = new MSelector(newW3cSelector, mSelector.GetProperties(), mSelector.GetRuleNumber(), mSelector.GetMediaQueries());
-                            LogHandler.debug("[DescToChild] [%s] New selector created: '%s'", mSelector, newSelector);
-
-                            mRule.ReplaceSelector(mSelector, newSelector);
-                            count++;
-                        }
+                        RecursiveFindDescendants(TryRemovePseudoElement(w3cSelector), element, mSelector);
                     }
+
+                    if(_descendants.values().contains(true))
+                    {
+                        long size =  _descendants.values().stream().filter(d -> d).count();
+
+                        LogHandler.debug("[DescToChild] [%s] Selector sequence contains '%d' descendant-combinators that can be replaced by child-combinators", mSelector, size);
+
+                        LogHandler.debug("[DescToChild] [%s] Old selector text: '%s'", mSelector, w3cSelector);
+
+                        Selector newW3cSelector = RecursiveUpdateSelector(w3cSelector);
+
+                        LogHandler.debug("[DescToChild] [%s] New selector text: '%s'", mSelector, newW3cSelector);
+
+                        count += size;
+
+                        MSelector newSelector = new MSelector(newW3cSelector, mSelector.GetProperties(), mSelector.GetRuleNumber(), mSelector.GetMediaQueries());
+                        newSelectors.put(mSelector, newSelector);
+                        LogHandler.debug("[DescToChild] [%s] New selector created: '%s'", mSelector, newSelector);
+                    }
+                }
+
+                for(MSelector oldSelector : newSelectors.keySet())
+                {
+                    mRule.ReplaceSelector(oldSelector, newSelectors.get(oldSelector));
                 }
             }
 
@@ -108,6 +91,144 @@ public class DescendantToChild implements ICssPostCrawlPlugin
         }
 
         return cssRules;
+    }
+
+
+    /**
+     *
+     * @param selector
+     * @param node
+     * @param mSelector
+     */
+    private void RecursiveFindDescendants(Selector selector, Node node, MSelector mSelector)
+    {
+        if(selector instanceof ChildSelectorImpl)
+        {
+            RecursiveFindDescendants(((ChildSelectorImpl)selector).getAncestorSelector(), node.getParentNode(), mSelector);
+        }
+        else if (selector instanceof SiblingSelector)
+        {
+            RecursiveFindDescendants(((SiblingSelector) selector).getSiblingSelector(), node.getPreviousSibling(), mSelector);
+        }
+        else if (selector instanceof DescendantSelector)
+        {
+            LogHandler.debug("[DescToChild] [%s] Try match direct parent node '%s' with the parent selector '%s'", mSelector, node, selector);
+
+            DescendantSelectorImpl dSel = (DescendantSelectorImpl)selector;
+
+            Node parent = node.getParentNode();
+            Selector ancestor = dSel.getAncestorSelector();
+
+            if (MatchSimpleSelector(ancestor, parent, mSelector))
+            {
+                if(!_descendants.containsKey(dSel))
+                    _descendants.put(dSel, true);
+            }
+            else
+            {
+                _descendants.put(dSel, false);
+
+                boolean found = false;
+                while(!found)
+                {
+                    parent = parent.getParentNode();
+                    if (parent instanceof Document)
+                    {
+                        LogHandler.warn("[DescToChild] [%s] Found document while finding DOM element that should match '%s' of selector '%s'", mSelector, ancestor, selector);
+                    }
+                    else
+                    {
+                        found = MatchSimpleSelector(ancestor, parent, mSelector);
+                    }
+                }
+            }
+
+            RecursiveFindDescendants(ancestor, parent, mSelector);
+        }
+    }
+
+
+    /**
+     *
+     * @param selector
+     * @return
+     */
+    private Selector TryRemovePseudoElement(Selector selector)
+    {
+        if(selector instanceof DescendantSelectorImpl)
+        {
+            DescendantSelectorImpl dSel = (DescendantSelectorImpl) selector;
+            if (dSel.getSimpleSelector() instanceof PseudoElementSelectorImpl)
+                return dSel.getAncestorSelector();
+        }
+
+        return selector;
+    }
+
+
+    /**
+     *
+     * @param selector
+     * @param node
+     * @param mSelector
+     * @return
+     */
+    private boolean MatchSimpleSelector(Selector selector, Node node, MSelector mSelector)
+    {
+        Selector selToMatch = null;
+        if(selector instanceof SimpleSelector || selector instanceof PseudoElementSelectorImpl)
+        {
+            selToMatch = selector;
+        }
+        else if(selector instanceof ChildSelectorImpl)
+        {
+            selToMatch = ((ChildSelectorImpl)selector).getSimpleSelector();
+        }
+        else if (selector instanceof SiblingSelector)
+        {
+            selToMatch = ((SiblingSelector)selector).getSelector();
+        }
+        else if (selector instanceof DescendantSelector)
+        {
+            selToMatch = ((DescendantSelector)selector).getSimpleSelector();
+        }
+
+        if (TrySelectNode(node, selToMatch))
+        {
+            LogHandler.debug("[DescToChild] [%s] Direct parent node '%s' is selectable by selector '%s' of selector sequence '%s', direct child may be allowed", mSelector, PrintNode(node), selToMatch, selector);
+
+            return true;
+        }
+
+        LogHandler.debug("[DescToChild] [%s] Direct parent node '%s' can not be selected by selector '%s', direct child not allowed", mSelector, PrintNode(node), selToMatch, selToMatch);
+        return false;
+    }
+
+
+    /**
+     *
+     * @param selector
+     * @return
+     */
+    private Selector RecursiveUpdateSelector(Selector selector)
+    {
+        if(selector instanceof ChildSelectorImpl)
+        {
+            ChildSelectorImpl cSel = (ChildSelectorImpl) selector;
+            cSel.setAncestorSelector(RecursiveUpdateSelector(cSel.getAncestorSelector()));
+        }
+        else if (selector instanceof DescendantSelectorImpl)
+        {
+            DescendantSelectorImpl dSel = (DescendantSelectorImpl)selector;
+            dSel.setAncestorSelector(RecursiveUpdateSelector(dSel.getAncestorSelector()));
+
+            if(_descendants.containsKey(dSel) && _descendants.get(dSel))
+            {
+                return new ChildSelectorImpl(dSel.getAncestorSelector(), dSel.getSimpleSelector());
+            }
+        }
+
+        return selector;
     }
 
 
@@ -123,8 +244,8 @@ public class DescendantToChild implements ICssPostCrawlPlugin
         {
             if (selector instanceof ElementSelectorImpl)
             {
-                if (node.getNodeName().equalsIgnoreCase(((ElementSelectorImpl) selector).getLocalName())) ;
-                return true;
+                if (node.getNodeName().equalsIgnoreCase(((ElementSelectorImpl) selector).getLocalName()))
+                    return true;
             }
             else if (selector instanceof ConditionalSelectorImpl)
             {
@@ -144,7 +265,7 @@ public class DescendantToChild implements ICssPostCrawlPlugin
                 {
                     ClassConditionImpl classCondition = (ClassConditionImpl) condition;
                     String attr = GetAttributeValue(node.getAttributes(), "class");
-                    if (attr != null && attr.equals(classCondition.getValue()))
+                    if (attr != null && attr.contains(classCondition.getValue()))
                     {
                         return true;
                     }
@@ -153,10 +274,23 @@ public class DescendantToChild implements ICssPostCrawlPlugin
                 {
                     AttributeConditionImpl attrCondition = (AttributeConditionImpl) condition;
                     String attr = GetAttributeValue(node.getAttributes(), attrCondition.getLocalName());
-                    if (attr != null && attr.equals(attrCondition.getValue()))
+                    if(attr != null)
                     {
-                        return true;
+                        if(attrCondition.getValue().isEmpty())
+                        {
+                            return true;
+                        }
+
+                        if (attr.equals(attrCondition.getValue()))
+                        {
+                            return true;
+                        }
                     }
+                }
+                else if (condition instanceof PseudoClassConditionImpl)
+                {
+                    if (node.getNodeName().equalsIgnoreCase(cSelector.getSimpleSelector().toString()))
+                        return true;
                 }
                 else
                 {
@@ -180,33 +314,6 @@ public class DescendantToChild implements ICssPostCrawlPlugin
 
     /**
      *
-     * @param selector
-     * @param descendants
-     */
-    private void RecursiveCheck(Selector selector, List<Selector> descendants)
-    {
-        if(descendants.size() > 2)
-            return;
-
-        if(selector instanceof PseudoElementSelectorImpl)
-        {
-            descendants.add(selector);
-        }
-        else if(selector instanceof SimpleSelector)
-        {
-            descendants.add(selector);
-        }
-        else if (selector instanceof DescendantSelector && !(selector instanceof ChildSelectorImpl))
-        {
-            DescendantSelector dSelector = (DescendantSelector)selector;
-            RecursiveCheck(dSelector.getSimpleSelector(), descendants);
-            RecursiveCheck(dSelector.getAncestorSelector(), descendants);
-        }
-    }
-
-
-    /**
-     *
      * @param attributes
      * @param attributeName
      * @return
@@ -217,28 +324,6 @@ public class DescendantToChild implements ICssPostCrawlPlugin
 
         if(node != null)
             return node.getNodeValue();
-
-        return null;
-    }
-
-
-    /**
-     *
-     * @param descendants
-     * @return
-     */
-    private Selector CreateW3cSelector(List<Selector> descendants)
-    {
-        InputSource inputSource = new InputSource(new StringReader(descendants.get(1) + " > " + descendants.get(0) + "{}"));
-        try
-        {
-            CSSStyleRuleImpl rule = (CSSStyleRuleImpl)_parser.parseRule(inputSource);
-            return rule.getSelectors().item(0);
-        }
-        catch (Exception ex)
-        {
-            LogHandler.error(ex, "Cannot create new selector using '%s' and '%s'", descendants.get(1), descendants.get(0));
-        }
 
         return null;
     }

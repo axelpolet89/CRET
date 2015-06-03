@@ -58,7 +58,7 @@ public class DescendantToChild implements ICssPostCrawlPlugin
                     {
                         Element element = ew.GetElement();
 
-                        RecursiveFindDescendants(TryRemovePseudoElement(w3cSelector), element, mSelector);
+                        RecursiveFindDescendants(TryFilterPseudoElement(w3cSelector), element, mSelector);
                     }
 
                     if(_descendants.values().contains(true))
@@ -94,6 +94,25 @@ public class DescendantToChild implements ICssPostCrawlPlugin
     }
 
 
+
+    /**
+     *
+     * @param selector
+     * @return
+     */
+    private Selector TryFilterPseudoElement(Selector selector)
+    {
+        if(selector instanceof DescendantSelectorImpl)
+        {
+            DescendantSelectorImpl dSel = (DescendantSelectorImpl) selector;
+            if (dSel.getSimpleSelector() instanceof PseudoElementSelectorImpl)
+                return dSel.getAncestorSelector();
+        }
+
+        return selector;
+    }
+
+
     /**
      *
      * @param selector
@@ -108,7 +127,23 @@ public class DescendantToChild implements ICssPostCrawlPlugin
         }
         else if (selector instanceof SiblingSelector)
         {
-            RecursiveFindDescendants(((SiblingSelector) selector).getSiblingSelector(), node.getPreviousSibling(), mSelector);
+            Node previousNode = node.getPreviousSibling();
+            Selector previousSelector = ((SiblingSelector) selector).getSelector();
+
+            // node is not directly adjacent to previous node, need to search previous sibling nodes
+            // until we find the one we can select with previousSelector
+            if(selector instanceof GeneralAdjacentSelectorImpl)
+            {
+                boolean found;
+                do
+                {
+                    found = MatchSimpleSelector(previousSelector, previousNode, mSelector);
+                    previousNode = previousNode.getPreviousSibling();
+                }
+                while(!found);
+            }
+
+            RecursiveFindDescendants(previousSelector, previousNode, mSelector);
         }
         else if (selector instanceof DescendantSelector)
         {
@@ -151,24 +186,6 @@ public class DescendantToChild implements ICssPostCrawlPlugin
     /**
      *
      * @param selector
-     * @return
-     */
-    private Selector TryRemovePseudoElement(Selector selector)
-    {
-        if(selector instanceof DescendantSelectorImpl)
-        {
-            DescendantSelectorImpl dSel = (DescendantSelectorImpl) selector;
-            if (dSel.getSimpleSelector() instanceof PseudoElementSelectorImpl)
-                return dSel.getAncestorSelector();
-        }
-
-        return selector;
-    }
-
-
-    /**
-     *
-     * @param selector
      * @param node
      * @param mSelector
      * @return
@@ -186,7 +203,7 @@ public class DescendantToChild implements ICssPostCrawlPlugin
         }
         else if (selector instanceof SiblingSelector)
         {
-            selToMatch = ((SiblingSelector)selector).getSelector();
+            selToMatch = ((SiblingSelector)selector).getSiblingSelector();
         }
         else if (selector instanceof DescendantSelector)
         {
@@ -216,6 +233,19 @@ public class DescendantToChild implements ICssPostCrawlPlugin
         {
             ChildSelectorImpl cSel = (ChildSelectorImpl) selector;
             cSel.setAncestorSelector(RecursiveUpdateSelector(cSel.getAncestorSelector()));
+        }
+        else if(selector instanceof SiblingSelector)
+        {
+            if(selector instanceof DirectAdjacentSelectorImpl)
+            {
+                DirectAdjacentSelectorImpl sSel = (DirectAdjacentSelectorImpl) selector;
+                sSel.setSelector(RecursiveUpdateSelector(sSel.getSelector()));
+            }
+            else
+            {
+                GeneralAdjacentSelectorImpl sSel = (GeneralAdjacentSelectorImpl) selector;
+                sSel.setSelector(RecursiveUpdateSelector(sSel.getSelector()));
+            }
         }
         else if (selector instanceof DescendantSelectorImpl)
         {
@@ -341,9 +371,13 @@ public class DescendantToChild implements ICssPostCrawlPlugin
         builder.append("<%s", node.getNodeName());
 
         NamedNodeMap map = node.getAttributes();
-        for(int i = 0; i < map.getLength(); i++)
+
+        if(map != null)
         {
-            builder.append(" %s=\"%s\"", map.item(i).getNodeName(), map.item(i).getNodeValue());
+            for (int i = 0; i < map.getLength(); i++)
+            {
+                builder.append(" %s=\"%s\"", map.item(i).getNodeName(), map.item(i).getNodeValue());
+            }
         }
 
         builder.append("></%s>", node.getNodeName());

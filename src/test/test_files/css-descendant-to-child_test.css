@@ -38,3 +38,13 @@ body #page h3
 {
     font-size: 14px;
 }
+
+.sibling-content span + a .image
+{
+    color: black;
+}
+
+.sibling-content span ~ a.url .image
+{
+    color: white;
+}

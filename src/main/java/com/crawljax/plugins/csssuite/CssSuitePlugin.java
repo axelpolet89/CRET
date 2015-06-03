@@ -65,7 +65,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(new CssNormalizer());
 		_postPlugins.add(analyzer);
 		_postPlugins.add(new CssUndoDetector());
-		_postPlugins.add(new DescendantToChild());
+		_postPlugins.add(new CssDescendantToChild());
 	}
 
 	public void EnableDebug()

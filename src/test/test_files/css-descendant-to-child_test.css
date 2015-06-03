@@ -1,50 +1,50 @@
-div#footer
+div#footer      /* No child-combinator */
 {
     color: black;
 }
 
-.input-content a
+.input-content a /* Yes child-combinator */
 {
     color: black;
 }
 
-#page h3
+#page h3        /* No child-combinator, since h3 exists within another div in #page */
 {
     background: #fff;
     color: #111;
 }
 
-body .extra-content:after
+body .extra-content:after /* Yes child-combinator */
 {
     font-size: 20px;
 }
 
-body.page .content
+body.page .content /* Yes child-combinator */
 {
     background-color: gray;
 }
 
-[class="input-content"] a:hover
+[class="input-content"] a:hover /* Yes child-combinator */
 {
     border: 1px solid white;
 }
 
-.input-content [checked]
+.input-content [checked] /* Yes child-combinator */
 {
     background-color: gray;
 }
 
-body #page h3
+body #page h3   /* Only child combinator between body #page */
 {
     font-size: 14px;
 }
 
-.sibling-content span + a .image
+.sibling-content span + a .image /* Child combinator between .sibling-content span and a .image*/
 {
     color: black;
 }
 
-.sibling-content span ~ a.url .image
+.sibling-content span ~ a.url .image /* Child combinator between .sibling-content span and a .image*/
 {
     color: white;
 }

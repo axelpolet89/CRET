@@ -1,5 +1,7 @@
 package com.crawljax.plugins.csssuite.data;
 
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 

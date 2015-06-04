@@ -3,7 +3,7 @@ package analysis;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 
-import com.crawljax.plugins.csssuite.data.MProperty;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
 import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
@@ -62,8 +62,8 @@ public class CssUndoDetectorTest
         }
 
         //assert correct amount of valid selectors
-        Assert.assertEquals(3, validSelectors.size());
-        Assert.assertArrayEquals(Arrays.asList("ul li", "#wishlist1 li", "h3").toArray(),
+        Assert.assertEquals(4, validSelectors.size());
+        Assert.assertArrayEquals(Arrays.asList("ul li", "#wishlist1 li", "h3", "h3").toArray(),
                 validSelectors.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
 
         for(int i = 0; i < validSelectors.size(); i++)

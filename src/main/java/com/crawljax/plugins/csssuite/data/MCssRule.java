@@ -1,5 +1,6 @@
 package com.crawljax.plugins.csssuite.data;
 
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.jcabi.w3c.Defect;
 import com.steadystate.css.dom.Property;

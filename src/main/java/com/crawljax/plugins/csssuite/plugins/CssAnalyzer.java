@@ -1,15 +1,12 @@
 package com.crawljax.plugins.csssuite.plugins;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.*;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
-import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
-import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
-import com.google.common.collect.ListMultimap;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

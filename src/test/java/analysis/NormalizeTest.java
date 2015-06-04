@@ -2,7 +2,7 @@ package analysis;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MProperty;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
 import org.apache.log4j.xml.DOMConfigurator;

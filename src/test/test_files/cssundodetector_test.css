@@ -24,3 +24,9 @@ h3
 {
     background: none;
 }
+
+h3
+{
+    border: 8px solid white;
+    border-top: 0px solid black;
+}

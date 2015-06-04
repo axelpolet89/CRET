@@ -2,15 +2,12 @@ package com.crawljax.plugins.csssuite.plugins;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
-import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MProperty;
-import com.crawljax.plugins.csssuite.data.MSelector;
+import com.crawljax.plugins.csssuite.data.*;
+import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -118,10 +115,10 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                 {
                     if(name.equals("border-radius"))
                     {
-                        newProps.add(new MProperty("border-top-left-radius", value, isImportant));
-                        newProps.add(new MProperty("border-top-right-radius", value, isImportant));
-                        newProps.add(new MProperty("border-bottom-right-radius", value, isImportant));
-                        newProps.add(new MProperty("border-bottom-left-radius", value, isImportant));
+                        newProps.add(CreateBorderProp("border-top-left-radius", value, isImportant, "border-radius"));
+                        newProps.add(CreateBorderProp("border-top-right-radius", value, isImportant, "border-radius"));
+                        newProps.add(CreateBorderProp("border-bottom-right-radius", value, isImportant, "border-radius"));
+                        newProps.add(CreateBorderProp("border-bottom-left-radius", value, isImportant, "border-radius"));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else
@@ -158,7 +155,6 @@ public class CssNormalizer implements ICssPostCrawlPlugin
 
     /**
      * Split any box declaration into four parts: top, right, bottom, left
-     * @param name
      * @param value
      * @param isImportant
      * @return
@@ -220,13 +216,16 @@ public class CssNormalizer implements ICssPostCrawlPlugin
     {
         List<MProperty> props = new ArrayList<>();
 
+        // either 'outline' or 'border'
+        String base = name.split("-")[0];
+
         // first filter rgb from value, since it contains whitespace
         String rgbColor = TryParseRgb(value);
         if(!rgbColor.isEmpty())
         {
             String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
             value = value.replaceFirst(replace, "");
-            props.add(new MProperty(String.format("%s-color", name), rgbColor, isImportant));
+            props.add(CreateBorderProp(String.format("%s-color", name), rgbColor, isImportant, String.format("%s-color", base)));
         }
 
         String[] parts = value.split("\\s");
@@ -238,19 +237,27 @@ public class CssNormalizer implements ICssPostCrawlPlugin
             if(part.equals("none") || part.equals("solid") || part.equals("dotted")  || part.equals("dashed") ||  part.equals("double")
                     || part.equals("groove") || part.equals("ridge") || part.equals("inset") || part.equals("outset"))
             {
-                props.add(new MProperty(String.format("%s-style", name), part, isImportant));
+                //props.add(new MProperty(String.format("%s-style", name), part, isImportant, new HashSet<>(Arrays.asList(String.format("%s-style", base)))));
+                props.add(CreateBorderProp(String.format("%s-style", name), part, isImportant, String.format("%s-style", base)));
             }
             else if (ContainsUnitLength(part) || part.equals("0"))
             {
-                props.add(new MProperty(String.format("%s-width", name), part, isImportant));
+               // props.add(new MProperty(String.format("%s-width", name), part, isImportant, new HashSet<>(Arrays.asList(String.format("%s-width", base)))));
+                props.add(CreateBorderProp(String.format("%s-width", name), part, isImportant, String.format("%s-width", base)));
             }
             else
             {
-                props.add(new MProperty(String.format("%s-color", name), part, isImportant));
+             //   props.add(new MProperty(String.format("%s-color", name), part, isImportant, new HashSet<>(Arrays.asList(String.format("%s-color", base)))));
+                props.add(CreateBorderProp(String.format("%s-color", name), part, isImportant, String.format("%s-color", base)));
             }
         }
 
         return props;
+    }
+
+    private static MProperty CreateBorderProp(String name, String value, boolean isImportant, String allowedWith)
+    {
+        return new MBorderProperty(name, value, isImportant, allowedWith);
     }
 
 

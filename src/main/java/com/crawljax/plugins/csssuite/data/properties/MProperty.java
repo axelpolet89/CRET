@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.data;
+package com.crawljax.plugins.csssuite.data.properties;
 
 /**
  * Represents a style declaration or CSS property that is contained inside a CSS rule
@@ -7,18 +7,18 @@ package com.crawljax.plugins.csssuite.data;
  */
 public class MProperty
 {
-	private final String _name;
+	protected final String _name;
 	private final String _originalValue;
 	private final String _w3cError;
 	private final boolean _isIgnored;
 	private final boolean _isImportant;
+	private final String _allowedWith;
 
-	private String _normalizedValue;
+	protected String _normalizedValue;
 	private String _status;
 
 	private boolean _isEffective;
 	private boolean _isInvalidUndo;
-
 
 	/**
 	 * Default constructor
@@ -37,6 +37,7 @@ public class MProperty
 		_w3cError = w3cError;
 		_isIgnored = !w3cError.isEmpty();
 		_isInvalidUndo = false;
+		_allowedWith = "";
 	}
 
 
@@ -102,6 +103,16 @@ public class MProperty
 		return _isInvalidUndo;
 	}
 
+
+	/**
+	 *
+	 * @param otherProperty
+	 * @return
+	 */
+	public boolean AllowCoexistence(MProperty otherProperty)
+	{
+		return false;
+	}
 
 	/**
 	 *

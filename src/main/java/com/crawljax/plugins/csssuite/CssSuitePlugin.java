@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.crawljax.plugins.csssuite.data.*;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;

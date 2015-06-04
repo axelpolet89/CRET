@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MProperty;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import org.apache.log4j.Logger;
 

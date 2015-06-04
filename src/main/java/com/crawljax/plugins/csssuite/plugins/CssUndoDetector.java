@@ -3,7 +3,7 @@ package com.crawljax.plugins.csssuite.plugins;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MProperty;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 
@@ -45,7 +45,9 @@ public class CssUndoDetector implements ICssPostCrawlPlugin
             for (int i = 0; i < effectiveSelectors.size(); i++)
             {
                 MSelector selector = effectiveSelectors.get(i);
-                for (MProperty property : selector.GetProperties())
+                List<MProperty> properties = selector.GetProperties();
+
+                for (MProperty property : properties)
                 {
                     final String name = property.GetName();
                     final String value = property.GetValue();
@@ -65,6 +67,23 @@ public class CssUndoDetector implements ICssPostCrawlPlugin
                                 name, value, selector);
 
                         boolean validUndo = false;
+
+                        // if this property is allowed to coexist besides another property in the same selector,
+                        // even with a 0 value, then it is a valid undo (f.e. border-top-width: 0; besides border-width: 4px;)
+                        for(MProperty property2 : properties)
+                        {
+                            if(property != property2)
+                            {
+                                if(property.AllowCoexistence(property2))
+                                {
+                                    validUndo = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(validUndo)
+                            break;
 
                         for (int j = i + 1; j < effectiveSelectors.size(); j++)
                         {
@@ -105,7 +124,6 @@ public class CssUndoDetector implements ICssPostCrawlPlugin
                                 // verify whether another effective property in a less-specific selector has the same name
                                 if (otherProperty.IsEffective() && otherName.equals(name))
                                 {
-
                                     // verify that it has a different value
                                     if (!otherValue.equals(defaultStyles.get(otherName)))
                                     {

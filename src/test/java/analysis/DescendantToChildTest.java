@@ -1,6 +1,7 @@
 package analysis;
 
 import com.crawljax.plugins.csssuite.data.*;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.plugins.*;
 
 import org.apache.log4j.Level;

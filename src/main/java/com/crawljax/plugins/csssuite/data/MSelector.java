@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite.data;
 import java.util.*;
 
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.util.PseudoHelper;
 import com.crawljax.plugins.csssuite.util.specificity.Specificity;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityCalculator;

@@ -189,5 +189,28 @@ public class NormalizeTest
         Assert.assertEquals("black", properties.get(2).GetValue());
         Assert.assertEquals("border-left-color", properties.get(3).GetName());
         Assert.assertEquals("black", properties.get(3).GetValue());
+
+
+        properties = selectors.get(15).GetProperties();
+        Assert.assertEquals(5, properties.size());
+        Assert.assertEquals("border-width", properties.get(0).GetName());
+        Assert.assertEquals("0", properties.get(0).GetValue());
+        Assert.assertEquals("border-top-left-radius", properties.get(1).GetName());
+        Assert.assertEquals("0", properties.get(1).GetValue());
+        Assert.assertEquals("border-top-right-radius", properties.get(2).GetName());
+        Assert.assertEquals("0", properties.get(2).GetValue());
+        Assert.assertEquals("border-bottom-right-radius", properties.get(3).GetName());
+        Assert.assertEquals("0", properties.get(3).GetValue());
+        Assert.assertEquals("border-bottom-left-radius", properties.get(4).GetName());
+        Assert.assertEquals("0", properties.get(4).GetValue());
+
+        properties = selectors.get(16).GetProperties();
+        Assert.assertEquals(3, properties.size());
+        Assert.assertEquals("border-top-width", properties.get(0).GetName());
+        Assert.assertEquals("0", properties.get(0).GetValue());
+        Assert.assertEquals("border-top-style", properties.get(1).GetName());
+        Assert.assertEquals("solid", properties.get(1).GetValue());
+        Assert.assertEquals("border-top-color", properties.get(2).GetName());
+        Assert.assertEquals("white", properties.get(2).GetValue());
     }
 }

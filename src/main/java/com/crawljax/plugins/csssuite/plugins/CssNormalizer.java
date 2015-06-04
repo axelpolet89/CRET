@@ -124,9 +124,11 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                         newProps.add(new MProperty("border-bottom-left-radius", value, isImportant));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
-
-                    newProps.addAll(BorderToProps(name, value, isImportant));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    else
+                    {
+                        newProps.addAll(BorderToProps(name, value, isImportant));
+                        LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    }
                 }
                 else if(name.equals("outline"))
                 {
@@ -238,7 +240,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
             {
                 props.add(new MProperty(String.format("%s-style", name), part, isImportant));
             }
-            else if (ContainsUnitLength(part))
+            else if (ContainsUnitLength(part) || part.equals("0"))
             {
                 props.add(new MProperty(String.format("%s-width", name), part, isImportant));
             }
@@ -309,13 +311,13 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                 }
                 props.add(new MProperty("background-position", position, isImportant));
             }
-            else if (ContainsUnitLength(part) || part.contains("%"))
+            else if (ContainsUnitLength(part) || part.contains("%") || part.equals("0"))
             {
                 String position = part;
                 if(i+1 < parts.length)
                 {
                     String part2 = parts[i + 1];
-                    if (ContainsUnitLength(part2) || part.contains("%"))
+                    if (ContainsUnitLength(part2) || part.contains("%") || part.equals("0"))
                     {
                         position += " " + part2;
                         i++;

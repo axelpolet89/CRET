@@ -73,3 +73,14 @@
 {
 	border-color: black;
 }
+
+#zeroes2
+{
+	border: 0;
+	border-radius: 0;
+}
+
+#border7
+{
+	border-top: 0px solid white;
+}

@@ -121,18 +121,16 @@ public class CssUndoDetector implements ICssPostCrawlPlugin
                                 final String otherName = otherProperty.GetName();
                                 final String otherValue = otherProperty.GetValue();
 
+                                // verify whether this property is allowed to co-exist to another property, whatever the value
                                 // verify whether another effective property in a less-specific selector has the same name
-                                if (otherProperty.IsEffective() && otherName.equals(name))
+                                // verify that it has a different value
+                                if (property.AllowCoexistence(otherProperty) || (otherProperty.IsEffective() && otherName.equals(name) && !otherValue.equals(value)))
                                 {
-                                    // verify that it has a different value
-                                    if (!otherValue.equals(defaultStyles.get(otherName)))
-                                    {
-                                        validUndo = true;
-                                        LogHandler.debug("[CssUndoDetector] Found an effective property '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
-                                                        "that is (correctly) undone by effective property with value '%s' in (more-specific) selector '%s'",
-                                                otherProperty.GetName(), otherProperty.GetValue(), nextSelector, property.GetValue(), selector);
-                                        break;
-                                    }
+                                    validUndo = true;
+                                    LogHandler.debug("[CssUndoDetector] Found an effective property '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
+                                                    "that is (correctly) undone by effective property with value '%s' in (more-specific) selector '%s'",
+                                            otherProperty.GetName(), otherProperty.GetValue(), nextSelector, property.GetValue(), selector);
+                                    break;
                                 }
                             }
 

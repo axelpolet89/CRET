@@ -77,6 +77,7 @@ public class DescendantToChildTest
                 validSelectors.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
 
         // verify re-match of selectors by performing run-time analysis again
+        MatchedElements.Clear();
         analyzer.Transform("", dom, postResult, order);
 
         Set<String> matches2 = MatchedElements.GetMatchedElements();

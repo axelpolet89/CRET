@@ -21,8 +21,6 @@ public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
 	@Override
 	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder)
 	{
-		MatchedElements.Clear();
-
 		for(String file : stateFileOrder.keySet())
 		{
 			LogHandler.info("[CssAnalyzer] Matching DOM elements for css file '%s'...", file);

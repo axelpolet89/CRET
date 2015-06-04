@@ -43,6 +43,9 @@ public class MatchedElements
 		return elementSelectors.get(element);
 	}
 
+	/**
+	 * USE ONLY IN TESTS!
+	 */
 	public static void Clear(){elementSelectors.clear();}
 
 	/**

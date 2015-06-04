@@ -18,8 +18,8 @@ import org.w3c.dom.Node;
 
 public class MSelector
 {
-	private final  Selector _selector;
-	private final  List<MProperty> _properties;
+	private final Selector _selector;
+	private final List<MProperty> _properties;
 	private String _selectorSequence;
 	private final int _ruleNumber;
 	private final List<MediaQuery> _mediaQueries;
@@ -42,11 +42,12 @@ public class MSelector
 
 	/**
 	 * Constructor
-	 * @param selector: the selector text (CSS).
+	 *
+	 * @param selector:   the selector text (CSS).
 	 * @param properties: the properties that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
-	public MSelector(Selector selector,  List<MProperty> properties, int ruleNumber, List<MediaQuery> queries)
+	public MSelector(Selector selector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries)
 	{
 		_selector = selector;
 		_properties = properties;
@@ -75,7 +76,7 @@ public class MSelector
 		{
 			DeterminePseudo();
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			LogHandler.error(ex, "Error in determining pseudo presence in selector '%s':", selector);
 		}
@@ -83,6 +84,21 @@ public class MSelector
 		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorSequence,
 				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
 				_hasPseudoElement);
+	}
+
+
+	/**
+	 * Copy constructor
+	 * @param w3cSelector
+	 * @param mSel
+	 */
+	public MSelector(Selector w3cSelector, MSelector mSel)
+	{
+		this(w3cSelector, mSel.GetProperties(), mSel.GetRuleNumber(), mSel.GetMediaQueries());
+
+		// set additional properties, left empty by default constructor
+		_isMatched = mSel.IsMatched();
+		_matchedElements.addAll(mSel.GetMatchedElements());
 	}
 
 

@@ -12,7 +12,6 @@ public class MProperty
 	private final String _w3cError;
 	private final boolean _isIgnored;
 	private final boolean _isImportant;
-	private final String _allowedWith;
 
 	protected String _normalizedValue;
 	private String _status;
@@ -37,7 +36,6 @@ public class MProperty
 		_w3cError = w3cError;
 		_isIgnored = !w3cError.isEmpty();
 		_isInvalidUndo = false;
-		_allowedWith = "";
 	}
 
 

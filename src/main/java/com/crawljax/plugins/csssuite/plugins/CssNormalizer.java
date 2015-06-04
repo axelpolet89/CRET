@@ -115,10 +115,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
                 {
                     if(name.equals("border-radius"))
                     {
-                        newProps.add(CreateBorderProp("border-top-left-radius", value, isImportant, "border-radius"));
-                        newProps.add(CreateBorderProp("border-top-right-radius", value, isImportant, "border-radius"));
-                        newProps.add(CreateBorderProp("border-bottom-right-radius", value, isImportant, "border-radius"));
-                        newProps.add(CreateBorderProp("border-bottom-left-radius", value, isImportant, "border-radius"));
+                        newProps.addAll(BorderRadiusToProps(value, isImportant));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else
@@ -255,10 +252,96 @@ public class CssNormalizer implements ICssPostCrawlPlugin
         return props;
     }
 
+    /**
+     *
+     * @param name
+     * @param value
+     * @param isImportant
+     * @param allowedWith
+     * @return
+     */
     private static MProperty CreateBorderProp(String name, String value, boolean isImportant, String allowedWith)
     {
         return new MBorderProperty(name, value, isImportant, allowedWith);
     }
+
+
+    /**
+     *
+     * @param value
+     * @param isImportant
+     * @return
+     */
+    private static List<MProperty> BorderRadiusToProps(String value, boolean isImportant) throws CssSuiteException
+    {
+        String[] parts = value.split("/");
+
+        List<String> radii = ParseRadiiParts(parts[0]);
+        String topLeft = radii.get(0);
+        String topRight = radii.get(1);
+        String bottomRight = radii.get(2);
+        String bottomLeft = radii.get(3);
+
+        if(parts.length == 2)
+        {
+            radii = ParseRadiiParts(parts[1]);
+            topLeft += " " + radii.get(0);
+            topRight += " " + radii.get(1);
+            bottomRight += " " + radii.get(2);
+            bottomLeft += " " + radii.get(3);
+        }
+
+        List<MProperty> result = new ArrayList<>();
+
+        result.add(CreateBorderProp("border-top-left-radius", topLeft, isImportant, "border-radius"));
+        result.add(CreateBorderProp("border-top-right-radius", topRight, isImportant, "border-radius"));
+        result.add(CreateBorderProp("border-bottom-right-radius", bottomRight, isImportant, "border-radius"));
+        result.add(CreateBorderProp("border-bottom-left-radius", bottomLeft, isImportant, "border-radius"));
+
+        return result;
+    }
+
+
+    /**
+     * Split any box declaration into four parts: top, right, bottom, left
+     * @param value
+     * @param isImportant
+     * @return
+     * @throws CssSuiteException
+     */
+    private static List<String> ParseRadiiParts(String value) throws CssSuiteException
+    {
+        String topLeft, topRight, bottomRight, bottomLeft;
+        String[] parts = value.split("\\s");
+
+        switch (parts.length)
+        {
+            case 1:
+                topLeft = topRight = bottomRight = bottomLeft = parts[0];
+                break;
+            case 2:
+                topLeft = bottomRight = parts[0];
+                topRight = bottomLeft = parts[1];
+                break;
+            case 3:
+                topLeft = parts[0];
+                topRight = parts[1];
+                bottomRight = parts[2];
+                bottomLeft = topRight;
+                break;
+            case 4:
+                topLeft = parts[0];
+                topRight = parts[1];
+                bottomRight = parts[2];
+                bottomLeft = parts[3];
+                break;
+            default:
+                throw new CssSuiteException("Cannot normalize value '%s', because number of parts is larger than 4 or smaller than 1", value);
+        }
+
+        return Arrays.asList(topLeft, topRight, bottomRight, bottomLeft);
+    }
+
 
 
 

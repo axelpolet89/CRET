@@ -76,7 +76,8 @@ public class CssDescendantToChild implements ICssPostCrawlPlugin
                         Selector newW3cSelector = RecursiveUpdateSelector(w3cSelector);
                         LogHandler.debug("[DescToChild] [%s] New selector text: '%s'", mSelector, newW3cSelector);
 
-                        MSelector newSelector = new MSelector(newW3cSelector, mSelector.GetProperties(), mSelector.GetRuleNumber(), mSelector.GetMediaQueries());
+                        // call copy constructor to create MSelector replacement
+                        MSelector newSelector = new MSelector(newW3cSelector, mSelector);
                         newSelectors.put(mSelector, newSelector);
                         LogHandler.debug("[DescToChild] [%s] New MSelector created: '%s', will replace old", mSelector, newSelector);
                     }

@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * Created by axel on 5/27/2015.
  *
- * This class is responsible for normalizing property values:
+ * This class is responsible for normalizing property values contained in MSelectors
  * 1) split shorthand declarations into separate parts
  * 2) normalize zero values
  * 3) normalize url values
@@ -31,7 +31,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
             {
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
-                    RemoveShortHandDeclarations(mSelector);
+                    SplitShortHandDeclarations(mSelector);
                     Normalize(mSelector);
                 }
             }
@@ -42,50 +42,10 @@ public class CssNormalizer implements ICssPostCrawlPlugin
 
 
     /**
-     *
+     * Split any shorthand margin, padding, border, border-radius, outline and background property into parts
      * @param mSelector
      */
-    private static void Normalize(MSelector mSelector)
-    {
-        for(MProperty mProperty : mSelector.GetProperties())
-        {
-            if(mProperty.IsIgnored())
-                continue;
-
-            final String origValue = mProperty.GetOriginalValue();
-            final String value = mProperty.GetOriginalValue().replaceAll("\\s", "");
-
-            if (value.contains("0"))
-            {
-                if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
-                        value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
-                {
-                    mProperty.SetNormalizedValue("0");
-                    LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
-                }
-                else if (mProperty.GetOriginalValue().contains("0."))
-                {
-                    mProperty.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
-                }
-            }
-
-            if(value.contains("http://"))
-            {
-                mProperty.SetNormalizedValue(origValue.replaceAll("http://", ""));
-            }
-            else if(value.contains("https://"))
-            {
-                mProperty.SetNormalizedValue(origValue.replaceAll("https://", ""));
-            }
-        }
-    }
-
-
-    /**
-     *
-     * @param mSelector
-     */
-    private static void RemoveShortHandDeclarations(MSelector mSelector)
+    private static void SplitShortHandDeclarations(MSelector mSelector)
     {
         List<MProperty> newProps = new ArrayList<>();
 
@@ -147,6 +107,46 @@ public class CssNormalizer implements ICssPostCrawlPlugin
         }
 
         mSelector.ReplaceProperties(newProps);
+    }
+
+
+    /**
+     * Normalize zero values and url values
+     * @param mSelector
+     */
+    private static void Normalize(MSelector mSelector)
+    {
+        for(MProperty mProperty : mSelector.GetProperties())
+        {
+            if(mProperty.IsIgnored())
+                continue;
+
+            final String origValue = mProperty.GetOriginalValue();
+            final String value = mProperty.GetOriginalValue().replaceAll("\\s", "");
+
+            if (value.contains("0"))
+            {
+                if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
+                        value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
+                {
+                    mProperty.SetNormalizedValue("0");
+                    LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
+                }
+                else if (mProperty.GetOriginalValue().contains("0."))
+                {
+                    mProperty.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
+                }
+            }
+
+            if(value.contains("http://"))
+            {
+                mProperty.SetNormalizedValue(origValue.replaceAll("http://", ""));
+            }
+            else if(value.contains("https://"))
+            {
+                mProperty.SetNormalizedValue(origValue.replaceAll("https://", ""));
+            }
+        }
     }
 
 
@@ -252,14 +252,7 @@ public class CssNormalizer implements ICssPostCrawlPlugin
         return props;
     }
 
-    /**
-     *
-     * @param name
-     * @param value
-     * @param isImportant
-     * @param allowedWith
-     * @return
-     */
+
     private static MProperty CreateBorderProp(String name, String value, boolean isImportant, String allowedWith)
     {
         return new MBorderProperty(name, value, isImportant, allowedWith);
@@ -305,7 +298,6 @@ public class CssNormalizer implements ICssPostCrawlPlugin
     /**
      * Split any box declaration into four parts: top, right, bottom, left
      * @param value
-     * @param isImportant
      * @return
      * @throws CssSuiteException
      */
@@ -341,7 +333,6 @@ public class CssNormalizer implements ICssPostCrawlPlugin
 
         return Arrays.asList(topLeft, topRight, bottomRight, bottomLeft);
     }
-
 
 
 

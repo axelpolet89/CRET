@@ -67,6 +67,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(analyzer);
 		_postPlugins.add(new CssUndoDetector());
 		_postPlugins.add(new CssDescendantToChild());
+		_postPlugins.add(new CloneDetector());
 	}
 
 	public void EnableDebug()
@@ -334,12 +335,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		clones.append("CloneDetector checked " + _processedCssFiles.size() + " files.\n");
 		clones.append(PrintFiles());
 
-		for(CloneDetector cd : cloneDetectors)
-		{
-			clones.append("\n\n Clone Report for file " + cd.GetFile());
-			clones.append("-> Found " + cd.CountClones() + " duplicate properties.\n");
-			clones.append(cd.PrintClones());
-		}
+		CloneDetector cd = (CloneDetector) _postPlugins.get(_postPlugins.size() - 1);
+
+		clones.append("\n\n Clone Report");
+		clones.append("-> Found " + cd.CountClones() + " duplicate properties.\n");
+		clones.append(cd.PrintClones());
+
 		output.append(clones.toString());
 
 		try

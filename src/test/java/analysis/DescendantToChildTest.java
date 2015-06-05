@@ -4,6 +4,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.plugins.*;
 
+import com.sun.org.glassfish.gmbal.ManagedAttribute;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -24,6 +25,7 @@ public class DescendantToChildTest
     {
         DOMConfigurator.configure("log4j.xml");
         LogManager.getLogger("css.suite.logger").setLevel(Level.DEBUG);
+        MatchedElements.Clear();
     }
 
     @Test

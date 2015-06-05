@@ -5,6 +5,7 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
+import com.crawljax.plugins.csssuite.plugins.MatchedElements;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -22,6 +23,7 @@ public class CssAnalyzerTest
 	{
 		DOMConfigurator.configure("log4j.xml");
 		LogManager.getLogger("css.suite.logger").setLevel(Level.DEBUG);
+		MatchedElements.Clear();
 	}
 
 

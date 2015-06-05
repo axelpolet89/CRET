@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.crawljax.plugins.csssuite.plugins.MatchedElements;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
@@ -19,6 +20,7 @@ public class SpecificityTest
 	public SpecificityTest()
 	{
 		DOMConfigurator.configure("log4j.xml");
+		MatchedElements.Clear();
 	}
 
 	@Test

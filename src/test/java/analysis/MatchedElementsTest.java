@@ -3,6 +3,7 @@ package analysis;
 import java.io.IOException;
 import java.util.List;
 
+import com.crawljax.plugins.csssuite.plugins.MatchedElements;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,6 +23,8 @@ public class MatchedElementsTest
 	public MatchedElementsTest()
 	{
 		DOMConfigurator.configure("log4j.xml");
+		MatchedElements.Clear();
+
 	}
 
 	@Test

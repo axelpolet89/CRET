@@ -8,6 +8,7 @@ import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
 import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
 import com.crawljax.plugins.csssuite.plugins.CssUndoDetector;
+import com.crawljax.plugins.csssuite.plugins.MatchedElements;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -27,6 +28,7 @@ public class CssUndoDetectorTest
     {
         DOMConfigurator.configure("log4j.xml");
         LogManager.getLogger("css.suite.logger").setLevel(Level.DEBUG);
+        MatchedElements.Clear();
     }
 
     @Test

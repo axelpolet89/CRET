@@ -5,6 +5,7 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
+import com.crawljax.plugins.csssuite.plugins.MatchedElements;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,6 +23,7 @@ public class NormalizeTest
     public NormalizeTest()
     {
         DOMConfigurator.configure("log4j.xml");
+        MatchedElements.Clear();
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins;
+package com.crawljax.plugins.csssuite.plugins.sass;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,70 +44,6 @@ public class CloneDetector implements ICssPostCrawlPlugin
     }
 
 
-//    /**
-//     *
-//     * @param rules
-//     */
-//    public void Detect(List<MCssRule> rules)
-//    {
-//        //allows for fast detection of clones (using hash compare on the keys)
-//        HashMap<String, CloneSet> clones = new HashMap<>();
-//
-//        for(MCssRule mRule : rules)
-//        {
-//            for(MSelector mSelector : mRule.GetSelectors())
-//            {
-//                for (MProperty mProp : mSelector.GetProperties())
-//                {
-//                    String key = PropertyToString(mProp);
-//                    if (clones.containsKey(key))
-//                    {
-//                        clones.get(key).AddRuleToSet(mSelector);
-//                    }
-//                    else
-//                    {
-//                        clones.put(key, new CloneSet(mProp));
-//                        clones.get(key).AddRuleToSet(mSelector);
-//                    }
-//                }
-//            }
-//        }
-//
-//        _allClonesclones.values().stream().filter(cloneSet -> cloneSet.GetSelectors().size() > 1).collect(Collectors.toList());
-//
-//        HashMap<List<MSelector>, List<MProperty>> result = new HashMap<>();
-//
-//        int idx = 1;
-//        for(CloneSet cloneSet : _allClones){
-//
-//            List<MSelector> group = cloneSet.GetSelectors();
-//            if(result.containsKey(group)) {
-//                idx++;
-//                continue;
-//            }
-//
-//            List<MProperty> props = new ArrayList<>();
-//            props.add(cloneSet.GetProperty());
-//
-//            for(int i = idx; i < _allClones.size(); i++)
-//            {
-//                CloneSet otherCloneSet = _allClones.get(i);
-//                //todo: still need to develop way by which some(at least 2) selectors match between clonesets
-//                if(otherCloneSet.GetSelectors().containsAll(cloneSet.GetSelectors()))
-//                {
-//                    props.add(otherCloneSet.GetProperty());
-//                }
-//            }
-//
-//            result.put(group, props);
-//
-//            idx++;
-//        }
-//
-//        _mixinClones = result;
-//    }
-
-
     /**
      *
      * @return
@@ -132,7 +68,7 @@ public class CloneDetector implements ICssPostCrawlPlugin
                 for (CloneSet cloneSet : _allClones.get(fileName))
                 {
                     result.append("Clone: " + PropertyToString(cloneSet.GetProperty()) + "\n");
-                    for (MSelector mRule : cloneSet.GetSelectors())
+                    for (MSelector mRule : cloneSet.GetSelectors().stream().sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber())).collect(Collectors.toList()))
                     {
                         result.append("Selector: " + mRule.toString() + "\n");
                     }
@@ -142,7 +78,7 @@ public class CloneDetector implements ICssPostCrawlPlugin
                 for (List<MSelector> key : _mixinClones.get(fileName).keySet())
                 {
                     final String[] s = {""};
-                    key.forEach(ms -> s[0] += "in selector: " + ms.toString() + "\n");
+                    key.stream().sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber())).forEach(ms -> s[0] += "in selector: " + ms.toString() + "\n");
 
                     result.append("Shared Properties Found!\n");
                     result.append(s[0]);
@@ -161,28 +97,61 @@ public class CloneDetector implements ICssPostCrawlPlugin
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
     {
+
         for(String fileName : cssRules.keySet())
         {
             //allows for fast detection of clones (using hash compare on the keys)
             HashMap<String, CloneSet> clones = new HashMap<>();
             List<MCssRule> rules = cssRules.get(fileName).GetRules();
 
-            for (MCssRule mRule : rules)
+            List<MSelector> origSelectors = new ArrayList<>();
+            Map<String, List<MSelector>> selectorClones = new HashMap<>();
+            List<MSelector> newSelectors = new ArrayList<>();
+
+            for(MCssRule rule : rules)
             {
-                for (MSelector mSelector : mRule.GetSelectors())
+                origSelectors.addAll(rule.GetSelectors());
+            }
+
+            for(MSelector mSelector : origSelectors)
+            {
+                String selectorText = mSelector.GetSelectorText();
+
+                if(!selectorClones.containsKey(selectorText))
                 {
-                    for (MProperty mProp : mSelector.GetProperties())
+                    selectorClones.put(selectorText, new ArrayList<>());
+                }
+
+                selectorClones.get(selectorText).add(mSelector);
+            }
+
+            for(String selectorText : selectorClones.keySet())
+            {
+                List<MSelector> mSelectors = selectorClones.get(selectorText);
+                MSelector newSelector = new MSelector(mSelectors.get(0));
+
+                for(int i = 1; i < mSelectors.size(); i++)
+                {
+                    newSelector.MergeProperties(mSelectors.get(i));
+                }
+
+                newSelectors.add(newSelector);
+            }
+
+
+            for (MSelector mSelector :newSelectors)
+            {
+                for (MProperty mProp : mSelector.GetProperties())
+                {
+                    String key = PropertyToString(mProp);
+                    if (clones.containsKey(key))
                     {
-                        String key = PropertyToString(mProp);
-                        if (clones.containsKey(key))
-                        {
-                            clones.get(key).AddRuleToSet(mSelector);
-                        }
-                        else
-                        {
-                            clones.put(key, new CloneSet(mProp));
-                            clones.get(key).AddRuleToSet(mSelector);
-                        }
+                        clones.get(key).AddRuleToSet(mSelector);
+                    }
+                    else
+                    {
+                        clones.put(key, new CloneSet(mProp));
+                        clones.get(key).AddRuleToSet(mSelector);
                     }
                 }
             }
@@ -224,6 +193,7 @@ public class CloneDetector implements ICssPostCrawlPlugin
         }
 
         return cssRules;
+
     }
 
 

@@ -20,25 +20,25 @@ public class MSelector
 {
 	private final Selector _selector;
 	private final List<MProperty> _properties;
-	private String _selectorSequence;
-	private final int _ruleNumber;
 	private final List<MediaQuery> _mediaQueries;
+	private String _selectorText; // possibly updatet in filtering universal selectors
+	private int _ruleNumber; // possibly updatet by MergeProperties
 
 	private boolean _isIgnored;
 	private boolean _isMatched;
 	private boolean _isNonStructuralPseudo;
 	private boolean _hasPseudoElement;
 
-	private final LinkedHashMap<String, String> _nonStructuralPseudoClasses;
-	private final LinkedHashMap<String, String> _structuralPseudoClasses;
+	private LinkedHashMap<String, String> _nonStructuralPseudoClasses;
+	private LinkedHashMap<String, String> _structuralPseudoClasses;
 	private int _pseudoLevel;
 	private String _keyPseudoClass;
 	private String _selectorTextWithoutPseudo;
 	private String _keyPseudoElement;
 
-	private final Specificity _specificity;
+	private Specificity _specificity;
 
-	private final List<ElementWrapper> _matchedElements;
+	private List<ElementWrapper> _matchedElements;
 
 	/**
 	 * Constructor
@@ -52,18 +52,23 @@ public class MSelector
 		_selector = selector;
 		_properties = properties;
 		_ruleNumber = ruleNumber;
-		_selectorSequence = selector.toString().trim();
+		_selectorText = selector.toString().trim();
 		_mediaQueries = queries;
 
-		_isIgnored = _selectorSequence.contains(":not") || _selectorSequence.contains("[disabled]");
+		Init();
+	}
+
+	private void Init()
+	{
+		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]");
 
 		try
 		{
-			RecursiveFilterUniversalSelector(selector);
+			RecursiveFilterUniversalSelector(_selector);
 		}
 		catch (Exception ex)
 		{
-			LogHandler.error(ex, "Error in filtering universal selectors in selector '%s':", selector);
+			LogHandler.error(ex, "Error in filtering universal selectors in selector '%s':", _selector);
 		}
 
 		_matchedElements = new ArrayList<>();
@@ -78,17 +83,17 @@ public class MSelector
 		}
 		catch (Exception ex)
 		{
-			LogHandler.error(ex, "Error in determining pseudo presence in selector '%s':", selector);
+			LogHandler.error(ex, "Error in determining pseudo presence in selector '%s':", _selector);
 		}
 
-		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorSequence,
+		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
 				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
 				_hasPseudoElement);
 	}
 
 
 	/**
-	 * Copy constructor
+	 * Partial copy constructor
 	 * @param w3cSelector
 	 * @param mSel
 	 */
@@ -101,6 +106,37 @@ public class MSelector
 		_matchedElements.addAll(mSel.GetMatchedElements());
 	}
 
+
+	/**
+	 * Full copy constructor
+	 */
+	public MSelector(MSelector mSel)
+	{
+		_selector = mSel.GetW3cSelector();
+		_selectorText = _selector.toString().trim();
+		_properties = new ArrayList<>();
+		_properties.addAll(mSel.GetProperties());
+		_mediaQueries = new ArrayList<>();
+		_mediaQueries.addAll(mSel.GetMediaQueries());
+		_ruleNumber = mSel.GetRuleNumber();
+
+		Init();
+
+		// set additional properties, left empty by default constructor
+		_isMatched = mSel.IsMatched();
+		_matchedElements.addAll(mSel.GetMatchedElements());
+	}
+
+
+	/**
+	 *
+	 * @param mSelector
+	 */
+	public void MergeProperties(MSelector mSelector)
+	{
+		_properties.addAll(mSelector.GetProperties());
+		_ruleNumber = Math.max(_ruleNumber, mSelector.GetRuleNumber());
+	}
 
 
 	/**
@@ -151,7 +187,7 @@ public class MSelector
 		String replacement = part.replaceAll("\\*", "");
 
 		//replace part of the original selector sequence, by a string without an asterisk
-		_selectorSequence = _selectorSequence.replaceAll(part, replacement);
+		_selectorText = _selectorText.replaceAll(part, replacement);
 	}
 
 
@@ -165,12 +201,12 @@ public class MSelector
 	private void DeterminePseudo()
 	{
 		//todo: what to do with negation pseudo?
-		if(_selectorSequence.contains(":not"))
+		if(_selectorText.contains(":not"))
 			return;
 
-		if(_selectorSequence.contains(":"))
+		if(_selectorText.contains(":"))
 		{
-			_selectorTextWithoutPseudo = _selectorSequence;
+			_selectorTextWithoutPseudo = _selectorText;
 
 			//find all pseudo selectors in the whole selector
 			_pseudoLevel = 0;
@@ -276,7 +312,7 @@ public class MSelector
 	public Selector GetW3cSelector() { return _selector; }
 
 	/** Getter */
-	public String GetSelectorText() { return _selectorSequence;	}
+	public String GetSelectorText() { return _selectorText;	}
 
 	/** Getter */
 	public List<MProperty> GetProperties() { return _properties; }
@@ -320,7 +356,7 @@ public class MSelector
 		if(_isNonStructuralPseudo)
 			return _selectorTextWithoutPseudo;
 
-		return _selectorSequence;
+		return _selectorText;
 	}
 
 
@@ -518,7 +554,7 @@ public class MSelector
 		{
 			propsSize += prop.ComputeSizeBytes();
 		}
-		return (propsSize + _selectorSequence.trim().replace(" ", "").getBytes().length);
+		return (propsSize + _selectorText.trim().replace(" ", "").getBytes().length);
 	}
 
 
@@ -548,7 +584,7 @@ public class MSelector
 	{
 		StringBuffer buffer = new StringBuffer();
 
-		buffer.append("Selector: " + _selectorSequence + "\n");
+		buffer.append("Selector: " + _selectorText + "\n");
 		buffer.append(" Matched?: " + _isMatched + "\n");
 
 		if (_matchedElements.size() > 0) {
@@ -566,6 +602,6 @@ public class MSelector
 	@Override
 	public String toString()
 	{
-		return String.format("%s (line '%d')", _selectorSequence, _ruleNumber);
+		return String.format("%s (line '%d')", _selectorText, _ruleNumber);
 	}
 }

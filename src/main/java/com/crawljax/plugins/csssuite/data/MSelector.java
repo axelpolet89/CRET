@@ -544,6 +544,22 @@ public class MSelector
 	}
 
 
+	public void RemovePropertiesByText(List<MProperty> properties)
+	{
+		List<MProperty> toRemove = new ArrayList<>();
+		for(MProperty mProperty : properties)
+		{
+			for(MProperty thisProperty : _properties)
+			{
+				if(mProperty.toString().equals(thisProperty.toString()))
+					toRemove.add(thisProperty);
+			}
+		}
+
+		_properties.removeAll(toRemove);
+	}
+
+
 	/**
 	 * @return size of the css code without whitespace + property size
 	 */

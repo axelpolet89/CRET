@@ -204,7 +204,7 @@ public class MCssRule
 			builder.append(" {");
 			for(MProperty mProp : mTuple.GetProperties())
 			{
-				builder.appendLine("\t" + mProp.Print());
+				builder.appendLine("\t" + mProp.toString());
 			}
 			builder.appendLine("}\n\n");
 		}

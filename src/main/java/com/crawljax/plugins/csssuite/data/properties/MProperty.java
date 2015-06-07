@@ -167,12 +167,7 @@ public class MProperty
 	 */
 	public String Print()
 	{
-		String result = _name + ": " + _normalizedValue;
-
-		if(_isImportant)
-			return result + " !important;";
-
-		return result + ";";
+		return "{ " + _name + " : " + _normalizedValue + " " + (_isImportant ? "!important ": "") + (_isEffective ? "Effective" : "Ineffective") + " }";
 	}
 
 
@@ -191,6 +186,13 @@ public class MProperty
 	@Override
 	public String toString()
 	{
-		return "{ " + _name + " : " + _normalizedValue + " " + (_isImportant ? "!important ": "") + (_isEffective ? "Effective" : "Ineffective") + " }";
+		String result = _name + ": " + _normalizedValue;
+
+		if(_isImportant)
+			return result + " !important;";
+
+		return result + ";";
+
 	}
 }
+

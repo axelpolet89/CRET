@@ -3,13 +3,18 @@ package com.crawljax.plugins.csssuite.plugins.sass;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.plugins.sass.fpgrowth.FPGrowth;
+import com.crawljax.plugins.csssuite.plugins.sass.items.Item;
+import com.crawljax.plugins.csssuite.plugins.sass.items.ItemSet;
+import com.crawljax.plugins.csssuite.plugins.sass.items.ItemSetList;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
-import org.apache.log4j.Logger;
+import sun.rmi.runtime.Log;
 
 /**
  * Created by axel on 5/5/2015.
@@ -138,58 +143,81 @@ public class CloneDetector implements ICssPostCrawlPlugin
                 newSelectors.add(newSelector);
             }
 
+            //FindDuplicationsAndFpGrowth(newSelectors);
+            List<SassTemplate> templates = GenerateSassTemplates(newSelectors);
 
-            for (MSelector mSelector :newSelectors)
+            LogHandler.debug("Found %d templates that apply to more than 2 or more properties", templates.stream().filter(t -> t.GetProperties().size() >= 2).toArray().length);
+
+            for(SassTemplate t : templates)
             {
-                for (MProperty mProp : mSelector.GetProperties())
+                if(t.GetProperties().size() >= 2)
                 {
-                    String key = PropertyToString(mProp);
-                    if (clones.containsKey(key))
+                    String templateText = "";
+                    for(MSelector ms : t.GetRelatedSelectors())
                     {
-                        clones.get(key).AddRuleToSet(mSelector);
+                        templateText += ms.toString();
                     }
-                    else
+
+                    LogHandler.debug("Generate SASS template for selectors: %s", templateText);
+                    for(MProperty p : t.GetProperties())
                     {
-                        clones.put(key, new CloneSet(mProp));
-                        clones.get(key).AddRuleToSet(mSelector);
+                        LogHandler.debug("MProperty: %s", p);
                     }
                 }
             }
 
-            _allClones.put(fileName, clones.values().stream().filter(cloneSet -> cloneSet.GetSelectors().size() > 1).collect(Collectors.toList()));
-
-            HashMap<List<MSelector>, List<MProperty>> result = new HashMap<>();
-
-            int idx = 1;
-            for (CloneSet cloneSet : _allClones.get(fileName))
-            {
-
-                List<MSelector> group = cloneSet.GetSelectors();
-                if (result.containsKey(group))
-                {
-                    idx++;
-                    continue;
-                }
-
-                List<MProperty> props = new ArrayList<>();
-                props.add(cloneSet.GetProperty());
-
-                for (int i = idx; i < _allClones.size(); i++)
-                {
-                    CloneSet otherCloneSet = _allClones.get(fileName).get(i);
-                    //todo: still need to develop way by which some(at least 2) selectors match between clonesets
-                    if (otherCloneSet.GetSelectors().containsAll(cloneSet.GetSelectors()))
-                    {
-                        props.add(otherCloneSet.GetProperty());
-                    }
-                }
-
-                result.put(group, props);
-
-                idx++;
-            }
-
-            _mixinClones.put(fileName, result);
+//
+//            for (MSelector mSelector :newSelectors)
+//            {
+//                for (MProperty mProp : mSelector.GetProperties())
+//                {
+//                    String key = mProp.toString();
+//                    if (clones.containsKey(key))
+//                    {
+//                        clones.get(key).AddRuleToSet(mSelector);
+//                    }
+//                    else
+//                    {
+//                        clones.put(key, new CloneSet(mProp));
+//                        clones.get(key).AddRuleToSet(mSelector);
+//                    }
+//                }
+//            }
+//
+//            _allClones.put(fileName, clones.values().stream().filter(cloneSet -> cloneSet.GetSelectors().size() > 1).collect(Collectors.toList()));
+//
+//            HashMap<List<MSelector>, List<MProperty>> result = new HashMap<>();
+//
+//            int idx = 1;
+//            for (CloneSet cloneSet : _allClones.get(fileName))
+//            {
+//
+//                List<MSelector> group = cloneSet.GetSelectors();
+//                if (result.containsKey(group))
+//                {
+//                    idx++;
+//                    continue;
+//                }
+//
+//                List<MProperty> props = new ArrayList<>();
+//                props.add(cloneSet.GetProperty());
+//
+//                for (int i = idx; i < _allClones.size(); i++)
+//                {
+//                    CloneSet otherCloneSet = _allClones.get(fileName).get(i);
+//                    //todo: still need to develop way by which some(at least 2) selectors match between clonesets
+//                    if (otherCloneSet.GetSelectors().containsAll(cloneSet.GetSelectors()))
+//                    {
+//                        props.add(otherCloneSet.GetProperty());
+//                    }
+//                }
+//
+//                result.put(group, props);
+//
+//                idx++;
+//            }
+//
+//            _mixinClones.put(fileName, result);
         }
 
         return cssRules;
@@ -221,5 +249,269 @@ public class CloneDetector implements ICssPostCrawlPlugin
         public MProperty GetProperty() {
             return _mProperty;
         }
+    }
+
+
+    private List<SassTemplate> GenerateSassTemplates(List<MSelector> selectors)
+    {
+        List<SassTemplate> templates = new ArrayList<>();
+        List<MSelector> allSelectors = new ArrayList<>(selectors);
+
+        List<ItemSetList> results = FindDuplicationsAndFpGrowth(allSelectors);
+
+        boolean notFeasible = false;
+        while(true)
+        {
+            int largest = 0;
+            ItemSet todo = null;
+
+            for (ItemSetList isl : results)
+            {
+                for (ItemSet is : isl)
+                {
+                    int lines = 0;
+                    for (Item i : is)
+                    {
+                        lines += i.size();
+                    }
+
+                    if (lines > largest)
+                    {
+                        largest = lines;
+                        todo = is;
+                    }
+                }
+
+                // remove the one we process now
+                if(todo != null)
+                    isl.remove(todo);
+            }
+
+            List<MSelector> origs = new ArrayList<>(selectors);
+            List<List<MSelector>> news = new ArrayList<>();
+
+            if (todo != null)
+            {
+                List<SassTemplate> innerTemplates = new ArrayList<>();
+
+                for (Item i : todo)
+                {
+                    List<MProperty> newProps = new ArrayList<>();
+                    List<MSelector> newSelectors = new ArrayList<>();
+
+                    for (Declaration d : i)
+                    {
+                        newSelectors.add(d.getSelector());
+                    }
+
+                    Optional<SassTemplate> existing = innerTemplates.stream().filter(t -> t.sameSelectors(newSelectors)).findFirst();
+
+                    if (existing.isPresent())
+                    {
+                        boolean pSet = false;
+                        for (Declaration d : i)
+                        {
+                            if (!pSet)
+                            {
+                                pSet = true;
+                                existing.get().addProperty(d.getProperty());
+                            }
+
+//                        MSelector m = d.getSelector();
+//                        newSelectors.add(new MSelector(m.GetW3cSelector(), newProps, m.GetRuleNumber(), m.GetMediaQueries()));
+//                        m.RemoveProperties(Arrays.asList(d.getProperty()));
+                        }
+                    }
+                    else
+                    {
+                        SassTemplate template = new SassTemplate();
+                        newSelectors.forEach(s -> template.addSelector(s));
+
+                        boolean pSet = false;
+                        for (Declaration d : i)
+                        {
+                            if (!pSet)
+                            {
+                                pSet = true;
+                                template.addProperty(d.getProperty());
+                            }
+//
+//                        MSelector m = d.getSelector();
+//                        newSelectors.add(new MSelector(m.GetW3cSelector(), newProps, m.GetRuleNumber(), m.GetMediaQueries()));
+//                        m.RemoveProperties(Arrays.asList(d.getProperty()));
+                        }
+
+                        innerTemplates.add(template);
+                    }
+
+//                news.add(newSelectors);
+                }
+
+                templates.addAll(innerTemplates);
+
+                List<MSelector> selectorsToRemove = new ArrayList<>();
+
+                for(SassTemplate template : innerTemplates)
+                {
+                    for(MSelector mSel : allSelectors.stream().filter(s -> template.GetRelatedSelectors().contains(s)).collect(Collectors.toList()))
+                    {
+                        mSel.RemovePropertiesByText(template.GetProperties());
+                        if(mSel.GetProperties().size() == 0)
+                            selectorsToRemove.add(mSel);
+                    }
+                }
+
+                allSelectors.removeAll(selectorsToRemove);
+
+                results = FindDuplicationsAndFpGrowth(allSelectors);
+
+//
+//            for(List<MSelector> mSelectors : news)
+//            {
+//                for(MSelector mSelector : mSelectors)
+//                {
+//                    MSelector toUpdate = origs.stream().filter(m -> m.toString().equals(mSelector.toString())).findFirst().get();
+//                    if (toUpdate.GetProperties().size() == 0)
+//                    {
+//                        selectorsToRemove.add(mSelector);
+//                    }
+//                }
+//            }
+//
+                //origs.removeAll(selectorsToRemove);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return templates;
+    }
+
+
+    private List<ItemSetList> FindDuplicationsAndFpGrowth(List<MSelector> selectors)
+    {
+        Map<Declaration, Item> declarationItemMap = new HashMap<>();
+
+        List<Declaration> declarations = new ArrayList<>();
+
+        selectors.stream().forEach(s -> s.GetProperties().forEach(p -> declarations.add(new Declaration(p, s))));
+
+        Set<Integer> visitedDeclarations = new HashSet<>();
+
+        int currentDeclarationIndex = -1;
+
+        TypeOneDuplicationInstance typeOneDuplication = new TypeOneDuplicationInstance();
+        List<TypeOneDuplicationInstance> duplicationInstanceList = new ArrayList<>();
+
+        while (++currentDeclarationIndex < declarations.size())
+        {
+            Declaration currentDeclaration = declarations.get(currentDeclarationIndex);
+
+            int checkingDecIndex = currentDeclarationIndex;
+
+        /*
+         * We want to keep all current identical declarations together, and
+         * then add them to the duplications list when we found all
+         * identical declarations of current declaration.
+         */
+            List<Declaration> currentTypeIDuplicatedDeclarations = new ArrayList<Declaration>();
+
+        /*
+         * So we add current declaration to this list and add all identical
+         * declarations to this list
+         */
+            currentTypeIDuplicatedDeclarations.add(currentDeclaration);
+
+        /*
+         * Only when add the current duplication to the duplications list
+         * that we have really found a duplication
+         */
+            boolean mustAddCurrentTypeIDuplication = false;
+
+        /*
+         * As we are going to find the duplications of type II, we repeat
+         * three previous expressions for type II duplications
+         */
+            List<Declaration> currentTypeIIDuplicatedDeclarations = new ArrayList<Declaration>();
+            currentTypeIIDuplicatedDeclarations.add(currentDeclaration);
+            boolean mustAddCurrentTypeTwoDuplication = false;
+
+            // for Apriori
+            Item newItem = declarationItemMap.get(currentDeclaration);
+            if (newItem == null)
+            {
+                newItem = new Item(currentDeclaration);
+                declarationItemMap.put(currentDeclaration, newItem);
+//                ItemSet itemSet = new ItemSet();
+//                itemSet.add(newItem);
+//                C1.add(itemSet);
+            }
+
+            while (++checkingDecIndex < declarations.size())
+            {
+                Declaration checkingDeclaration = declarations.get(checkingDecIndex);
+
+//                boolean equals = currentDeclaration.declarationEquals(checkingDeclaration);
+
+                boolean equals = currentDeclaration.getProperty().toString().equals(checkingDeclaration.getProperty().toString());
+
+                if (equals && !visitedDeclarations.contains(currentDeclarationIndex))
+                {
+
+                    // We have found type I duplication
+                    // We add the checkingDeclaration, it will add the Selector
+                    // itself.
+                    currentTypeIDuplicatedDeclarations.add(checkingDeclaration);
+                    visitedDeclarations.add(checkingDecIndex);
+                    mustAddCurrentTypeIDuplication = true;
+
+                    // This only used in apriori and fpgrowth
+                    newItem.add(checkingDeclaration);
+                    declarationItemMap.put(checkingDeclaration, newItem);
+                    newItem.addDuplicationType(1);
+                }
+            }
+
+            // Only if we have at least one declaration in the list (at list one
+            // duplication)
+            if (mustAddCurrentTypeIDuplication)
+            {
+                if (typeOneDuplication.hasAllSelectorsForADuplication(currentTypeIDuplicatedDeclarations))
+                {
+                    typeOneDuplication.addAllDeclarations(currentTypeIDuplicatedDeclarations);
+                }
+                else
+                {
+                    typeOneDuplication = new TypeOneDuplicationInstance();
+                    typeOneDuplication
+                            .addAllDeclarations(currentTypeIDuplicatedDeclarations);
+                    duplicationInstanceList.add(typeOneDuplication);
+                }
+            }
+        }
+
+        String test = "";
+
+        List<TreeSet<Item>> itemSets = new ArrayList<>(selectors.size());
+
+        for (MSelector s : selectors)
+        {
+            TreeSet<Item> currentItems = new TreeSet<>();
+            for (Declaration decl : declarations.stream().filter(d -> d.getSelector() == s).collect(Collectors.toList()))
+            {
+                Item item = declarationItemMap.get(decl);
+                if (item.getSupportSize() >= 2)
+                {
+                    currentItems.add(item);
+                }
+            }
+            if (currentItems.size() > 0)
+                itemSets.add(currentItems);
+        }
+
+        FPGrowth fpGrowth = new FPGrowth(false);
+        return fpGrowth.mine(itemSets, 2);
     }
 }

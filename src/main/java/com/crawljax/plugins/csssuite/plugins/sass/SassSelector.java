@@ -31,7 +31,7 @@ public class SassSelector
         _extends = new ArrayList<>();
     }
 
-    public void AddExtend(SassTemplate sassTemplate)
+    public void AddExtension(SassTemplate sassTemplate)
     {
         _extends.add(sassTemplate);
     }

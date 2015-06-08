@@ -1,24 +1,17 @@
 package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.crawljax.plugins.csssuite.LogHandler;
-import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.generator.CssWriter;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
-import com.crawljax.plugins.csssuite.plugins.sass.SassSelector;
+
 import com.crawljax.plugins.csssuite.plugins.sass.SassTemplate;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.fpgrowth.FPGrowth;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.Item;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSet;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSetList;
-import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 /**
  * Created by axel on 5/5/2015.
@@ -28,179 +21,63 @@ import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
  * Based on the rules inside any cloneset, we check if those rules exist in other clonesets.
  * If they do, then more than one property is shared by those rules
  */
-public class CloneDetector implements ICssPostCrawlPlugin
+public class CloneDetector
 {
     //clones per property(name-value)
-    private final Map<String, List<CloneSet>> _allClones;
+    //private final Map<String, List<CloneSet>> _allClones;
 
     //clones per set of rules, possibly more than 1 shared MProperty per ruleset
     private final Map<String, Map<List<MSelector>, List<MProperty>>> _mixinClones;
 
     public CloneDetector()
     {
-        _allClones = new HashMap<>();
+        //_allClones = new HashMap<>();
         _mixinClones = new HashMap<>();
     }
 
 
-    /**
-
-     * @param mProp
-     * @return
-     */
-    private static String PropertyToString(MProperty mProp){
-        return mProp.GetName() + ":" + mProp.GetValue();
-    }
-
-
-    /**
-     *
-     * @return
-     */
-    public int CountClones() { return _allClones.size(); }
-
-
-    /**
-     *
-     * @return
-     */
-    public String PrintClones()
+    public List<SassTemplate> ClonesToTemplates(List<MCssRule> rules)
     {
-        SuiteStringBuilder result = new SuiteStringBuilder();
+        //allows for fast detection of clones (using hash compare on the keys)
+        //HashMap<String, CloneSet> clones = new HashMap<>();
 
-        for(String fileName : _allClones.keySet())
+        List<MSelector> origSelectors = new ArrayList<>();
+        Map<String, List<MSelector>> selectorClones = new HashMap<>();
+        List<MSelector> newSelectors = new ArrayList<>();
+
+        for(MCssRule rule : rules)
         {
-            if(_allClones.get(fileName).size() > 0)
-            {
-                result.append("Clones detected in file '%s'", fileName);
-
-                for (CloneSet cloneSet : _allClones.get(fileName))
-                {
-                    result.append("Clone: " + PropertyToString(cloneSet.GetProperty()) + "\n");
-                    for (MSelector mRule : cloneSet.GetSelectors().stream().sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber())).collect(Collectors.toList()))
-                    {
-                        result.append("Selector: " + mRule.toString() + "\n");
-                    }
-                    result.appendLine("\n");
-                }
-
-                for (List<MSelector> key : _mixinClones.get(fileName).keySet())
-                {
-                    final String[] s = {""};
-                    key.stream().sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber())).forEach(ms -> s[0] += "in selector: " + ms.toString() + "\n");
-
-                    result.append("Shared Properties Found!\n");
-                    result.append(s[0]);
-                    for (MProperty mProp : _mixinClones.get(fileName).get(key))
-                    {
-                        result.append("on property: " + mProp.toString() + "\n");
-                    }
-                    result.appendLine("\n");
-                }
-            }
+            origSelectors.addAll(rule.GetSelectors());
         }
 
-        return result.toString();
-    }
-
-    @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
-    {
-
-        for(String fileName : cssRules.keySet())
+        for(MSelector mSelector : origSelectors)
         {
-            //allows for fast detection of clones (using hash compare on the keys)
-            HashMap<String, CloneSet> clones = new HashMap<>();
-            List<MCssRule> rules = cssRules.get(fileName).GetRules();
+            String selectorText = mSelector.GetSelectorText();
 
-            List<MSelector> origSelectors = new ArrayList<>();
-            Map<String, List<MSelector>> selectorClones = new HashMap<>();
-            List<MSelector> newSelectors = new ArrayList<>();
-
-            for(MCssRule rule : rules)
+            if(!selectorClones.containsKey(selectorText))
             {
-                origSelectors.addAll(rule.GetSelectors());
+                selectorClones.put(selectorText, new ArrayList<>());
             }
 
-            for(MSelector mSelector : origSelectors)
+            selectorClones.get(selectorText).add(mSelector);
+        }
+
+        for(String selectorText : selectorClones.keySet())
+        {
+            List<MSelector> mSelectors = selectorClones.get(selectorText);
+            MSelector newSelector = new MSelector(mSelectors.get(0));
+
+            for(int i = 1; i < mSelectors.size(); i++)
             {
-                String selectorText = mSelector.GetSelectorText();
-
-                if(!selectorClones.containsKey(selectorText))
-                {
-                    selectorClones.put(selectorText, new ArrayList<>());
-                }
-
-                selectorClones.get(selectorText).add(mSelector);
+                newSelector.MergeProperties(mSelectors.get(i));
             }
 
-            for(String selectorText : selectorClones.keySet())
-            {
-                List<MSelector> mSelectors = selectorClones.get(selectorText);
-                MSelector newSelector = new MSelector(mSelectors.get(0));
+            newSelectors.add(newSelector);
+        }
 
-                for(int i = 1; i < mSelectors.size(); i++)
-                {
-                    newSelector.MergeProperties(mSelectors.get(i));
-                }
+        return GenerateSassTemplates(newSelectors);
 
-                newSelectors.add(newSelector);
-            }
 
-            //FindDuplicationsAndFpGrowth(newSelectors);
-            List<SassTemplate> templates = GenerateSassTemplates(newSelectors);
-
-            for(SassTemplate t : templates)
-            {
-                List<MProperty> properties = t.GetProperties();
-                //restore properties
-                if(properties.size() == 1 || properties.size() == 2)
-                {
-                    for(MSelector mSelector : t.GetRelatedSelectors())
-                    {
-                        for(MProperty mProperty : properties)
-                        {
-                            mSelector.AddProperty(mProperty);
-                        }
-                    }
-                }
-
-//                String templateText = "";
-//                for(MSelector ms : t.GetRelatedSelectors())
-//                {
-//                    templateText += ms.toString();
-//                }
-//
-//                LogHandler.debug("Generate SASS template for selectors: %s", templateText);
-//                for(MProperty p : t.GetProperties())
-//                {
-//                    LogHandler.debug("MProperty: %s", p);
-//                }
-            }
-
-            templates = templates.stream().filter(t -> t.GetProperties().size() >= 3).collect(Collectors.toList());
-            LogHandler.debug("Found %d templates that apply to more than 3 or more properties", templates.size());
-
-            for(int i = 0; i < templates.size(); i++)
-            {
-                templates.get(i).SetNumber(i+1);
-            }
-
-            List<SassSelector> sSelectors = GenerateSass(newSelectors, templates);
-
-            CssWriter cssWriter = new CssWriter();
-            try
-            {
-                cssWriter.GenerateSassFile(fileName, sSelectors, templates);
-            }
-            catch (URISyntaxException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
 //
 //            for (MSelector mSelector :newSelectors)
 //            {
@@ -253,71 +130,8 @@ public class CloneDetector implements ICssPostCrawlPlugin
 //            }
 //
 //            _mixinClones.put(fileName, result);
-        }
-
-        return cssRules;
-
     }
 
-
-    private List<SassSelector> GenerateSass(List<MSelector> selectors, List<SassTemplate> extensions)
-    {
-        List<SassSelector> results = new ArrayList<>();
-
-        for(MSelector mSelector : selectors)
-        {
-            SassSelector ss = new SassSelector(mSelector);
-
-            for(SassTemplate st : extensions)
-            {
-                boolean applies = false;
-                for(MSelector related : st.GetRelatedSelectors())
-                {
-                    if(related == mSelector)
-                    {
-                        applies = true;
-                        break;
-                    }
-                }
-
-                if(applies)
-                {
-                    ss.AddExtend(st);
-                }
-            }
-
-            results.add(ss);
-        }
-
-        return results;
-    }
-
-
-    /**
-     * Wrapper for a MProperty that is shared accross multple css rules
-     */
-    private class CloneSet{
-        private MProperty _mProperty;
-        private List<MSelector> _mSelectors;
-
-        public CloneSet(MProperty mProp){
-            _mProperty = mProp;
-            _mSelectors = new ArrayList<>();
-        }
-
-        public List<MSelector> GetSelectors() {
-            return _mSelectors;
-        }
-
-        public void AddRuleToSet(MSelector mRule)
-        {
-            _mSelectors.add(mRule);
-        }
-
-        public MProperty GetProperty() {
-            return _mProperty;
-        }
-    }
 
 
     private List<SassTemplate> GenerateSassTemplates(List<MSelector> selectors)
@@ -327,9 +141,6 @@ public class CloneDetector implements ICssPostCrawlPlugin
 
         List<ItemSetList> results = FindDuplicationsAndFpGrowth(allSelectors);
 
-        int templateNo = 1;
-
-        boolean notFeasible = false;
         while(true)
         {
             int largest = 0;
@@ -366,7 +177,6 @@ public class CloneDetector implements ICssPostCrawlPlugin
 
                 for (Item i : todo)
                 {
-                    List<MProperty> newProps = new ArrayList<>();
                     List<MSelector> newSelectors = new ArrayList<>();
 
                     for (Declaration d : i)
@@ -395,7 +205,6 @@ public class CloneDetector implements ICssPostCrawlPlugin
                     else
                     {
                         SassTemplate template = new SassTemplate();
-                        templateNo++;
 
                         newSelectors.forEach(s -> template.addSelector(s));
 
@@ -415,8 +224,6 @@ public class CloneDetector implements ICssPostCrawlPlugin
 
                         innerTemplates.add(template);
                     }
-
-//                news.add(newSelectors);
                 }
 
                 templates.addAll(innerTemplates);
@@ -428,31 +235,12 @@ public class CloneDetector implements ICssPostCrawlPlugin
                     for(MSelector mSel : allSelectors.stream().filter(s -> template.GetRelatedSelectors().contains(s)).collect(Collectors.toList()))
                     {
                         mSel.RemovePropertiesByText(template.GetProperties());
-//                        if(mSel.GetProperties().size() == 0)
-//                        {
-//                            selectorsToRemove.add(mSel);
-//                        }
                     }
                 }
 
                 allSelectors.removeAll(selectorsToRemove);
 
                 results = FindDuplicationsAndFpGrowth(allSelectors);
-
-//
-//            for(List<MSelector> mSelectors : news)
-//            {
-//                for(MSelector mSelector : mSelectors)
-//                {
-//                    MSelector toUpdate = origs.stream().filter(m -> m.toString().equals(mSelector.toString())).findFirst().get();
-//                    if (toUpdate.GetProperties().size() == 0)
-//                    {
-//                        selectorsToRemove.add(mSelector);
-//                    }
-//                }
-//            }
-//
-                //origs.removeAll(selectorsToRemove);
             }
             else
             {
@@ -588,4 +376,84 @@ public class CloneDetector implements ICssPostCrawlPlugin
         FPGrowth fpGrowth = new FPGrowth(false);
         return fpGrowth.mine(itemSets, 2);
     }
+
+
+//    /**
+//     *
+//     * @return
+//     */
+//    public String PrintClones()
+//    {
+//        SuiteStringBuilder result = new SuiteStringBuilder();
+//
+//        for(String fileName : _allClones.keySet())
+//        {
+//            if(_allClones.get(fileName).size() > 0)
+//            {
+//                result.append("Clones detected in file '%s'", fileName);
+//
+//                for (CloneSet cloneSet : _allClones.get(fileName))
+//                {
+//                    result.append("Clone: " + PropertyToString(cloneSet.GetProperty()) + "\n");
+//                    for (MSelector mRule : cloneSet.GetSelectors().stream().sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber())).collect(Collectors.toList()))
+//                    {
+//                        result.append("Selector: " + mRule.toString() + "\n");
+//                    }
+//                    result.appendLine("\n");
+//                }
+//
+//                for (List<MSelector> key : _mixinClones.get(fileName).keySet())
+//                {
+//                    final String[] s = {""};
+//                    key.stream().sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber())).forEach(ms -> s[0] += "in selector: " + ms.toString() + "\n");
+//
+//                    result.append("Shared Properties Found!\n");
+//                    result.append(s[0]);
+//                    for (MProperty mProp : _mixinClones.get(fileName).get(key))
+//                    {
+//                        result.append("on property: " + mProp.toString() + "\n");
+//                    }
+//                    result.appendLine("\n");
+//                }
+//            }
+//        }
+//
+//        return result.toString();
+//    }
+//
+
+//    /**
+//     * Wrapper for a MProperty that is shared accross multple css rules
+//     */
+//    private class CloneSet{
+//        private MProperty _mProperty;
+//        private List<MSelector> _mSelectors;
+//
+//        public CloneSet(MProperty mProp){
+//            _mProperty = mProp;
+//            _mSelectors = new ArrayList<>();
+//        }
+//
+//        public List<MSelector> GetSelectors() {
+//            return _mSelectors;
+//        }
+//
+//        public void AddRuleToSet(MSelector mRule)
+//        {
+//            _mSelectors.add(mRule);
+//        }
+//
+//        public MProperty GetProperty() {
+//            return _mProperty;
+//        }
+//    }
+//
+//    /**
+//
+//     * @param mProp
+//     * @return
+//     */
+//    private static String PropertyToString(MProperty mProp){
+//        return mProp.GetName() + ":" + mProp.GetValue();
+//    }
 }

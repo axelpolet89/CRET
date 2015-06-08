@@ -36,6 +36,6 @@ public class CloneDetectorTest
         normalizer.Transform(files);
 
         CloneDetector cloneDetector = new CloneDetector();
-        cloneDetector.Transform(files);
+        cloneDetector.ClonesToTemplates(files.get(0).GetRules());
     }
 }

@@ -2,6 +2,7 @@ package com.crawljax.plugins.csssuite.plugins.sass;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +12,9 @@ import java.util.List;
  */
 public class SassTemplate
 {
-    private List<MProperty> _properties;
-    private List<MSelector> _extractedFrom;
+    private final List<MProperty> _properties;
+    private final List<MSelector> _extractedFrom;
+    private int _number;
 
     public SassTemplate()
     {
@@ -43,5 +45,29 @@ public class SassTemplate
     public List<MSelector> GetRelatedSelectors()
     {
         return _extractedFrom;
+    }
+
+    public void SetNumber(int number)
+    {
+        _number = number;
+    }
+
+    public int GetNumber()
+    {
+        return _number;
+    }
+
+    public String Print()
+    {
+        SuiteStringBuilder builder = new SuiteStringBuilder();
+
+        builder.append("%%extend_%d{", _number);
+        for(MProperty property : _properties)
+        {
+            builder.appendLine("\t%s", property);
+        }
+        builder.appendLine("}\n\n");
+
+        return builder.toString();
     }
 }

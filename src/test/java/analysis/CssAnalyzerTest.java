@@ -1,11 +1,11 @@
 package analysis;
 
-import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.plugins.MatchedElements;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -47,7 +47,7 @@ public class CssAnalyzerTest
 		order.put("external", 0);
 		order.put("internal", 1);
 
-		CssAnalyzer analyzer = new CssAnalyzer();
+		MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
 		analyzer.Transform("", dom, files, order);
 
 		List<MSelector> matchedExternal = new ArrayList<>();
@@ -181,7 +181,7 @@ public class CssAnalyzerTest
 		LinkedHashMap order = new LinkedHashMap();
 		order.put("external", 0);
 
-		CssAnalyzer analyzer = new CssAnalyzer();
+		MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
 		analyzer.Transform("", dom, files, order);
 
 		List<MSelector> matchedExternal = new ArrayList<>();

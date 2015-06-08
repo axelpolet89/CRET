@@ -4,7 +4,8 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.plugins.*;
 
-import com.sun.org.glassfish.gmbal.ManagedAttribute;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -44,8 +45,8 @@ public class DescendantToChildTest
         order.put("external", 0);
 
         // depends on cssanalyzer...
-        CssAnalyzer analyzer = new CssAnalyzer();
-        CssDescendantToChild dtoc = new CssDescendantToChild();
+        MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
+        ChildCombinatorsPlugin dtoc = new ChildCombinatorsPlugin();
 
         // crawl dom
         analyzer.Transform("", dom, files, order);

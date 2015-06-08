@@ -18,7 +18,7 @@ import java.util.*;
  * 2) normalize zero values
  * 3) normalize url values
  */
-public class CssNormalizer implements ICssPostCrawlPlugin
+public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 {
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)

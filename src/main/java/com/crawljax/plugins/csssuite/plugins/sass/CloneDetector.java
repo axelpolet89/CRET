@@ -1,5 +1,7 @@
 package com.crawljax.plugins.csssuite.plugins.sass;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -8,6 +10,7 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
+import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.sass.fpgrowth.FPGrowth;
 import com.crawljax.plugins.csssuite.plugins.sass.items.Item;
@@ -146,26 +149,57 @@ public class CloneDetector implements ICssPostCrawlPlugin
             //FindDuplicationsAndFpGrowth(newSelectors);
             List<SassTemplate> templates = GenerateSassTemplates(newSelectors);
 
-            LogHandler.debug("Found %d templates that apply to more than 2 or more properties", templates.stream().filter(t -> t.GetProperties().size() >= 2).toArray().length);
-
             for(SassTemplate t : templates)
             {
-                if(t.GetProperties().size() >= 2)
+                List<MProperty> properties = t.GetProperties();
+                //restore properties
+                if(properties.size() == 1 || properties.size() == 2)
                 {
-                    String templateText = "";
-                    for(MSelector ms : t.GetRelatedSelectors())
+                    for(MSelector mSelector : t.GetRelatedSelectors())
                     {
-                        templateText += ms.toString();
-                    }
-
-                    LogHandler.debug("Generate SASS template for selectors: %s", templateText);
-                    for(MProperty p : t.GetProperties())
-                    {
-                        LogHandler.debug("MProperty: %s", p);
+                        for(MProperty mProperty : properties)
+                        {
+                            mSelector.AddProperty(mProperty);
+                        }
                     }
                 }
+
+//                String templateText = "";
+//                for(MSelector ms : t.GetRelatedSelectors())
+//                {
+//                    templateText += ms.toString();
+//                }
+//
+//                LogHandler.debug("Generate SASS template for selectors: %s", templateText);
+//                for(MProperty p : t.GetProperties())
+//                {
+//                    LogHandler.debug("MProperty: %s", p);
+//                }
             }
 
+            templates = templates.stream().filter(t -> t.GetProperties().size() >= 3).collect(Collectors.toList());
+            LogHandler.debug("Found %d templates that apply to more than 3 or more properties", templates.size());
+
+            for(int i = 0; i < templates.size(); i++)
+            {
+                templates.get(i).SetNumber(i+1);
+            }
+
+            List<SassSelector> sSelectors = GenerateSass(newSelectors, templates);
+
+            CssWriter cssWriter = new CssWriter();
+            try
+            {
+                cssWriter.GenerateSassFile(fileName, sSelectors, templates);
+            }
+            catch (URISyntaxException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
 //
 //            for (MSelector mSelector :newSelectors)
 //            {
@@ -225,6 +259,39 @@ public class CloneDetector implements ICssPostCrawlPlugin
     }
 
 
+    private List<SassSelector> GenerateSass(List<MSelector> selectors, List<SassTemplate> extensions)
+    {
+        List<SassSelector> results = new ArrayList<>();
+
+        for(MSelector mSelector : selectors)
+        {
+            SassSelector ss = new SassSelector(mSelector);
+
+            for(SassTemplate st : extensions)
+            {
+                boolean applies = false;
+                for(MSelector related : st.GetRelatedSelectors())
+                {
+                    if(related == mSelector)
+                    {
+                        applies = true;
+                        break;
+                    }
+                }
+
+                if(applies)
+                {
+                    ss.AddExtend(st);
+                }
+            }
+
+            results.add(ss);
+        }
+
+        return results;
+    }
+
+
     /**
      * Wrapper for a MProperty that is shared accross multple css rules
      */
@@ -258,6 +325,8 @@ public class CloneDetector implements ICssPostCrawlPlugin
         List<MSelector> allSelectors = new ArrayList<>(selectors);
 
         List<ItemSetList> results = FindDuplicationsAndFpGrowth(allSelectors);
+
+        int templateNo = 1;
 
         boolean notFeasible = false;
         while(true)
@@ -325,6 +394,8 @@ public class CloneDetector implements ICssPostCrawlPlugin
                     else
                     {
                         SassTemplate template = new SassTemplate();
+                        templateNo++;
+
                         newSelectors.forEach(s -> template.addSelector(s));
 
                         boolean pSet = false;
@@ -356,8 +427,10 @@ public class CloneDetector implements ICssPostCrawlPlugin
                     for(MSelector mSel : allSelectors.stream().filter(s -> template.GetRelatedSelectors().contains(s)).collect(Collectors.toList()))
                     {
                         mSel.RemovePropertiesByText(template.GetProperties());
-                        if(mSel.GetProperties().size() == 0)
-                            selectorsToRemove.add(mSel);
+//                        if(mSel.GetProperties().size() == 0)
+//                        {
+//                            selectorsToRemove.add(mSel);
+//                        }
                     }
                 }
 

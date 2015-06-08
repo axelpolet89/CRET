@@ -6,6 +6,7 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
  * the property is effective
  * the property overrides no other effective property
  */
-public class CssUndoDetector implements ICssPostCrawlPlugin
+public class DetectUndoingPlugin implements ICssPostCrawlPlugin
 {
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)

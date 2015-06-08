@@ -1,8 +1,8 @@
 package analysis;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.plugins.MatchedElements;
 import com.crawljax.plugins.csssuite.plugins.sass.CloneDetector;
+import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -26,15 +26,16 @@ public class CloneDetectorTest
     @Test
     public void TestCloneDetector()
     {
-        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_3_test.css");
+        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_test.css");
         Assert.assertNotNull(externalFile);
 
         Map<String, MCssFile> files = new HashMap();
         files.put("external", externalFile);
 
+        PropertyMergePlugin normalizer = new PropertyMergePlugin();
+        normalizer.Transform(files);
+
         CloneDetector cloneDetector = new CloneDetector();
         cloneDetector.Transform(files);
-
-
     }
 }

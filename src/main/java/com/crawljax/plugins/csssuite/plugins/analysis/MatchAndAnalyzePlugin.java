@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins;
+package com.crawljax.plugins.csssuite.plugins.analysis;
 
 import java.util.*;
 
@@ -16,7 +16,7 @@ import se.fishtank.css.selectors.Selectors;
 import se.fishtank.css.selectors.dom.W3CNode;
 import se.fishtank.css.selectors.parser.ParserException;
 
-public class CssAnalyzer implements ICssCrawlPlugin, ICssPostCrawlPlugin
+public class MatchAndAnalyzePlugin implements ICssCrawlPlugin, ICssPostCrawlPlugin
 {
 	@Override
 	public void Transform(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder)

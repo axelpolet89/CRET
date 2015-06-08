@@ -544,6 +544,15 @@ public class MSelector
 	}
 
 
+	/**
+	 *
+	 * @param mProperty
+	 */
+	public void AddProperty(MProperty mProperty)
+	{
+		_properties.add(mProperty);
+	}
+
 	public void RemovePropertiesByText(List<MProperty> properties)
 	{
 		List<MProperty> toRemove = new ArrayList<>();

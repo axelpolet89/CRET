@@ -4,8 +4,8 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
-import com.crawljax.plugins.csssuite.plugins.MatchedElements;
+import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +35,7 @@ public class NormalizeTest
         Map<String, MCssFile> files = new HashMap();
         files.put("external", externalFile);
 
-        CssNormalizer cssNormalizer = new CssNormalizer();
+        NormalizeAndSplitPlugin cssNormalizer = new NormalizeAndSplitPlugin();
         cssNormalizer.Transform(files);
 
         List<MSelector> selectors = new ArrayList<>();

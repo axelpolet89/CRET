@@ -1,14 +1,27 @@
-package com.crawljax.plugins.csssuite.generator;
+package com.crawljax.plugins.csssuite.plugins.merge;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
+import com.crawljax.plugins.csssuite.data.properties.MProperty;
+
+import java.util.List;
 
 /**
  * Created by axel on 5/27/2015.
  */
-public abstract class ShortHandProperty
+public abstract class MergerBase
 {
+    protected String _name;
     protected boolean _isImportant;
     protected boolean _isSet;
+
+    /**
+     *
+     * @param name
+     */
+    public MergerBase(String name)
+    {
+        _name = name;
+    }
 
     /**
      *
@@ -49,15 +62,15 @@ public abstract class ShortHandProperty
                                             "with important=%s and this property has important=%s, while this one is.", value, name, _isImportant, isImportant);
         }
 
-        if(name.contains("-"))
-        {
-            ParseFromSingle(name, value);
-        }
-        else
-        {
-            ParseFromShortHand(value);
-        }
+        ParseFromSingle(name, value);
     }
+
+
+    /**
+     *
+     * @return
+     */
+    public abstract List<MProperty> BuildMProperties();
 
 
     /**
@@ -66,12 +79,4 @@ public abstract class ShortHandProperty
      * @param value
      */
     protected abstract void ParseFromSingle(String name, String value);
-
-
-    /**
-     *
-     * @param value
-     * @throws CssSuiteException
-     */
-    protected abstract void ParseFromShortHand(String value) throws CssSuiteException;
 }

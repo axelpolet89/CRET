@@ -3,7 +3,7 @@ package analysis;
 import java.io.IOException;
 import java.util.List;
 
-import com.crawljax.plugins.csssuite.plugins.MatchedElements;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;

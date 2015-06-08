@@ -1,10 +1,9 @@
-package com.crawljax.plugins.csssuite.plugins;
+package com.crawljax.plugins.csssuite.plugins.analysis;
 
 import com.crawljax.plugins.csssuite.data.ElementWrapper;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
-import com.crawljax.util.XPathHelper;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;

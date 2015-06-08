@@ -14,6 +14,7 @@ import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
 import com.crawljax.plugins.csssuite.plugins.sass.CloneDetector;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
@@ -61,13 +62,13 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_plugins = new ArrayList<>();
 		_postPlugins = new ArrayList<>();
 
-		CssAnalyzer analyzer = new CssAnalyzer();
+		MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
 
 		_plugins.add(analyzer);
-		_postPlugins.add(new CssNormalizer());
+		_postPlugins.add(new NormalizeAndSplitPlugin());
 		_postPlugins.add(analyzer);
-		_postPlugins.add(new CssUndoDetector());
-		_postPlugins.add(new CssDescendantToChild());
+		_postPlugins.add(new DetectUndoingPlugin());
+		_postPlugins.add(new ChildCombinatorsPlugin());
 		_postPlugins.add(new CloneDetector());
 	}
 
@@ -425,7 +426,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 						for (MProperty prop : selector.GetProperties())
 						{
-							buffer.append("   Property " + prop + "\n");
+							buffer.append("   Property " + prop.Print() + "\n");
 						}
 					}
 

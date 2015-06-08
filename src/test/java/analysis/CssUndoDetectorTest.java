@@ -5,10 +5,10 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.plugins.CssAnalyzer;
-import com.crawljax.plugins.csssuite.plugins.CssNormalizer;
-import com.crawljax.plugins.csssuite.plugins.CssUndoDetector;
-import com.crawljax.plugins.csssuite.plugins.MatchedElements;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
+import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
+import com.crawljax.plugins.csssuite.plugins.DetectUndoingPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -47,9 +47,9 @@ public class CssUndoDetectorTest
         order.put("external", 0);
 
         // depends on cssanalyzer...
-        CssAnalyzer analyzer = new CssAnalyzer();
-        CssNormalizer normalizer = new CssNormalizer();
-        CssUndoDetector undoDetector = new CssUndoDetector();
+        MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
+        NormalizeAndSplitPlugin normalizer = new NormalizeAndSplitPlugin();
+        DetectUndoingPlugin undoDetector = new DetectUndoingPlugin();
 
         // crawl dom
         analyzer.Transform("", dom, files, order);

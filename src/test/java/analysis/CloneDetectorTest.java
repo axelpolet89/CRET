@@ -1,7 +1,7 @@
 package analysis;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.plugins.sass.CloneDetector;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;

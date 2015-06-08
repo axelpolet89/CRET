@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass;
+package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
 
 public enum DuplicationInstanceType
 {

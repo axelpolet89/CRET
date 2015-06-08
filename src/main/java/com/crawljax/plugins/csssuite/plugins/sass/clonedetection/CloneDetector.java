@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass;
+package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,12 +12,13 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
-import com.crawljax.plugins.csssuite.plugins.sass.fpgrowth.FPGrowth;
-import com.crawljax.plugins.csssuite.plugins.sass.items.Item;
-import com.crawljax.plugins.csssuite.plugins.sass.items.ItemSet;
-import com.crawljax.plugins.csssuite.plugins.sass.items.ItemSetList;
+import com.crawljax.plugins.csssuite.plugins.sass.SassSelector;
+import com.crawljax.plugins.csssuite.plugins.sass.SassTemplate;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.fpgrowth.FPGrowth;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.Item;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSet;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSetList;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
-import sun.rmi.runtime.Log;
 
 /**
  * Created by axel on 5/5/2015.

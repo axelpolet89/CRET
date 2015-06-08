@@ -15,7 +15,8 @@ import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
-import com.crawljax.plugins.csssuite.plugins.sass.CloneDetector;
+import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
@@ -69,7 +70,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(analyzer);
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorsPlugin());
-		_postPlugins.add(new CloneDetector());
+		_postPlugins.add(new PropertyMergePlugin());
+		//_postPlugins.add(new CloneDetector());
 	}
 
 	public void EnableDebug()
@@ -333,17 +335,17 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		output.append(undefinedClasses);
 		// output.append(duplicateSelectors);
 
-		StringBuffer clones = new StringBuffer();
-		clones.append("CloneDetector checked " + _processedCssFiles.size() + " files.\n");
-		clones.append(PrintFiles());
-
-		CloneDetector cd = (CloneDetector) _postPlugins.get(_postPlugins.size() - 1);
-
-		clones.append("\n\n Clone Report");
-		clones.append("-> Found " + cd.CountClones() + " duplicate properties.\n");
-		clones.append(cd.PrintClones());
-
-		output.append(clones.toString());
+//		StringBuffer clones = new StringBuffer();
+//		clones.append("CloneDetector checked " + _processedCssFiles.size() + " files.\n");
+//		clones.append(PrintFiles());
+//
+//		CloneDetector cd = (CloneDetector) _postPlugins.get(_postPlugins.size() - 1);
+//
+//		clones.append("\n\n Clone Report");
+//		clones.append("-> Found " + cd.CountClones() + " duplicate properties.\n");
+//		clones.append(cd.PrintClones());
+//
+//		output.append(clones.toString());
 
 		try
 		{
@@ -664,58 +666,60 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private int NewCssSizeBytes()
 	{
-		boolean effective;
-		boolean exit = false;
-		int result = 0;
+		return 0;
 
-		int counter = 0;
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
-		{
-			for (MCssRule mRule : entry.getValue().GetRules())
-			{
-				List<MSelector> selector = mRule.GetSelectors();
-				for (int i = 0; i < selector.size(); i++)
-				{
-					if (!selector.get(i).IsIgnored())
-					{
-						exit = true;
-
-						List<MProperty> property = selector.get(i).GetProperties();
-						for (int j = 0; j < property.size(); j++)
-						{
-							if (!property.get(j).IsEffective())
-							{
-								effective = false;
-								for (int k = i + 1; k < selector.size(); k++)
-								{
-									if (!selector.get(k).IsIgnored()) {
-										if (selector.get(k).GetProperties().get(j).IsEffective())
-										{
-											effective = true;
-											break;
-										}
-									}
-								}
-								if (!effective)
-								{
-									counter++;
-									result += property.get(j).ComputeSizeBytes();
-								}
-							}
-						}
-
-					}
-
-					if (exit)
-					{
-						if (counter == selector.get(i).GetProperties().size())
-							result += selector.get(i).ComputeSizeBytes();
-						break;
-					}
-				}
-			}
-		}
-
-		return result;
+//		boolean effective;
+//		boolean exit = false;
+//		int result = 0;
+//
+//		int counter = 0;
+//		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+//		{
+//			for (MCssRule mRule : entry.getValue().GetRules())
+//			{
+//				List<MSelector> selector = mRule.GetSelectors();
+//				for (int i = 0; i < selector.size(); i++)
+//				{
+//					if (!selector.get(i).IsIgnored())
+//					{
+//						exit = true;
+//
+//						List<MProperty> property = selector.get(i).GetProperties();
+//						for (int j = 0; j < property.size(); j++)
+//						{
+//							if (!property.get(j).IsEffective())
+//							{
+//								effective = false;
+//								for (int k = i + 1; k < selector.size(); k++)
+//								{
+//									if (!selector.get(k).IsIgnored()) {
+//										if (selector.get(k).GetProperties().get(j).IsEffective())
+//										{
+//											effective = true;
+//											break;
+//										}
+//									}
+//								}
+//								if (!effective)
+//								{
+//									counter++;
+//									result += property.get(j).ComputeSizeBytes();
+//								}
+//							}
+//						}
+//
+//					}
+//
+//					if (exit)
+//					{
+//						if (counter == selector.get(i).GetProperties().size())
+//							result += selector.get(i).ComputeSizeBytes();
+//						break;
+//					}
+//				}
+//			}
+//		}
+//
+//		return result;
 	}
 }

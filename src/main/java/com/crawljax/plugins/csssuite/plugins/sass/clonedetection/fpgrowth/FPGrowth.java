@@ -1,8 +1,8 @@
-package com.crawljax.plugins.csssuite.plugins.sass.fpgrowth;
+package com.crawljax.plugins.csssuite.plugins.sass.clonedetection.fpgrowth;
 
-import com.crawljax.plugins.csssuite.plugins.sass.items.Item;
-import com.crawljax.plugins.csssuite.plugins.sass.items.ItemSet;
-import com.crawljax.plugins.csssuite.plugins.sass.items.ItemSetList;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.Item;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSet;
+import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSetList;
 
 import java.util.*;
 

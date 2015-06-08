@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass;
+package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
 
 /**
  * Created by axel on 6/5/2015.

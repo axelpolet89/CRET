@@ -8,13 +8,11 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
+import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -69,12 +67,19 @@ public class SassGenerator implements ICssPostCrawlPlugin
             }
 
             List<SassSelector> sassSelectors = GenerateSassSelectors(allSelectors, templates);
-            sassFiles.put(fileName, new SassFile(templates, sassSelectors));
+            List<SassRule> sassRules = GenerateSassRules(sassSelectors);
+            List<SassMediaRule> mediaRules = GenerateMediaRules(sassRules);
 
-            CssWriter cssWriter = new CssWriter();
+            sassFiles.put(fileName, new SassFile(templates, sassRules, mediaRules));
+        }
+
+        CssWriter cssWriter = new CssWriter();
+
+        for(String fileName : sassFiles.keySet())
+        {
             try
             {
-                cssWriter.GenerateSassFile(fileName, sassSelectors, templates);
+                cssWriter.GenerateSassFile(fileName, sassFiles.get(fileName));
             }
             catch (URISyntaxException e)
             {
@@ -115,4 +120,98 @@ public class SassGenerator implements ICssPostCrawlPlugin
         return results;
     }
 
+    private List<SassRule> GenerateSassRules(List<SassSelector> sassSelectors)
+    {
+        // group selectors by their line number, maintain order by using LinkedHashMap
+        Map<Integer, List<SassSelector>> lineNoSelectorMap = new LinkedHashMap<>();
+        sassSelectors.stream()
+                .sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber()))
+                .forEach((s) -> {
+                    int lineNumber = s.GetRuleNumber();
+                    if (!lineNoSelectorMap.containsKey(lineNumber))
+                    {
+                        lineNoSelectorMap.put(lineNumber, new ArrayList<>());
+                    }
+
+                    lineNoSelectorMap.get(lineNumber).add(s);
+                });
+
+        List<SassRule> sassRules = new ArrayList<>();
+
+        // final merge, verify that properties previously contained in the same rule (e.g. equal line number)
+        // do not have the same declarations (e.g. all sass declarations and regular properties
+        // if they do, merge them into 1 SassRule
+        for(int lineNumber : lineNoSelectorMap.keySet())
+        {
+            List<SassSelector> innerSelectors = lineNoSelectorMap.get(lineNumber);
+            List<Integer> processedIdx = new ArrayList<>();
+            for(int i = 0; i < innerSelectors.size(); i++)
+            {
+                if(processedIdx.contains(i))
+                    continue;
+
+                List<SassSelector> selectorsForRule = new ArrayList<>();
+                SassSelector current = innerSelectors.get(i);
+                processedIdx.add(i);
+                selectorsForRule.add(current);
+
+                for(int j = i + 1; j < innerSelectors.size(); j++)
+                {
+                    if(processedIdx.contains(j))
+                        continue;
+
+                    SassSelector other = innerSelectors.get(j);
+                    if(current.HasEqualDeclarationsByText(other))
+                    {
+                        selectorsForRule.add(other);
+                        processedIdx.add(j);
+                    }
+                }
+
+                sassRules.add(new SassRule(lineNumber, selectorsForRule));
+            }
+        }
+
+        return sassRules;
+    }
+
+    private List<SassMediaRule> GenerateMediaRules(List<SassRule> sassRules)
+    {
+        List<SassMediaRule> mediaRules = new ArrayList<>();
+        Map<List<MediaQuery>, List<SassRule>> mediaGroups = new LinkedHashMap<>();
+        List<MediaQuery> currentMedia = new ArrayList<>();
+
+        // find all sass rules that are contained inside one or more media-queries
+        for(SassRule sassRule : sassRules)
+        {
+            if(!mediaGroups.containsKey(currentMedia))
+            {
+                mediaGroups.put(currentMedia, new ArrayList<>());
+                mediaGroups.get(currentMedia).add(sassRule);
+                continue;
+            }
+
+            List<MediaQuery> mqs = sassRule.getMediaQueries();
+            if(currentMedia.containsAll(mqs) && mqs.containsAll(currentMedia))
+            {
+                mediaGroups.get(currentMedia).add(sassRule);
+            }
+
+            currentMedia = sassRule.getMediaQueries();
+        }
+
+        // remove any sass rule contained in a media rule from given list
+        // create sass media rules from media groups
+        for(List<MediaQuery> mediaQueries : mediaGroups.keySet())
+        {
+            if(mediaQueries.isEmpty())
+                continue;
+
+            mediaGroups.get(mediaQueries).forEach(sassRules::remove);
+
+            mediaRules.add(new SassMediaRule(mediaQueries, mediaGroups.get(mediaQueries)));
+        }
+
+        return mediaRules;
+    }
 }

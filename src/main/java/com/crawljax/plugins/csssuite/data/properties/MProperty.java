@@ -205,7 +205,6 @@ public class MProperty
 			return result + " !important;";
 
 		return result + ";";
-
 	}
 }
 

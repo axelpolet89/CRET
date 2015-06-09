@@ -70,4 +70,10 @@ public class SassTemplate
 
         return builder.toString();
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("extend_%d", _number);
+    }
 }

@@ -2,9 +2,9 @@ package com.crawljax.plugins.csssuite.generator;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.plugins.sass.SassSelector;
-import com.crawljax.plugins.csssuite.plugins.sass.SassTemplate;
+import com.crawljax.plugins.csssuite.plugins.sass.*;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
+import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -74,7 +74,7 @@ public class CssWriter
     }
 
 
-    public void GenerateSassFile(String fileName, List<SassSelector> selectors, List<SassTemplate> templates) throws URISyntaxException, IOException
+    public void GenerateSassFile(String fileName, SassFile sassFile) throws URISyntaxException, IOException
     {
         File file = null;
         try
@@ -98,50 +98,38 @@ public class CssWriter
 
         FileWriter writer = new FileWriter(file);
 
-//        Collections.sort(rules, new Comparator<MCssRule>() {
-//            @Override
-//            public int compare(MCssRule mCssRule, MCssRule t1) {
-//                return Integer.compare(mCssRule.GetLocator().getLineNumber(), t1.GetLocator().getLineNumber());
-//            }
-//        });
-
-        for (int i = 0; i < templates.size(); i++)
+        for (SassTemplate st : sassFile.getExtensions())
         {
-            writer.write(templates.get(i).Print());
+            writer.write(st.Print());
         }
 
-        Map<Integer, List<SassSelector>> rules = new LinkedHashMap<>();
-
-        selectors.stream()
-                .sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber()))
-                .forEach((s) -> {
-                    int ruleNumber = s.GetRuleNumber();
-                    if (!rules.containsKey(ruleNumber))
-                    {
-                        rules.put(ruleNumber, new ArrayList<>());
-                    }
-
-                    rules.get(ruleNumber).add(s);
-                });
-
-        for (int rule : rules.keySet())
+        SuiteStringBuilder builder = new SuiteStringBuilder();
+        List<SassRule> sassRules = sassFile.getRules();
+        for (int i = 0; i < sassRules.size(); i++)
         {
-            SuiteStringBuilder builder = new SuiteStringBuilder();
-            String selectorGroup = "";
+            SassRule sr = sassRules.get(i);
+            sr.Print(builder, "");
 
-            List<SassSelector> ruleSelectors = rules.get(rule);
-            for(int i = 0; i < ruleSelectors.size(); i++)
+            if(i < sassRules.size() - 1)
+                builder.append("\n\n");
+        }
+        writer.write(builder.toString());
+
+        List<SassMediaRule> mediaRules = sassFile.getMediaRules();
+
+        if(mediaRules.size() > 0)
+        {
+            builder = new SuiteStringBuilder();
+            builder.append("\n\n");
+
+            for (int i = 0; i < mediaRules.size(); i++)
             {
-                SassSelector sassSelector = ruleSelectors.get(i);
-                selectorGroup += sassSelector.GetSelectorText();
-                if(i < ruleSelectors.size() - 1)
-                    selectorGroup += ", ";
-            }
-            builder.append(selectorGroup);
-            builder.append("{");
-            ruleSelectors.get(0).PrintContents(builder);
-            builder.appendLine("}\n\n");
+                SassMediaRule smr = mediaRules.get(i);
+                smr.Print(builder);
 
+                if (i < mediaRules.size() - 1)
+                    builder.append("\n\n");
+            }
             writer.write(builder.toString());
         }
 

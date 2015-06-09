@@ -1,5 +1,7 @@
 package com.crawljax.plugins.csssuite.plugins.sass;
 
+import com.steadystate.css.parser.media.MediaQuery;
+
 import java.util.List;
 
 /**
@@ -8,11 +10,28 @@ import java.util.List;
 public class SassFile
 {
     private final List<SassTemplate> _extensions;
-    private final List<SassSelector> _selectors;
+    private final List<SassRule> _rules;
+    private final List<SassMediaRule> _mediaRules;
 
-    public SassFile(List<SassTemplate> sassTemplates, List<SassSelector> sassSelectors)
+    public SassFile(List<SassTemplate> sassTemplates, List<SassRule> rules, List<SassMediaRule> mediaRules)
     {
         _extensions = sassTemplates;
-        _selectors = sassSelectors;
+        _rules = rules;
+        _mediaRules = mediaRules;
+    }
+
+    public List<SassTemplate> getExtensions()
+    {
+        return _extensions;
+    }
+
+    public List<SassRule> getRules()
+    {
+        return _rules;
+    }
+
+    public List<SassMediaRule> getMediaRules()
+    {
+        return _mediaRules;
     }
 }

@@ -165,6 +165,8 @@ public class MCssRule
 
 	/**
 	 * Transform the current rule into valid CSS syntax
+	 * It is possible that the selectors in this rule have varying properties, due to previous analyses and filters
+	 * So we need to find selectors for this rule that have properties in common and output them as a group
 	 * @return
 	 */
 	public String Print()

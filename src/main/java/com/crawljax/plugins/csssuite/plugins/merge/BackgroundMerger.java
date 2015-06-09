@@ -78,6 +78,6 @@ public class BackgroundMerger extends MergerBase
         if(!_attachment.isEmpty())
             value += " " + _attachment;
 
-        return Arrays.asList(new MProperty(_name, value, _isImportant));
+        return Arrays.asList(new MProperty(_name, value, _isImportant, true));
     }
 }

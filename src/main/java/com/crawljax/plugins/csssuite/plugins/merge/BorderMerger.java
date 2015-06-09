@@ -56,10 +56,10 @@ public class BorderMerger extends MergerBase
         if(_style.isEmpty())
         {
             if(!_width.isEmpty())
-                result.add(new MProperty(String.format("%s-width", _name), _width, _isImportant));
+                result.add(new MProperty(String.format("%s-width", _name), _width, _isImportant, true));
 
             if(!_color.isEmpty())
-                result.add(new MProperty(String.format("%s-color", _name), _color, _isImportant));
+                result.add(new MProperty(String.format("%s-color", _name), _color, _isImportant, true));
         }
         else
         {
@@ -73,7 +73,7 @@ public class BorderMerger extends MergerBase
             if(!_color.isEmpty())
                 value += " " + _color;
 
-            result.add(new MProperty(_name, value, _isImportant));
+            result.add(new MProperty(_name, value, _isImportant, true));
         }
 
         return result;

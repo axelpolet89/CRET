@@ -33,26 +33,28 @@ public class SassGenerator implements ICssPostCrawlPlugin
         for(String fileName : cssRules.keySet())
         {
             List<MCssRule> rules = cssRules.get(fileName).GetRules();
+
+            // copy all MSelectors, so we won't affect the original rules
             List<MSelector> allSelectors = new ArrayList<>();
             for(MCssRule rule : rules)
             {
-                allSelectors.addAll(rule.GetSelectors());
+                allSelectors.addAll(rule.GetSelectors().stream().map(selector -> new MSelector((selector))).collect(Collectors.toList()));
             }
 
             List<SassTemplate> templates = cd.GenerateSassTemplates(allSelectors);
 
             for (SassTemplate t : templates)
             {
-                List<MProperty> properties = t.GetProperties();
+                List<MProperty> templateProps = t.GetProperties();
 
                 // restore properties for each template we will NOT include, because they do not adhere to minimum property count
-                if (properties.size() > 0 && properties.size() < minPropCount)
+                if (templateProps.size() > 0 && templateProps.size() < minPropCount)
                 {
-                    for (MSelector mSelector : t.GetRelatedSelectors())
+                    for (MSelector templateSel : t.GetRelatedSelectors())
                     {
-                        for (MProperty mProperty : properties)
+                        for (MProperty mProperty : templateProps)
                         {
-                            mSelector.AddProperty(mProperty);
+                            templateSel.AddProperty(mProperty);
                         }
                     }
                 }

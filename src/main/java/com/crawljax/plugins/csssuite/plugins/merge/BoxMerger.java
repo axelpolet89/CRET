@@ -79,6 +79,6 @@ public class BoxMerger extends MergerBase
             value =  String.format("%s %s %s %s", _top, _right, _bottom, _left);
         }
 
-        return Arrays.asList(new MProperty(_name, value, _isImportant));
+        return Arrays.asList(new MProperty(_name, value, _isImportant, true));
     }
 }

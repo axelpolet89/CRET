@@ -107,7 +107,7 @@ public class BorderRadiusMerger extends MergerBase
         else
             value = part1;
 
-        return Arrays.asList(new MProperty("border-radius", value, _isImportant));
+        return Arrays.asList(new MProperty("border-radius", value, _isImportant, true));
     }
 
     private static String BuildPart(String tl, String tr, String br, String bl)

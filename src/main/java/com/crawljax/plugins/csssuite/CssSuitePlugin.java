@@ -16,6 +16,7 @@ import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
 import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
+import com.crawljax.plugins.csssuite.plugins.sass.SassGenerator;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
@@ -71,7 +72,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorsPlugin());
 		_postPlugins.add(new PropertyMergePlugin());
-		//_postPlugins.add(new CloneDetector());
+		_postPlugins.add(new SassGenerator());
 	}
 
 	public void EnableDebug()

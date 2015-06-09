@@ -50,6 +50,19 @@ public class MProperty
 		this(name, value, isImportant, "");
 	}
 
+
+	/**
+	 * Constructor for property without error and optional effectiveness, used in normalization
+	 * @param name
+	 * @param value
+	 * @param isImportant
+	 */
+	public MProperty(String name, String value, boolean isImportant, boolean isEffective)
+	{
+		this(name, value, isImportant, "");
+		_isEffective = isEffective;
+	}
+
 	/** Getter */
 	public String GetName()
 	{

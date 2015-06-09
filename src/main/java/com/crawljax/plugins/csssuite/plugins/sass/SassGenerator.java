@@ -1,5 +1,6 @@
 package com.crawljax.plugins.csssuite.plugins.sass;
 
+import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
@@ -8,6 +9,8 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
+import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNamer;
+import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.IOException;
@@ -67,6 +70,7 @@ public class SassGenerator implements ICssPostCrawlPlugin
             }
 
             List<SassSelector> sassSelectors = GenerateSassSelectors(allSelectors, templates);
+            List<SassVariable> sassVariables = GenerateVariables(sassSelectors);
             List<SassRule> sassRules = GenerateSassRules(sassSelectors);
             List<SassMediaRule> mediaRules = GenerateMediaRules(sassRules);
 
@@ -213,5 +217,39 @@ public class SassGenerator implements ICssPostCrawlPlugin
         }
 
         return mediaRules;
+    }
+
+    private List<SassVariable> GenerateVariables(List<SassSelector> sassSelectors)
+    {
+        List<SassVariable> variables = new ArrayList<>();
+
+        ColorNamer ctn = new ColorNamer();
+
+        for(SassSelector sassSelector : sassSelectors)
+        {
+            for(MProperty mProperty : sassSelector.GetProperties())
+            {
+                String value = mProperty.GetValue();
+                if(value.contains("rgba"))
+                {
+
+                }
+                else if(value.contains("rgb"))
+                {
+                    value = ColorHelper.TryParseRgb(value);
+                    String[] parts = value.replaceFirst("rgb\\(","").replaceFirst("\\)","").split(",");
+                    try
+                    {
+                        String name = ctn.TryGetNameForRgb(Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()), Integer.parseInt(parts[2].trim()));
+                    }
+                    catch (CssSuiteException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        return variables;
     }
 }

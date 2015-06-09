@@ -6,6 +6,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.util.ColorHelper;
 
 import java.util.*;
 
@@ -217,7 +218,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
         String base = name.split("-")[0];
 
         // first filter rgb from value, since it contains whitespace
-        String rgbColor = TryParseRgb(value);
+        String rgbColor = ColorHelper.TryParseRgb(value);
         if(!rgbColor.isEmpty())
         {
             String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
@@ -348,7 +349,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
         List<MProperty> props = new ArrayList<>();
 
         // first filter rgb from value, since it contains whitespace
-        String rgbColor = TryParseRgb(value);
+        String rgbColor = ColorHelper.TryParseRgb(value);
         if(!rgbColor.isEmpty())
         {
             String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
@@ -413,35 +414,6 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
         }
 
         return props;
-    }
-
-
-    /**
-     *
-     * @param value
-     * @return
-     */
-    private static String TryParseRgb(String value)
-    {
-        if(value.contains("rgba("))
-        {
-            int s =  value.indexOf("rgba(");
-            int e = value.indexOf(")");
-            if(s > e)
-                e = value.lastIndexOf(")");
-            return value.substring(s, e+1);
-        }
-
-        if (value.contains("rgb("))
-        {
-            int s =  value.indexOf("rgb(");
-            int e = value.indexOf(")");
-            if(s > e)
-                e = value.lastIndexOf(")");
-            return value.substring(s, e+1);
-        }
-
-        return "";
     }
 
 

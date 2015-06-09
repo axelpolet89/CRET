@@ -62,8 +62,8 @@ public class SassSelector
 
     public boolean HasEqualDeclarationsByText(SassSelector other)
     {
-        List<String> sorted = GetSortedProperties();
-        List<String> otherSorted = other.GetSortedProperties();
+        List<String> sorted = GetSortedPropertiesText();
+        List<String> otherSorted = other.GetSortedPropertiesText();
 
         if(sorted.size() != otherSorted.size())
         {
@@ -81,10 +81,15 @@ public class SassSelector
         return true;
     }
 
-    public List<String> GetSortedProperties()
+    public List<String> GetSortedPropertiesText()
     {
         List<String> result = _extensions.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
         result.addAll(_properties.stream().sorted((p1, p2) -> p1.toString().compareTo(p2.toString())).map(p -> p.toString()).collect(Collectors.toList()));
         return result;
+    }
+
+    public List<MProperty> GetProperties()
+    {
+        return _properties;
     }
 }

@@ -1,0 +1,136 @@
+body.custom-background {
+    background-image: url(www.beckerelectric.com/wp-content/uploads/2014/01/becker-background.png);
+    background-repeat: repeat-x;
+    background-position: top left;
+    background-attachment: fixed;
+}
+
+#navslidebuttons {
+    width: 100%;
+    overflow: hidden;
+    clear: both;
+    margin-top: -28px;
+    z-index: 9999;
+    position: relative;
+    padding-right: 14px;
+}
+
+#navslideinner {
+    overflow: hidden;
+    float: right;
+}
+
+.navcircleactive {
+    margin-left: 5px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: grey;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-bottom-right-radius: 24px;
+    border-bottom-left-radius: 24px;
+    width: 20px;
+    height: 20px;
+}
+
+.navcircleinactive {
+    margin-left: 5px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: grey;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-bottom-right-radius: 24px;
+    border-bottom-left-radius: 24px;
+    width: 20px;
+    height: 20px;
+}
+
+.navhoops {
+    float: left;
+}
+
+#slider {
+    position: relative;
+    overflow: hidden;
+    margin-right: 12px;
+    margin-left: 12px;
+    border-width: 0;
+    border-style: solid;
+    border-color: grey;
+    width: auto !important;
+    height: 170px !important;
+    overflow: hidden;
+}
+
+#slider > ul {
+    position: relative;
+    width: 100% !important;
+    list-style: none;
+    border-width: 0;
+    border-style: solid;
+    border-color: grey;
+}
+
+#slider > ul > li {
+    position: relative;
+    display: block;
+    float: left;
+    text-align: center;
+    border-width: 0;
+    border-style: solid;
+    border-color: grey;
+    width: 95% !important;
+    height: 150px !important;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+#slider > ul > li img {
+    width: 25% !important;
+}
+
+a.control_prev, a.control_next {
+    position: absolute;
+    top: 40%;
+    z-index: 999;
+    display: block;
+    padding-top: 4px !important;
+    padding-right: 4px !important;
+    padding-bottom: 6px !important;
+    padding-left: 4px !important;
+    width: 10px;
+    height: 15px;
+    color: rgb(86, 176, 221) !important;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.4em;
+}
+
+a.control_prev:hover, a.control_next:hover {
+    opacity: 1;
+    -webkit-transition: all .2s ease;
+}
+
+a.control_prev {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+a.control_next {
+    right: 0;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.slider_option {
+    position: relative;
+    margin-top: 10px;
+    margin-right: auto;
+    margin-bottom: 10px;
+    margin-left: auto;
+    width: 160px;
+    font-size: 18px;
+    display: none;
+}

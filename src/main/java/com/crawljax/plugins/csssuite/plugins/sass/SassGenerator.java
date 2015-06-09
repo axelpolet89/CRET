@@ -13,8 +13,10 @@ import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNameFinder;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -223,16 +225,29 @@ public class SassGenerator implements ICssPostCrawlPlugin
     {
         List<SassVariable> variables = new ArrayList<>();
 
+        List<String> browserColors = ParseBrowserColors();
+
         ColorNameFinder ctn = new ColorNameFinder();
         if(!ctn.IsInitialized())
             return variables;
+
+        Set<String> alreadyUsed = new HashSet<>();
 
         for(SassSelector sassSelector : sassSelectors)
         {
             for(MProperty mProperty : sassSelector.GetProperties())
             {
+                String varName = "";
+                String varValue = "";
+
+                String name = mProperty.GetName();
                 String value = mProperty.GetValue();
-                if(value.contains("rgba"))
+
+                if(value.contains("url"))
+                {
+
+                }
+                else if(value.contains("rgba"))
                 {
 
                 }
@@ -242,16 +257,78 @@ public class SassGenerator implements ICssPostCrawlPlugin
                     String[] parts = value.replaceFirst("rgb\\(","").replaceFirst("\\)","").split(",");
                     try
                     {
-                        String name = ctn.TryGetNameForRgb(Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()), Integer.parseInt(parts[2].trim()));
+                        varName = String.format("%s-%s", "color", ctn.TryGetNameForRgb(Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()), Integer.parseInt(parts[2].trim())));
+                        varValue = value;
                     }
                     catch (CssSuiteException e)
                     {
                         e.printStackTrace();
                     }
                 }
+                else if(name.contains("color"))
+                {
+                    varName = String.format("%s-%s", "color", value);
+                    varValue = value;
+                }
+                else if(name.equals("border") || name.equals("background") || name.equals("outline") || name.equals("box-shadow"))
+                {
+                    String[] parts = value.split(" ");
+
+                    for(String part : parts)
+                    {
+                        if(browserColors.contains(part.trim()))
+                        {
+                            varName = String.format("%s-%s", "color", part);
+                            varValue = part;
+                            break;
+                        }
+                    }
+                }
+
+                if(!varName.isEmpty())
+                {
+
+                    // if varName already used, find next id
+                    if (alreadyUsed.contains(varName))
+                    {
+                        int id = 1;
+                        while (true)
+                        {
+                            String replace = String.format("%s_%d", varName, id);
+                            if (!alreadyUsed.contains(replace))
+                            {
+                                varName = replace;
+                                break;
+                            }
+                            id++;
+                        }
+                    }
+
+                    SassVariable sv = new SassVariable(varName, varValue, mProperty);
+                    variables.add(sv);
+
+                    String escapedValue = varValue.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
+                    String escapedName = sv.toString().replace("$", "\\$");
+                    mProperty.SetNormalizedValue(value.replaceFirst(escapedValue, escapedName));
+                }
             }
         }
 
         return variables;
+    }
+
+
+    private List<String> ParseBrowserColors()
+    {
+        try
+        {
+            return Files.readAllLines(new File("./src/main/java/com/crawljax/plugins/csssuite/plugins/sass/colors/browser_color_names.txt").toPath());
+        }
+        catch (IOException e)
+        {
+            LogHandler.error(e, "[SassGenerator] Cannot load browser_color_names.txt!");
+        }
+
+        return new ArrayList<>();
     }
 }

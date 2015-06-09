@@ -8,19 +8,25 @@ import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
  */
 public class SassVariable
 {
-    private final String _prefix;
     private final String _name;
+    private final String _value;
     private final MProperty _relatedProperty;
 
-    public SassVariable(String prefix, String name, MProperty property)
+    public SassVariable(String name, String value, MProperty property)
     {
-        _prefix = prefix;
         _name = name;
+        _value = value;
         _relatedProperty = property;
     }
 
     public void Print(SuiteStringBuilder builder)
     {
-        builder.append("$%s-%s: %s", _prefix, _name, _relatedProperty.GetValue());
+        builder.append("$%s: %s", _name, _value);
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("$%s", _name);
     }
 }

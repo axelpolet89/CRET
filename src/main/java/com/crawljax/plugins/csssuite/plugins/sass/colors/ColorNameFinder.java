@@ -83,7 +83,7 @@ public class ColorNameFinder
      */
     private boolean Init()
     {
-        File file = new File("./src/main/java/com/crawljax/plugins/csssuite/plugins/sass/colors/colors.txt");
+        File file = new File("./src/main/java/com/crawljax/plugins/csssuite/plugins/sass/colors/hex_color_names.txt");
 
         try (BufferedReader br = new BufferedReader(new FileReader(file)))
         {
@@ -93,14 +93,14 @@ public class ColorNameFinder
                 String[] parts = line.split(":");
 
                 if(_hexNameMap.containsKey(parts[0]))
-                    LogHandler.warn("[ColorToName] Duplicate color %s found in colors.txt", parts[0]);
+                    LogHandler.warn("[ColorToName] Duplicate color %s found in hex_color_names.txt", parts[0]);
 
-                _hexNameMap.put(parts[0], parts[1]);
+                _hexNameMap.put(parts[0], parts[1].replace(" ",""));
             }
         }
         catch (IOException e)
         {
-            LogHandler.error(e, "[ColorToName] Error while reading colors.txt");
+            LogHandler.error(e, "[ColorToName] Error while reading hex_color_names.txt");
             return false;
         }
 

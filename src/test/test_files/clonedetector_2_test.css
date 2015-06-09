@@ -1,0 +1,26 @@
+.class1
+{
+    color: blue;
+    font-weight: bold;
+    margin: 10px;
+}
+
+.class2
+{
+    color: blue;
+    font-weight: bold;
+    border: 1px solid gray;
+    margin: 10px;
+}
+
+.class3
+{
+    font-weight: bold;
+    border: 3px solid red;
+    float: left;
+}
+
+.class4
+{
+    border: 1px solid gray;
+}

@@ -2,7 +2,6 @@ package com.crawljax.plugins.csssuite.generator;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.sass.SassSelector;
 import com.crawljax.plugins.csssuite.plugins.sass.SassTemplate;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by axel on 5/17/2015.
@@ -112,7 +110,7 @@ public class CssWriter
             writer.write(templates.get(i).Print());
         }
 
-        Map<Integer, List<SassSelector>> rules = new HashMap<>();
+        Map<Integer, List<SassSelector>> rules = new LinkedHashMap<>();
 
         selectors.stream()
                 .sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber()))
@@ -141,7 +139,7 @@ public class CssWriter
             }
             builder.append(selectorGroup);
             builder.append("{");
-            ruleSelectors.get(0).PrintInner(builder);
+            ruleSelectors.get(0).PrintContents(builder);
             builder.appendLine("}\n\n");
 
             writer.write(builder.toString());

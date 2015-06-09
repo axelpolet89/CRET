@@ -150,19 +150,22 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
 
         if(properties.size() == 4)
         {
-            for (MProperty property : properties)
+            List<MProperty> result = new ArrayList<>();
+            for (MProperty mProperty : properties)
             {
                 try
                 {
-                    merger.Parse(property.GetName(), property.GetValue(), property.IsImportant());
+                    merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant());
                 }
                 catch (CssSuiteException e)
                 {
-                    LogHandler.error(e, "Cannot parse single property %s into shorthand", property);
+                    result.add(mProperty);
+                    LogHandler.warn("Cannot parse single property %s into shorthand equivalent, just add it to result", mProperty);
                 }
             }
 
-            return merger.BuildMProperties();
+            result.addAll(merger.BuildMProperties());
+            return result;
         }
 
         return properties;
@@ -187,6 +190,8 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
             return properties;
         }
 
+        List<MProperty> result = new ArrayList<>();
+
         for (MProperty property : properties)
         {
             try
@@ -195,10 +200,12 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
             }
             catch (CssSuiteException e)
             {
-                LogHandler.error(e, "Cannot parse single property %s into shorthand", property);
+                result.add(property);
+                LogHandler.warn("Cannot parse single property %s into shorthand equivalent, just add it to result", property);
             }
         }
 
-        return merger.BuildMProperties();
+        result.addAll(merger.BuildMProperties());
+        return result;
     }
 }

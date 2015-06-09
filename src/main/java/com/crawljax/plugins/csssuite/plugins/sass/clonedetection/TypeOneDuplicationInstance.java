@@ -1,9 +1,5 @@
 package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
 
-/**
- * Created by axel on 6/5/2015.
- */
-
 import com.crawljax.plugins.csssuite.data.MSelector;
 
 import java.util.ArrayList;
@@ -11,14 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
-
 /**
  * This class represents the occurrences of same declarations
  * for different selectors.
  *
  * @author Davood Mazinanian
- *
+ * https://github.com/dmazinanian/css-analyser
  */
 public class TypeOneDuplicationInstance
 {

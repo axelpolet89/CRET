@@ -32,6 +32,11 @@ public class SassTemplate
         _extractedFrom.add(mSelector);
     }
 
+    public void SetNumber(int number)
+    {
+        _number = number;
+    }
+
     public boolean sameSelectors(List<MSelector> selectors)
     {
         return _extractedFrom.size() == selectors.size() && selectors.containsAll(_extractedFrom);
@@ -45,11 +50,6 @@ public class SassTemplate
     public List<MSelector> GetRelatedSelectors()
     {
         return _extractedFrom;
-    }
-
-    public void SetNumber(int number)
-    {
-        _number = number;
     }
 
     public int GetNumber()

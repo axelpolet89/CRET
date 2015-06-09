@@ -15,11 +15,8 @@ import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSetLi
 
 /**
  * Created by axel on 5/5/2015.
- * Initial clonedetector, differs from css-analyser tool, less bloated
- * This class is able to find duplicates by matching properties and values inside the css rules from a given file
- * For each property a CloneSet is created, which holds that property and two or more rules in which it prevails
- * Based on the rules inside any cloneset, we check if those rules exist in other clonesets.
- * If they do, then more than one property is shared by those rules
+ *
+ * Implementation of detecting clones based on FP-growth solution in https://github.com/dmazinanian/css-analyser
  */
 public class CloneDetector
 {
@@ -36,21 +33,17 @@ public class CloneDetector
     }
 
 
-    public List<SassTemplate> ClonesToTemplates(List<MCssRule> rules)
+    /**
+     *
+     * @param selectors
+     * @return
+     */
+    public List<MSelector> MergeSelectors(List<MSelector> selectors)
     {
-        //allows for fast detection of clones (using hash compare on the keys)
-        //HashMap<String, CloneSet> clones = new HashMap<>();
-
-        List<MSelector> origSelectors = new ArrayList<>();
         Map<String, List<MSelector>> selectorClones = new HashMap<>();
         List<MSelector> newSelectors = new ArrayList<>();
 
-        for(MCssRule rule : rules)
-        {
-            origSelectors.addAll(rule.GetSelectors());
-        }
-
-        for(MSelector mSelector : origSelectors)
+        for(MSelector mSelector : selectors)
         {
             String selectorText = mSelector.GetSelectorText();
 
@@ -75,8 +68,21 @@ public class CloneDetector
             newSelectors.add(newSelector);
         }
 
-        return GenerateSassTemplates(newSelectors);
+        return newSelectors;
+    }
 
+
+
+//    /**
+//     *
+//     * @param origSelectors
+//     * @return
+//     */
+//    public List<SassTemplate> FindClonesAsSassTemplates(List<MSelector> origSelectors)
+//    {
+//        //allows for fast detection of clones (using hash compare on the keys)
+//        //HashMap<String, CloneSet> clones = new HashMap<>();
+//
 
 //
 //            for (MSelector mSelector :newSelectors)
@@ -130,11 +136,15 @@ public class CloneDetector
 //            }
 //
 //            _mixinClones.put(fileName, result);
-    }
+//    }
 
 
-
-    private List<SassTemplate> GenerateSassTemplates(List<MSelector> selectors)
+    /**
+     *
+     * @param selectors
+     * @return
+     */
+    public List<SassTemplate> GenerateSassTemplates(List<MSelector> selectors)
     {
         List<SassTemplate> templates = new ArrayList<>();
         List<MSelector> allSelectors = new ArrayList<>(selectors);
@@ -252,7 +262,13 @@ public class CloneDetector
     }
 
 
-    private List<ItemSetList> FindDuplicationsAndFpGrowth(List<MSelector> selectors)
+    /**
+     * Implementation taken from https://github.com/dmazinanian/css-analyser
+     * and adapted to be applied on MSelectors and MProperties
+     * @param selectors
+     * @return
+     */
+    private static List<ItemSetList> FindDuplicationsAndFpGrowth(List<MSelector> selectors)
     {
         Map<Declaration, Item> declarationItemMap = new HashMap<>();
 
@@ -273,55 +289,40 @@ public class CloneDetector
 
             int checkingDecIndex = currentDeclarationIndex;
 
-        /*
-         * We want to keep all current identical declarations together, and
-         * then add them to the duplications list when we found all
-         * identical declarations of current declaration.
-         */
-            List<Declaration> currentTypeIDuplicatedDeclarations = new ArrayList<Declaration>();
+            /*
+             * We want to keep all current identical declarations together, and
+             * then add them to the duplications list when we found all
+             * identical declarations of current declaration.
+             */
+            List<Declaration> currentTypeIDuplicatedDeclarations = new ArrayList<>();
 
-        /*
-         * So we add current declaration to this list and add all identical
-         * declarations to this list
-         */
+            /*
+             * So we add current declaration to this list and add all identical
+             * declarations to this list
+             */
             currentTypeIDuplicatedDeclarations.add(currentDeclaration);
 
-        /*
-         * Only when add the current duplication to the duplications list
-         * that we have really found a duplication
-         */
+            /*
+             * Only when add the current duplication to the duplications list
+             * that we have really found a duplication
+             */
             boolean mustAddCurrentTypeIDuplication = false;
 
-        /*
-         * As we are going to find the duplications of type II, we repeat
-         * three previous expressions for type II duplications
-         */
-            List<Declaration> currentTypeIIDuplicatedDeclarations = new ArrayList<Declaration>();
-            currentTypeIIDuplicatedDeclarations.add(currentDeclaration);
-            boolean mustAddCurrentTypeTwoDuplication = false;
-
-            // for Apriori
             Item newItem = declarationItemMap.get(currentDeclaration);
             if (newItem == null)
             {
                 newItem = new Item(currentDeclaration);
                 declarationItemMap.put(currentDeclaration, newItem);
-//                ItemSet itemSet = new ItemSet();
-//                itemSet.add(newItem);
-//                C1.add(itemSet);
             }
 
             while (++checkingDecIndex < declarations.size())
             {
                 Declaration checkingDeclaration = declarations.get(checkingDecIndex);
 
-//                boolean equals = currentDeclaration.declarationEquals(checkingDeclaration);
-
                 boolean equals = currentDeclaration.getProperty().toString().equals(checkingDeclaration.getProperty().toString());
 
                 if (equals && !visitedDeclarations.contains(currentDeclarationIndex))
                 {
-
                     // We have found type I duplication
                     // We add the checkingDeclaration, it will add the Selector
                     // itself.
@@ -347,17 +348,14 @@ public class CloneDetector
                 else
                 {
                     typeOneDuplication = new TypeOneDuplicationInstance();
-                    typeOneDuplication
-                            .addAllDeclarations(currentTypeIDuplicatedDeclarations);
+                    typeOneDuplication.addAllDeclarations(currentTypeIDuplicatedDeclarations);
                     duplicationInstanceList.add(typeOneDuplication);
                 }
             }
         }
 
-        String test = "";
-
+        // Create a treeset of items for each selector with declarations found that occur in at least one other selector
         List<TreeSet<Item>> itemSets = new ArrayList<>(selectors.size());
-
         for (MSelector s : selectors)
         {
             TreeSet<Item> currentItems = new TreeSet<>();

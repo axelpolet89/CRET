@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
  */
 public class SassGenerator implements ICssPostCrawlPlugin
 {
+    public int minPropCount = 3;
+
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
     {
@@ -37,13 +39,14 @@ public class SassGenerator implements ICssPostCrawlPlugin
                 allSelectors.addAll(rule.GetSelectors());
             }
 
-            List<SassTemplate> templates = cd.ClonesToTemplates(rules);
+            List<SassTemplate> templates = cd.GenerateSassTemplates(allSelectors);
 
             for (SassTemplate t : templates)
             {
                 List<MProperty> properties = t.GetProperties();
-                //restore properties
-                if (properties.size() == 1 || properties.size() == 2)
+
+                // restore properties for each template we will NOT include, because they do not adhere to minimum property count
+                if (properties.size() > 0 && properties.size() < minPropCount)
                 {
                     for (MSelector mSelector : t.GetRelatedSelectors())
                     {
@@ -55,16 +58,16 @@ public class SassGenerator implements ICssPostCrawlPlugin
                 }
             }
 
-            templates = templates.stream().filter(t -> t.GetProperties().size() >= 3).collect(Collectors.toList());
-            LogHandler.debug("Found %d templates that apply to more than 3 or more properties", templates.size());
+            templates = templates.stream().filter(t -> t.GetProperties().size() >= minPropCount).collect(Collectors.toList());
+            LogHandler.debug("Found %d templates that apply to more than %d or more properties", templates.size(), minPropCount);
 
             for (int i = 0; i < templates.size(); i++)
             {
                 templates.get(i).SetNumber(i + 1);
             }
 
-            List<SassSelector> sassSelectors = GenerateSass(allSelectors, templates);
-            sassFiles.put(fileName, new SassFile(templates, GenerateSass(allSelectors, templates)));
+            List<SassSelector> sassSelectors = GenerateSassSelectors(allSelectors, templates);
+            sassFiles.put(fileName, new SassFile(templates, sassSelectors));
 
             CssWriter cssWriter = new CssWriter();
             try
@@ -84,7 +87,7 @@ public class SassGenerator implements ICssPostCrawlPlugin
         return cssRules;
     }
 
-    private List<SassSelector> GenerateSass(List<MSelector> selectors, List<SassTemplate> extensions)
+    private List<SassSelector> GenerateSassSelectors(List<MSelector> selectors, List<SassTemplate> extensions)
     {
         List<SassSelector> results = new ArrayList<>();
 

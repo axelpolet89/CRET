@@ -15,11 +15,8 @@ public class SassSelector
     private String _selectorText;
     private MSelector _original;
 
-    private SassSelector _parent;
-    private SassSelector _child;
-
     private List<MProperty> _properties;
-    private List<SassTemplate> _extends;
+    private List<SassTemplate> _extensions;
 
     public SassSelector(MSelector original)
     {
@@ -28,47 +25,35 @@ public class SassSelector
         _selectorText = original.GetSelectorText();
         _properties = original.GetProperties();
 
-        _extends = new ArrayList<>();
+        _extensions = new ArrayList<>();
     }
 
     public void AddExtension(SassTemplate sassTemplate)
     {
-        _extends.add(sassTemplate);
+        _extensions.add(sassTemplate);
     }
 
-    public String GetSelectorText()
+    public void PrintContents(SuiteStringBuilder builder)
     {
-        return _selectorText;
-    }
-
-    public String Print()
-    {
-        SuiteStringBuilder builder = new SuiteStringBuilder();
-
-        builder.append(_selectorText);
-        builder.append("{");
-
-        PrintInner(builder);
-
-        builder.appendLine("}\n\n");
-
-        return builder.toString();
-    }
-
-    public void PrintInner(SuiteStringBuilder builder)
-    {
-        for(SassTemplate sassTemplate : _extends)
+        for(SassTemplate sassTemplate : _extensions)
         {
             builder.appendLine("\t@extend: %%extend_%d;", sassTemplate.GetNumber());
         }
 
-        if(_extends.size() > 0)
-            builder.appendLine("");
+//        if(_extensions.size() > 0 && _properties.size() > 0)
+//        {
+//            builder.appendLine("");
+//        }
 
         for(MProperty mProperty : _properties)
         {
             builder.appendLine("\t%s", mProperty);
         }
+    }
+
+    public String GetSelectorText()
+    {
+        return _selectorText;
     }
 
     public int GetRuleNumber()

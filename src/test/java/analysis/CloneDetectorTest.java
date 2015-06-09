@@ -1,6 +1,7 @@
 package analysis;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
+import com.crawljax.plugins.csssuite.plugins.sass.SassGenerator;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
 import org.apache.log4j.Level;
@@ -26,16 +27,24 @@ public class CloneDetectorTest
     @Test
     public void TestCloneDetector()
     {
-        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_test.css");
-        Assert.assertNotNull(externalFile);
+        MCssFile externalFile1 = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_2_test.css");
+        Assert.assertNotNull(externalFile1);
+
+        MCssFile externalFile2 = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_test.css");
+        Assert.assertNotNull(externalFile2);
+
+        MCssFile externalFile3 = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_3_test.css");
+        Assert.assertNotNull(externalFile3);
 
         Map<String, MCssFile> files = new HashMap();
-        files.put("external", externalFile);
+        files.put("clonedetector_2_test.css", externalFile1);
+        files.put("clonedetector_test.css", externalFile2);
+        files.put("clonedetector_3_test.css", externalFile3);
 
         PropertyMergePlugin normalizer = new PropertyMergePlugin();
         normalizer.Transform(files);
 
-        CloneDetector cloneDetector = new CloneDetector();
-        cloneDetector.ClonesToTemplates(files.get(0).GetRules());
+        SassGenerator gen = new SassGenerator();
+        gen.Transform(files);
     }
 }

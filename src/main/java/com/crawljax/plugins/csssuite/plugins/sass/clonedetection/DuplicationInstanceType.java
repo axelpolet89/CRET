@@ -1,13 +1,10 @@
 package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
 
+/**
+ * https://github.com/dmazinanian/css-analyser
+ */
 public enum DuplicationInstanceType
 {
-	/*IDENTICAL_SELECTOR("Identical Selector"), 
-	IDENTICAL_PROPERTY_AND_VALUE("Identical property and value"),
-	IDENTICAL_VALUE("Identical value"), 
-	IDENTICAL_EFFECT("Identical effect on a same selector"),
-	OVERRIDEN_PROPERTY("Overruden property for a selector");*/
-
     /**
      * A pair of selectors having a common set of lexically identical declarations except
      * for variations in the order of declarations, whitespace, and inline comments
@@ -46,7 +43,8 @@ public enum DuplicationInstanceType
 
     String stringRepresentation;
 
-    DuplicationInstanceType(String value) {
+    DuplicationInstanceType(String value)
+    {
         stringRepresentation = value;
     }
 

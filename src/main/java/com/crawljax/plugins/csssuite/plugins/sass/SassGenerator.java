@@ -9,7 +9,7 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
-import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNamer;
+import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNameFinder;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
@@ -223,7 +223,9 @@ public class SassGenerator implements ICssPostCrawlPlugin
     {
         List<SassVariable> variables = new ArrayList<>();
 
-        ColorNamer ctn = new ColorNamer();
+        ColorNameFinder ctn = new ColorNameFinder();
+        if(!ctn.IsInitialized())
+            return variables;
 
         for(SassSelector sassSelector : sassSelectors)
         {

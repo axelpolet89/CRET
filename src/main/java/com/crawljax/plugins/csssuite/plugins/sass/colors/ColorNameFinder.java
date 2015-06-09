@@ -16,7 +16,7 @@ import java.util.*;
  * If the table does not contain the given color, the nearest color to the given color
  * is located and that name is used.
  */
-public class ColorNamer
+public class ColorNameFinder
 {
     private class Color
     {
@@ -64,7 +64,7 @@ public class ColorNamer
     private final Map<String, String> _hexNameMap;
     private boolean _isInitialized;
 
-    public ColorNamer()
+    public ColorNameFinder()
     {
         _hexColorMap = new LinkedHashMap<>();
         _hexNameMap = new LinkedHashMap<>();

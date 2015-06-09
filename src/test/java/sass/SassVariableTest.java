@@ -1,7 +1,7 @@
 package sass;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
-import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNamer;
+import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNameFinder;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -21,7 +21,7 @@ public class SassVariableTest
     @Test
     public void TestColorToName() throws CssSuiteException
     {
-        ColorNamer ctn = new ColorNamer();
+        ColorNameFinder ctn = new ColorNameFinder();
 
         String test1 = ctn.TryGetNameForRgb(0, 0, 0);
         String test2 = ctn.TryGetNameForRgb(255, 255, 255);

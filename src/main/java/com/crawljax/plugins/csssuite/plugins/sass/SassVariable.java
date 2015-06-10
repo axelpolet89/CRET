@@ -8,12 +8,14 @@ import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
  */
 public class SassVariable
 {
+    private final SassVarType _type;
     private final String _name;
     private final String _value;
     private final MProperty _relatedProperty;
 
-    public SassVariable(String name, String value, MProperty property)
+    public SassVariable(SassVarType type, String name, String value, MProperty property)
     {
+        _type = type;
         _name = name;
         _value = value;
         _relatedProperty = property;
@@ -21,7 +23,12 @@ public class SassVariable
 
     public void Print(SuiteStringBuilder builder)
     {
-        builder.append("$%s: %s", _name, _value);
+        builder.append("$%s: %s;", _name, _value);
+    }
+
+    public SassVarType getVarType()
+    {
+        return _type;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.crawljax.plugins.csssuite.data;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
@@ -114,11 +115,12 @@ public class MSelector
 	{
 		_selector = mSel.GetW3cSelector();
 		_selectorText = _selector.toString().trim();
-		_properties = new ArrayList<>();
-		_properties.addAll(mSel.GetProperties());
 		_mediaQueries = new ArrayList<>();
 		_mediaQueries.addAll(mSel.GetMediaQueries());
 		_ruleNumber = mSel.GetRuleNumber();
+
+		//copy construct properties
+		_properties = mSel.GetProperties().stream().map(MProperty::new).collect(Collectors.toList());
 
 		Init();
 

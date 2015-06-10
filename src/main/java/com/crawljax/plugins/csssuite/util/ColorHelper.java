@@ -32,4 +32,14 @@ public class ColorHelper
 
         return "";
     }
+
+
+    public static String TryParseUrl(String value)
+    {
+        int s =  value.indexOf("url(");
+        int e = value.indexOf(")");
+        if(s > e)
+            e = value.lastIndexOf(")");
+        return value.substring(s, e+1);
+    }
 }

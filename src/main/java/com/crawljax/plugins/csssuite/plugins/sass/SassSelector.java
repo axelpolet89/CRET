@@ -18,7 +18,7 @@ public class SassSelector
     private MSelector _original;
 
     private List<MProperty> _properties;
-    private List<SassTemplate> _extensions;
+    private List<SassMixin> _extensions;
 
     public SassSelector(MSelector original)
     {
@@ -30,16 +30,16 @@ public class SassSelector
         _extensions = new ArrayList<>();
     }
 
-    public void AddExtension(SassTemplate sassTemplate)
+    public void AddExtension(SassMixin sassTemplate)
     {
         _extensions.add(sassTemplate);
     }
 
     public void PrintContents(SuiteStringBuilder builder, String prefix)
     {
-        for(SassTemplate sassTemplate : _extensions)
+        for(SassMixin sassTemplate : _extensions)
         {
-            builder.appendLine("%s\t@extend: %%extend_%d;", prefix, sassTemplate.GetNumber());
+            builder.appendLine("%s\t@include %s;", prefix, sassTemplate);
         }
 
         for(MProperty mProperty : _properties)

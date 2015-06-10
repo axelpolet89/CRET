@@ -10,13 +10,13 @@ import java.util.List;
 /**
  * Created by axel on 6/5/2015.
  */
-public class SassTemplate
+public class SassMixin
 {
     private final List<MProperty> _properties;
     private final List<MSelector> _extractedFrom;
     private int _number;
 
-    public SassTemplate()
+    public SassMixin()
     {
         _properties = new ArrayList<>();
         _extractedFrom = new ArrayList<>();
@@ -57,23 +57,19 @@ public class SassTemplate
         return _number;
     }
 
-    public String Print()
+    public void Print(SuiteStringBuilder builder)
     {
-        SuiteStringBuilder builder = new SuiteStringBuilder();
-
-        builder.append("%%extend_%d{", _number);
+        builder.append("@mixin mixin_%d{", _number);
         for(MProperty property : _properties)
         {
             builder.appendLine("\t%s", property);
         }
-        builder.appendLine("}\n\n");
-
-        return builder.toString();
+        builder.appendLine("}");
     }
 
     @Override
     public String toString()
     {
-        return String.format("extend_%d", _number);
+        return String.format("mixin_%d", _number);
     }
 }

@@ -63,6 +63,25 @@ public class MProperty
 		_isEffective = isEffective;
 	}
 
+
+	/**
+	 * Full copy constructor
+	 * @param property
+	 */
+	public MProperty(MProperty property)
+	{
+		_name = property.GetName();
+		_originalValue = property.GetOriginalValue();
+		_normalizedValue = property.GetValue();
+		_status = property.GetStatus();
+		_isEffective = property.IsEffective();
+		_isImportant = property.IsImportant();
+		_isIgnored = property.IsIgnored();
+		_isInvalidUndo = property.IsInvalidUndo();
+		_w3cError = property.GetW3cError();
+	}
+
+
 	/** Getter */
 	public String GetName()
 	{

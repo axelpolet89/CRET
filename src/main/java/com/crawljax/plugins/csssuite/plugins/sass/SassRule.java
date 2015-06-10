@@ -43,6 +43,8 @@ public class SassRule
         return _mediaQueries;
     }
 
+    public int GetLineNumber() { return _lineNumber; }
+
     public void Print(SuiteStringBuilder builder, String prefix)
     {
         String selectorGroup = "";

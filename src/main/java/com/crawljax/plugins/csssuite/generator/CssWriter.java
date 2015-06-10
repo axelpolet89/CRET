@@ -4,7 +4,6 @@ import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.plugins.sass.*;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
-import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -81,7 +80,7 @@ public class CssWriter
         {
             if (!fileName.contains(".css"))
             {
-                LogHandler.info("[CssWriter] Styles not contained in a CSS file -> written to embedded_styles");
+                LogHandler.info("[CssWriter] Styles not contained in a SCSS file -> written to embedded_styles");
                 file = CreateFile(fileName, "output\\sassfiles\\", "\\embedded_styles\\");
             }
             else
@@ -91,19 +90,112 @@ public class CssWriter
         }
         catch (IOException ex)
         {
-            LogHandler.error(ex, "Error while creating CSS file for url '%s'", fileName.replace("%", "-PERC-"));
+            LogHandler.error(ex, "Error while creating SCSS file for url '%s'", fileName.replace("%", "-PERC-"));
             return;
         }
 
 
         FileWriter writer = new FileWriter(file);
 
-        for (SassTemplate st : sassFile.getExtensions())
+        List<SassVariable> colors = new ArrayList<>();
+        List<SassVariable> alphaColors = new ArrayList<>();
+        List<SassVariable> urls = new ArrayList<>();
+        List<SassVariable> fonts = new ArrayList<>();
+
+        for (SassVariable sv : sassFile.getVariables())
         {
-            writer.write(st.Print());
+            switch (sv.getVarType())
+            {
+                case COLOR:
+                    colors.add(sv);
+                    break;
+                case ALPHA_COLOR:
+                    alphaColors.add(sv);
+                    break;
+                case URL:
+                    urls.add(sv);
+                    break;
+                case FONT:
+                    fonts.add(sv);
+                    break;
+            }
         }
 
         SuiteStringBuilder builder = new SuiteStringBuilder();
+
+        boolean otherVarsSet = false;
+        if(colors.size() > 0)
+        {
+            otherVarsSet = true;
+            builder.append("//colors\n");
+
+            for(SassVariable sv : colors)
+            {
+                sv.Print(builder);
+                builder.append("\n");
+            }
+        }
+
+        if(alphaColors.size() > 0)
+        {
+            if(otherVarsSet)
+            {
+                builder.append("\n");
+            }
+
+            otherVarsSet = true;
+
+            builder.append("//alpha colors\n");
+            for(SassVariable sv : alphaColors)
+            {
+                sv.Print(builder);
+                builder.append("\n");
+            }
+        }
+
+        if(urls.size() > 0)
+        {
+            if(otherVarsSet)
+            {
+                builder.append("\n");
+            }
+            otherVarsSet = true;
+
+
+            builder.append("//urls\n");
+            for(SassVariable sv : urls)
+            {
+                sv.Print(builder);
+                builder.append("\n");
+            }
+        }
+
+        if(fonts.size() > 0)
+        {
+            if(otherVarsSet)
+            {
+                builder.append("\n");
+            }
+
+            builder.append("//fonts");
+            for(SassVariable sv : fonts)
+            {
+                sv.Print(builder);
+                builder.append("\n");
+            }
+        }
+
+        if(otherVarsSet)
+        {
+            builder.append("\n\n");
+        }
+
+        for (SassMixin st : sassFile.getExtensions())
+        {
+            st.Print(builder);
+            builder.append("\n\n");
+        }
+
         List<SassRule> sassRules = sassFile.getRules();
         for (int i = 0; i < sassRules.size(); i++)
         {
@@ -113,13 +205,11 @@ public class CssWriter
             if(i < sassRules.size() - 1)
                 builder.append("\n\n");
         }
-        writer.write(builder.toString());
 
         List<SassMediaRule> mediaRules = sassFile.getMediaRules();
 
         if(mediaRules.size() > 0)
         {
-            builder = new SuiteStringBuilder();
             builder.append("\n\n");
 
             for (int i = 0; i < mediaRules.size(); i++)
@@ -130,10 +220,11 @@ public class CssWriter
                 if (i < mediaRules.size() - 1)
                     builder.append("\n\n");
             }
-            writer.write(builder.toString());
         }
 
-        LogHandler.info("[CssWriter] New rules written to output");
+        writer.write(builder.toString());
+
+        LogHandler.info("[CssWriter] New SCSS rules written!");
 
         writer.flush();
         writer.close();

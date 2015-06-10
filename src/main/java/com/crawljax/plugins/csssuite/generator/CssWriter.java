@@ -3,6 +3,8 @@ package com.crawljax.plugins.csssuite.generator;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.plugins.sass.*;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.io.File;
@@ -177,7 +179,7 @@ public class CssWriter
                 builder.append("\n");
             }
 
-            builder.append("//fonts");
+            builder.append("//fonts\n");
             for(SassVariable sv : fonts)
             {
                 sv.Print(builder);
@@ -190,11 +192,18 @@ public class CssWriter
             builder.append("\n\n");
         }
 
-        for (SassMixin st : sassFile.getExtensions())
+        for (SassCloneMixin cloneMixin : sassFile.getCloneMixins())
         {
-            st.Print(builder);
+            cloneMixin.Print(builder);
             builder.append("\n\n");
         }
+
+        for (SassMixinBase mixin : sassFile.getMixins())
+        {
+            mixin.Print(builder);
+            builder.append("\n\n");
+        }
+
 
         List<SassRule> sassRules = sassFile.getRules();
         for (int i = 0; i < sassRules.size(); i++)

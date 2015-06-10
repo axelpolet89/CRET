@@ -104,10 +104,7 @@ public class MProperty
 	public boolean IsIgnored() { return _isIgnored; }
 
 	/** Getter */
-	public String GetValue()
-	{
-		return _normalizedValue;
-	}
+	public String GetValue() { return _normalizedValue;	}
 
 	/** Getter */
 	public String GetStatus()
@@ -132,6 +129,9 @@ public class MProperty
 	{
 		return _isInvalidUndo;
 	}
+
+	/** Getter */
+	public String GetFullValue() { return _normalizedValue + (_isImportant ? " !important" : ""); }
 
 
 	/**

@@ -1,5 +1,8 @@
 package com.crawljax.plugins.csssuite.plugins.sass;
 
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
+
 import java.util.List;
 
 /**
@@ -8,24 +11,25 @@ import java.util.List;
 public class SassFile
 {
     private final List<SassVariable> _variables;
-    private final List<SassMixin> _extensions;
+    private final List<SassCloneMixin> _cloneMixins;
+    private final List<SassMixinBase> _mixins;
     private final List<SassRule> _rules;
     private final List<SassMediaRule> _mediaRules;
 
-    public SassFile(List<SassVariable> variables, List<SassMixin> sassTemplates, List<SassRule> rules, List<SassMediaRule> mediaRules)
+    public SassFile(List<SassVariable> variables, List<SassCloneMixin> cloneMixins, List<SassMixinBase> mixins, List<SassRule> rules, List<SassMediaRule> mediaRules)
     {
         _variables = variables;
-        _extensions = sassTemplates;
+        _cloneMixins = cloneMixins;
+        _mixins = mixins;
         _rules = rules;
         _mediaRules = mediaRules;
     }
 
     public List<SassVariable> getVariables() { return _variables; }
 
-    public List<SassMixin> getExtensions()
-    {
-        return _extensions;
-    }
+    public List<SassCloneMixin> getCloneMixins() { return _cloneMixins; }
+
+    public List<SassMixinBase> getMixins() { return _mixins; }
 
     public List<SassRule> getRules()
     {

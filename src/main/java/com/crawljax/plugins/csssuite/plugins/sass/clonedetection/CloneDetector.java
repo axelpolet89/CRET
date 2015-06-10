@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 
-import com.crawljax.plugins.csssuite.plugins.sass.SassMixin;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.fpgrowth.FPGrowth;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.Item;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items.ItemSet;
@@ -143,9 +143,9 @@ public class CloneDetector
      * @param selectors
      * @return
      */
-    public List<SassMixin> GenerateMixins(List<MSelector> selectors)
+    public List<SassCloneMixin> GenerateMixins(List<MSelector> selectors)
     {
-        List<SassMixin> templates = new ArrayList<>();
+        List<SassCloneMixin> templates = new ArrayList<>();
         List<MSelector> allSelectors = new ArrayList<>(selectors);
 
         List<ItemSetList> results = FindDuplicationsAndFpGrowth(allSelectors);
@@ -182,7 +182,7 @@ public class CloneDetector
 
             if (todo != null)
             {
-                List<SassMixin> innerTemplates = new ArrayList<>();
+                List<SassCloneMixin> innerTemplates = new ArrayList<>();
 
                 for (Item i : todo)
                 {
@@ -193,7 +193,7 @@ public class CloneDetector
                         newSelectors.add(d.getSelector());
                     }
 
-                    Optional<SassMixin> existing = innerTemplates.stream().filter(t -> t.sameSelectors(newSelectors)).findFirst();
+                    Optional<SassCloneMixin> existing = innerTemplates.stream().filter(t -> t.sameSelectors(newSelectors)).findFirst();
 
                     if (existing.isPresent())
                     {
@@ -213,7 +213,7 @@ public class CloneDetector
                     }
                     else
                     {
-                        SassMixin template = new SassMixin();
+                        SassCloneMixin template = new SassCloneMixin();
 
                         newSelectors.forEach(s -> template.addSelector(s));
 
@@ -239,7 +239,7 @@ public class CloneDetector
 
                 List<MSelector> selectorsToRemove = new ArrayList<>();
 
-                for(SassMixin template : innerTemplates)
+                for(SassCloneMixin template : innerTemplates)
                 {
                     for(MSelector mSel : allSelectors.stream().filter(s -> template.GetRelatedSelectors().contains(s)).collect(Collectors.toList()))
                     {

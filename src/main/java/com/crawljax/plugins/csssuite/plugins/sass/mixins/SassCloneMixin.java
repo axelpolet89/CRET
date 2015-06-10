@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass;
+package com.crawljax.plugins.csssuite.plugins.sass.mixins;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
@@ -10,13 +10,13 @@ import java.util.List;
 /**
  * Created by axel on 6/5/2015.
  */
-public class SassMixin
+public class SassCloneMixin
 {
     private final List<MProperty> _properties;
     private final List<MSelector> _extractedFrom;
     private int _number;
 
-    public SassMixin()
+    public SassCloneMixin()
     {
         _properties = new ArrayList<>();
         _extractedFrom = new ArrayList<>();

@@ -2,6 +2,7 @@ package com.crawljax.plugins.csssuite.plugins.sass;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.steadystate.css.parser.media.MediaQuery;
 
@@ -18,7 +19,8 @@ public class SassSelector
     private MSelector _original;
 
     private List<MProperty> _properties;
-    private List<SassMixin> _extensions;
+    private List<SassCloneMixin> _includes;
+    private List<String> _otherIncludes;
 
     public SassSelector(MSelector original)
     {
@@ -27,19 +29,30 @@ public class SassSelector
         _selectorText = original.GetSelectorText();
         _properties = original.GetProperties();
 
-        _extensions = new ArrayList<>();
+        _includes = new ArrayList<>();
+        _otherIncludes = new ArrayList<>();
     }
 
-    public void AddExtension(SassMixin sassTemplate)
+    public void AddCloneInclude(SassCloneMixin sassTemplate)
     {
-        _extensions.add(sassTemplate);
+        _includes.add(sassTemplate);
+    }
+
+    public void AddInclude(String include)
+    {
+        _otherIncludes.add(include);
     }
 
     public void PrintContents(SuiteStringBuilder builder, String prefix)
     {
-        for(SassMixin sassTemplate : _extensions)
+        for(SassCloneMixin cloneMixin : _includes)
         {
-            builder.appendLine("%s\t@include %s;", prefix, sassTemplate);
+            builder.appendLine("%s\t@include %s;", prefix, cloneMixin);
+        }
+
+        for(String otherMixin : _otherIncludes)
+        {
+            builder.appendLine("%s\t@include %s;", prefix, otherMixin);
         }
 
         for(MProperty mProperty : _properties)
@@ -83,7 +96,7 @@ public class SassSelector
 
     public List<String> GetSortedPropertiesText()
     {
-        List<String> result = _extensions.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
+        List<String> result = _includes.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
         result.addAll(_properties.stream().sorted((p1, p2) -> p1.toString().compareTo(p2.toString())).map(p -> p.toString()).collect(Collectors.toList()));
         return result;
     }
@@ -91,5 +104,10 @@ public class SassSelector
     public List<MProperty> GetProperties()
     {
         return _properties;
+    }
+
+    public void RemoveProperties(List<MProperty> properties)
+    {
+        _properties.removeAll(properties);
     }
 }

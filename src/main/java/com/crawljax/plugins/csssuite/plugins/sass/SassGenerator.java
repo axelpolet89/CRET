@@ -9,6 +9,9 @@ import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNameFinder;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassBoxMixin;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
@@ -24,7 +27,7 @@ import java.util.stream.Collectors;
  */
 public class SassGenerator implements ICssPostCrawlPlugin
 {
-    public int minPropCount = 3;
+    private final int minPropCount = 2;
 
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
@@ -47,35 +50,20 @@ public class SassGenerator implements ICssPostCrawlPlugin
             List<SassVariable> sassVariables = GenerateVariables(allSelectors);
 
             LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
-            List<SassMixin> templates = cd.GenerateMixins(allSelectors);
+            List<SassCloneMixin> validMixins = FilterValidCloneMixins(cd.GenerateMixins(allSelectors));
 
-            for (SassMixin t : templates)
+            LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), minPropCount, fileName);
+
+            for (int i = 0; i < validMixins.size(); i++)
             {
-                List<MProperty> templateProps = t.GetProperties();
-
-                // restore properties for each template we will NOT include, because they do not adhere to minimum property count
-                if (templateProps.size() > 0 && templateProps.size() < minPropCount)
-                {
-                    for (MSelector templateSel : t.GetRelatedSelectors())
-                    {
-                        for (MProperty mProperty : templateProps)
-                        {
-                            templateSel.AddProperty(mProperty);
-                        }
-                    }
-                }
-            }
-
-            templates = templates.stream().filter(t -> t.GetProperties().size() >= minPropCount).collect(Collectors.toList());
-            LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties for file %s", templates.size(), minPropCount, fileName);
-
-            for (int i = 0; i < templates.size(); i++)
-            {
-                templates.get(i).SetNumber(i + 1);
+                validMixins.get(i).SetNumber(i + 1);
             }
 
             LogHandler.debug("[SassGenerator] Generate SASS selectors...");
-            List<SassSelector> sassSelectors = GenerateSassSelectors(allSelectors, templates);
+            List<SassSelector> sassSelectors = GenerateSassSelectors(allSelectors, validMixins);
+
+            LogHandler.debug("[SassGenerator] Generate SASS convenience mixins...");
+            List<SassMixinBase> sassMixins = GenerateConvenienceMixins(sassSelectors);
 
             LogHandler.debug("[SassGenerator] Generate SASS rules...");
             List<SassRule> sassRules = GenerateSassRules(sassSelectors);
@@ -83,7 +71,7 @@ public class SassGenerator implements ICssPostCrawlPlugin
             LogHandler.debug("[SassGenerator] Generate SASS media rules...");
             List<SassMediaRule> mediaRules = GenerateMediaRules(sassRules);
 
-            sassFiles.put(fileName, new SassFile(sassVariables, templates, sassRules, mediaRules));
+            sassFiles.put(fileName, new SassFile(sassVariables, validMixins, sassMixins, sassRules, mediaRules));
         }
 
         CssWriter cssWriter = new CssWriter();
@@ -107,7 +95,113 @@ public class SassGenerator implements ICssPostCrawlPlugin
         return cssRules;
     }
 
-    private List<SassSelector> GenerateSassSelectors(List<MSelector> selectors, List<SassMixin> extensions)
+
+    private List<SassCloneMixin> FilterValidCloneMixins(List<SassCloneMixin> mixins)
+    {
+        List<SassCloneMixin> validMixins = new ArrayList<>();
+
+        for (SassCloneMixin mixin : mixins)
+        {
+            List<MProperty> templateProps = mixin.GetProperties();
+            int numberOfProps = templateProps.size();
+
+            // if the total number of properties exceeds minimum property threshold, continue
+            if (numberOfProps >= minPropCount)
+            {
+                // number of lines that mixin will add to output file
+                int mixinSize = templateProps.size();
+
+                int count = 0;
+                int lineNumber = 0;
+                for(MSelector mSelector : mixin.GetRelatedSelectors().stream()
+                        .sorted((ms1, ms2) -> Integer.compare(ms1.GetRuleNumber(), ms2.GetRuleNumber()))
+                        .collect(Collectors.toList()))
+                {
+                    if(mSelector.GetRuleNumber() != lineNumber)
+                    {
+                        count += numberOfProps - 1;
+                        lineNumber = mSelector.GetRuleNumber();
+                    }
+                }
+
+                // if the total number of properties saved exceeds the number of properties added to the mixin, include the mixin
+                if(count >= mixinSize)
+                {
+                    validMixins.add(mixin);
+                }
+                else
+                {
+                    RestoreCloneMixin(mixin);
+                }
+            }
+            else
+            {
+                RestoreCloneMixin(mixin);
+            }
+        }
+
+        return validMixins;
+    }
+
+
+    private void RestoreCloneMixin(SassCloneMixin mixin)
+    {
+        List<MProperty> mixinProps = mixin.GetProperties();
+
+        for (MSelector mSelector : mixin.GetRelatedSelectors())
+        {
+            mixinProps.forEach(mSelector::AddProperty);
+        }
+    }
+
+
+    private List<SassMixinBase> GenerateConvenienceMixins(List<SassSelector> allSelectors)
+    {
+        List<SassMixinBase> mixins = new ArrayList<>();
+
+        SassBoxMixin padding = new SassBoxMixin("padding");
+        SassBoxMixin margin = new SassBoxMixin("margin");
+
+        boolean pUsed = false;
+        boolean mUsed = false;
+
+        for(SassSelector sassSelector : allSelectors)
+        {
+            List<MProperty> paddings = sassSelector.GetProperties().stream().filter(ms -> ms.GetName().contains("padding-")).collect(Collectors.toList());
+            List<MProperty> margins = sassSelector.GetProperties().stream().filter(ms -> ms.GetName().contains("margin-")).collect(Collectors.toList());
+
+            if(paddings.size() > 1)
+            {
+                sassSelector.AddInclude(padding.CreateMixinCall(paddings));
+                sassSelector.RemoveProperties(paddings);
+
+                pUsed = true;
+            }
+
+            if(margins.size() > 1)
+            {
+                sassSelector.AddInclude(margin.CreateMixinCall(margins));
+                sassSelector.RemoveProperties(margins);
+
+                mUsed = true;
+            }
+        }
+
+        if(pUsed)
+        {
+            mixins.add(padding);
+        }
+
+        if(mUsed)
+        {
+            mixins.add(margin);
+        }
+
+        return mixins;
+    }
+
+
+    private List<SassSelector> GenerateSassSelectors(List<MSelector> selectors, List<SassCloneMixin> extensions)
     {
         List<SassSelector> results = new ArrayList<>();
 
@@ -115,13 +209,13 @@ public class SassGenerator implements ICssPostCrawlPlugin
         {
             SassSelector ss = new SassSelector(mSelector);
 
-            for(SassMixin st : extensions)
+            for(SassCloneMixin st : extensions)
             {
                 for(MSelector related : st.GetRelatedSelectors())
                 {
                     if(related == mSelector)
                     {
-                        ss.AddExtension(st);
+                        ss.AddCloneInclude(st);
                         break;
                     }
                 }
@@ -249,7 +343,13 @@ public class SassGenerator implements ICssPostCrawlPlugin
 
                 try
                 {
-                    if (origValue.contains("url"))
+                    if (origName.equals("font-family"))
+                    {
+                        varType = SassVarType.FONT;
+                        varName = "font-stack";
+                        varValue = origValue;
+                    }
+                    else if (origValue.contains("url"))
                     {
                         varType = SassVarType.URL;
                         varName = "url";

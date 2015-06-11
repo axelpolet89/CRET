@@ -7,6 +7,7 @@ import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
+import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -64,9 +65,49 @@ public class CssWriter
             }
         });
 
+        List<MediaQuery> currentMedia = new ArrayList<>();
+
         for (MCssRule rule : rules)
         {
-            writer.write(rule.Print());
+            if(rule.GetSelectors().size() > 0 && rule.GetSelectors().stream().allMatch(s -> s.GetMediaQueries().size() > 0))
+            {
+                List<MediaQuery> media = rule.GetSelectors().get(0).GetMediaQueries();
+
+                if(currentMedia.containsAll(media) && media.containsAll(currentMedia))
+                {
+                    writer.write(rule.Print());
+                }
+                else
+                {
+                    if(!currentMedia.isEmpty())
+                        writer.write("\n}\n");
+
+                    currentMedia = media;
+
+                    String mediaQueryText = "@media";
+
+                    for(MediaQuery mq : media)
+                    {
+                        mediaQueryText += " " + mq.toString();
+                    }
+
+                    mediaQueryText += "{\n";
+
+                    writer.write(mediaQueryText);
+
+                    writer.write(rule.Print());
+                }
+            }
+            else
+            {
+                if(!currentMedia.isEmpty())
+                {
+                    writer.write("\n}\n");
+                    currentMedia.clear();
+                }
+
+                writer.write(rule.Print());
+            }
         }
 
         LogHandler.info("[CssWriter] New rules written to output");

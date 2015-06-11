@@ -32,7 +32,7 @@ public class Beckers {
 
 		builder.setBrowserConfig(new BrowserConfiguration(BrowserType.FIREFOX, 1));
 
-		CssSuitePlugin cssSuite = new CssSuitePlugin();
+		CssSuitePlugin cssSuite = new CssSuitePlugin("becker_electric", INDEX);
 		//cssSuite.EnableDebug();
 
 		builder.addPlugin(cssSuite);

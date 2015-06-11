@@ -2,6 +2,7 @@ package com.crawljax.plugins.csssuite.plugins.sass;
 
 import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
+import com.crawljax.plugins.csssuite.plugins.sass.variables.SassVariable;
 
 import java.util.List;
 

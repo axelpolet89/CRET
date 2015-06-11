@@ -11,12 +11,14 @@ import java.util.*;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
+import com.crawljax.plugins.csssuite.generator.SassWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
 import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
-import com.crawljax.plugins.csssuite.plugins.sass.SassGenerator;
+import com.crawljax.plugins.csssuite.plugins.sass.SassBuilder;
+import com.crawljax.plugins.csssuite.plugins.sass.SassFile;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
@@ -39,6 +41,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	/* Configuration properties */
 	public boolean _enableW3cValidation = true;
 
+	private final String _siteName;
+	private final String _siteIndex;
+
 	private final List<String> _processedCssFiles;
 	private int _originalCssLOC;
 
@@ -49,12 +54,16 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private final File _outputFile = new File("output/csssuite" + String.format("%s", new SimpleDateFormat("ddMMyy-hhmmss").format(new Date())) + ".txt");
 
-	public CssSuitePlugin()
+	public CssSuitePlugin(String siteName, String _siteIndex)
 	{
+		_siteName = siteName;
+		this._siteIndex = _siteIndex;
+
 		DOMConfigurator.configure("log4j.xml");
 
 		LogHandler.info("");
 		LogHandler.info("==================================START NEW CSS-SUITE RUN=====================================");
+		LogHandler.info("TARGET: %s at URL %s", _siteName, this._siteIndex);
 
 		_originalCssLOC = 0;
 
@@ -72,7 +81,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorsPlugin());
 		_postPlugins.add(new PropertyMergePlugin());
-		_postPlugins.add(new SassGenerator());
 	}
 
 	public void EnableDebug()
@@ -370,6 +378,28 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				e.printStackTrace();
 			}
 			catch (URISyntaxException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
+		SassBuilder sassBuilder =  new SassBuilder();
+
+		Map<String, SassFile> sassFiles = sassBuilder.CssToSass(rules);
+
+		SassWriter sassWriter = new SassWriter("output\\sassfiles\\", _siteName, _siteIndex);
+
+		for(String fileName : sassFiles.keySet())
+		{
+			try
+			{
+				sassWriter.GenerateSassCode(fileName, sassFiles.get(fileName));
+			}
+			catch (URISyntaxException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IOException e)
 			{
 				e.printStackTrace();
 			}

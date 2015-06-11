@@ -33,7 +33,7 @@ public class CillaRunner {
 
 		builder.setBrowserConfig(new BrowserConfiguration(BrowserType.FIREFOX, 1));
 
-		builder.addPlugin(new CssSuitePlugin());
+		builder.addPlugin(new CssSuitePlugin("ece_ubc_ca", INDEX));
 
 		CrawljaxRunner crawljax = new CrawljaxRunner(builder.build());
 		crawljax.call();

@@ -6,12 +6,15 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
+import com.crawljax.plugins.csssuite.generator.SassWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNameFinder;
 import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassBoxMixin;
 import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
+import com.crawljax.plugins.csssuite.plugins.sass.variables.SassVarType;
+import com.crawljax.plugins.csssuite.plugins.sass.variables.SassVariable;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
@@ -25,12 +28,11 @@ import java.util.stream.Collectors;
 /**
  * Created by axel on 6/8/2015.
  */
-public class SassGenerator implements ICssPostCrawlPlugin
+public class SassBuilder
 {
     private final int minPropCount = 2;
 
-    @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
+    public Map<String, SassFile> CssToSass(Map<String, MCssFile> cssRules)
     {
         Map<String, SassFile> sassFiles = new HashMap<>();
         CloneDetector cd = new CloneDetector();
@@ -74,25 +76,7 @@ public class SassGenerator implements ICssPostCrawlPlugin
             sassFiles.put(fileName, new SassFile(sassVariables, validMixins, sassMixins, sassRules, mediaRules));
         }
 
-        CssWriter cssWriter = new CssWriter();
-
-        for(String fileName : sassFiles.keySet())
-        {
-            try
-            {
-                cssWriter.GenerateSassFile(fileName, sassFiles.get(fileName));
-            }
-            catch (URISyntaxException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        return cssRules;
+        return sassFiles;
     }
 
 

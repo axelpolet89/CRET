@@ -1,8 +1,7 @@
 package analysis;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.plugins.sass.SassGenerator;
-import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
+import com.crawljax.plugins.csssuite.plugins.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -44,7 +43,7 @@ public class CloneDetectorTest
         PropertyMergePlugin normalizer = new PropertyMergePlugin();
         normalizer.Transform(files);
 
-        SassGenerator gen = new SassGenerator();
-        gen.Transform(files);
+        SassBuilder gen = new SassBuilder();
+        gen.CssToSass(files);
     }
 }

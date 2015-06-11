@@ -46,7 +46,7 @@ public class DescendantToChildTest
 
         // depends on cssanalyzer...
         MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
-        ChildCombinatorsPlugin dtoc = new ChildCombinatorsPlugin();
+        ChildCombinatorPlugin dtoc = new ChildCombinatorPlugin();
 
         // crawl dom
         analyzer.Transform("", dom, files, order);

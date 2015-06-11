@@ -79,7 +79,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_postPlugins.add(new NormalizeAndSplitPlugin());
 		_postPlugins.add(analyzer);
 		_postPlugins.add(new DetectUndoingPlugin());
-		_postPlugins.add(new ChildCombinatorsPlugin());
+		_postPlugins.add(new ChildCombinatorPlugin());
 		_postPlugins.add(new PropertyMergePlugin());
 	}
 

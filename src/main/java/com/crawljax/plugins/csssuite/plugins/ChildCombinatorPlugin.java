@@ -26,11 +26,11 @@ import java.util.Map;
  * Performs analysis on a MSelector and it's matched elements,
  * by crawling the parents and siblings of those DOM elements using the specification of the selector
  */
-public class ChildCombinatorsPlugin implements ICssPostCrawlPlugin
+public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
 {
     private final Map<DescendantSelectorImpl, Boolean> _descendants;
 
-    public ChildCombinatorsPlugin()
+    public ChildCombinatorPlugin()
     {
         _descendants = new HashMap<>();
     }

@@ -1,10 +1,10 @@
 package com.crawljax.plugins.csssuite.generator;
 
 import com.crawljax.plugins.csssuite.LogHandler;
-import com.crawljax.plugins.csssuite.plugins.sass.*;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
-import com.crawljax.plugins.csssuite.plugins.sass.variables.SassVariable;
+import com.crawljax.plugins.csssuite.sass.*;
+import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
+import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
@@ -31,7 +31,7 @@ public class SassWriter
         _siteIndex = siteIndex;
     }
 
-    public void GenerateSassCode(String fileName, SassFile sassFile) throws URISyntaxException, IOException
+    public File GenerateSassCode(String fileName, SassFile sassFile) throws URISyntaxException, IOException
     {
         File file = null;
 
@@ -60,7 +60,7 @@ public class SassWriter
         catch (IOException ex)
         {
             LogHandler.error(ex, "Error while creating SCSS file for url '%s'", fileName1.replace("%", "-PERC-"));
-            return;
+            return null;
         }
 
 
@@ -204,5 +204,7 @@ public class SassWriter
 
         writer.flush();
         writer.close();
+
+        return file;
     }
 }

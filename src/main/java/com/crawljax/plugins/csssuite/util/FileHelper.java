@@ -70,4 +70,28 @@ public class FileHelper
 
         return file;
     }
+
+    public static File CreateFileAndDirs(String fileName) throws IOException
+    {
+        File file = new File(fileName);
+        File dir = new File(fileName.replace(file.getName(), ""));
+
+        if(!dir.exists())
+        {
+            dir.mkdirs();
+        }
+
+        try
+        {
+            if (!file.exists())
+                file.createNewFile();
+        }
+        catch(IOException ex)
+        {
+            LogHandler.error("Error in creating new file '%s'\nwith name '%s'", file, file.getName());
+            throw(ex);
+        }
+
+        return file;
+    }
 }

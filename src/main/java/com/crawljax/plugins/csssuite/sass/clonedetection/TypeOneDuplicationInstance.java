@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
+package com.crawljax.plugins.csssuite.sass.clonedetection;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
 

@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass;
+package com.crawljax.plugins.csssuite.sass;
 
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.steadystate.css.parser.media.MediaQuery;

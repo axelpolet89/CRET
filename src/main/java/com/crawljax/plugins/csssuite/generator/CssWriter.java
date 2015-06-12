@@ -2,17 +2,12 @@ package com.crawljax.plugins.csssuite.generator;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.plugins.sass.*;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.util.FileHelper;
-import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 

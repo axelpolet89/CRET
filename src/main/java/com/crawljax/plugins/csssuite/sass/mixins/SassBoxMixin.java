@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass.mixins;
+package com.crawljax.plugins.csssuite.sass.mixins;
 
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;

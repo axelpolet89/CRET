@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass.variables;
+package com.crawljax.plugins.csssuite.sass.variables;
 
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;

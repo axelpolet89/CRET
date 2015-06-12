@@ -1,7 +1,7 @@
-package com.crawljax.plugins.csssuite.plugins.sass.clonedetection.items;
+package com.crawljax.plugins.csssuite.sass.clonedetection.items;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.Declaration;
+import com.crawljax.plugins.csssuite.sass.clonedetection.Declaration;
 
 import java.util.*;
 

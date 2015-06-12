@@ -1,26 +1,22 @@
-package com.crawljax.plugins.csssuite.plugins.sass;
+package com.crawljax.plugins.csssuite.sass;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
-import com.crawljax.plugins.csssuite.generator.CssWriter;
-import com.crawljax.plugins.csssuite.generator.SassWriter;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
-import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
-import com.crawljax.plugins.csssuite.plugins.sass.colors.ColorNameFinder;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassBoxMixin;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
-import com.crawljax.plugins.csssuite.plugins.sass.variables.SassVarType;
-import com.crawljax.plugins.csssuite.plugins.sass.variables.SassVariable;
+import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
+import com.crawljax.plugins.csssuite.sass.colors.ColorNameFinder;
+import com.crawljax.plugins.csssuite.sass.mixins.SassBoxMixin;
+import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
+import com.crawljax.plugins.csssuite.sass.variables.SassVarType;
+import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -425,7 +421,7 @@ public class SassBuilder
     {
         try
         {
-            return Files.readAllLines(new File("./src/main/java/com/crawljax/plugins/csssuite/plugins/sass/colors/color_names_browser.txt").toPath());
+            return Files.readAllLines(new File("./src/main/java/com/crawljax/plugins/csssuite/sass/colors/color_names_browser.txt").toPath());
         }
         catch (IOException e)
         {

@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass.variables;
+package com.crawljax.plugins.csssuite.sass.variables;
 
 /**
  * Created by axel on 6/10/2015.

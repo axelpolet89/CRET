@@ -1,7 +1,6 @@
-package com.crawljax.plugins.csssuite.plugins.sass.clonedetection;
+package com.crawljax.plugins.csssuite.sass.clonedetection;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 
 /**

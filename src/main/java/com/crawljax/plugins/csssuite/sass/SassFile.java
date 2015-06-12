@@ -1,8 +1,8 @@
-package com.crawljax.plugins.csssuite.plugins.sass;
+package com.crawljax.plugins.csssuite.sass;
 
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassCloneMixin;
-import com.crawljax.plugins.csssuite.plugins.sass.mixins.SassMixinBase;
-import com.crawljax.plugins.csssuite.plugins.sass.variables.SassVariable;
+import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
+import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
 
 import java.util.List;
 

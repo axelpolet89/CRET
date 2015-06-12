@@ -4,10 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.StringReader;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+//import com.cathive.sass.SassContext;
+//import com.cathive.sass.SassFileContext;
+//import com.cathive.sass.SassOptions;
+//import com.cathive.sass.SassOutputStyle;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
@@ -17,9 +22,9 @@ import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
 import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
-import com.crawljax.plugins.csssuite.plugins.sass.SassBuilder;
-import com.crawljax.plugins.csssuite.plugins.sass.SassFile;
-import com.crawljax.plugins.csssuite.plugins.sass.clonedetection.CloneDetector;
+import com.crawljax.plugins.csssuite.sass.SassBuilder;
+import com.crawljax.plugins.csssuite.sass.SassFile;
+import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
@@ -387,23 +392,57 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		Map<String, SassFile> sassFiles = sassBuilder.CssToSass(rules);
 
-		SassWriter sassWriter = new SassWriter("output\\sassfiles\\", _siteName, _siteIndex);
+		Map<String, File> scssInputFiles = new HashMap<>();
+
+		SassWriter sassWriter = new SassWriter("output\\SASS\\input", _siteName, _siteIndex);
 
 		for(String fileName : sassFiles.keySet())
 		{
 			try
 			{
-				sassWriter.GenerateSassCode(fileName, sassFiles.get(fileName));
+				scssInputFiles.put(fileName, sassWriter.GenerateSassCode(fileName, sassFiles.get(fileName)));
 			}
-			catch (URISyntaxException e)
+			catch (Exception e)
 			{
-				e.printStackTrace();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
+				LogHandler.error(e, "Error while generating SCSS code for file %s", fileName);
 			}
 		}
+
+//		io.bit3.jsass.Compiler sassCompiler = new Compiler();
+//		Options sassOptions = new Options();
+
+		for(String fileName : scssInputFiles.keySet())
+		{
+			try
+			{
+//				URI scssSource = scssInputFiles.get(fileName).toURI();
+//				URI cssTarget = new URI(scssSource.toString().replace("input", "output").replace(".scss", ".css"));
+//
+//				SassContext ctx = SassFileContext.create(new File(scssSource.getPath()).toPath());
+//				SassOptions options = ctx.getOptions();
+//
+//				options.setOutputStyle(SassOutputStyle.NESTED);
+//
+//				ctx.compile(System.out);
+
+//				Output cssOutput = sassCompiler.compileFile(scssSource, cssTarget, sassOptions);
+//				String css = cssOutput.getCss();
+			}
+			catch (Exception e)
+			{
+				LogHandler.error(e, "Error while compiling SCSS to CSS via JSASS for file %s", fileName);
+			}
+		}
+
+//		try
+//		{
+//			Process tr = Runtime.getRuntime().exec( new String[]{ "sass -v" } );
+//		}
+//		catch (IOException e)
+//		{
+//			e.printStackTrace();
+//		}
+
 	}
 
 

@@ -1,4 +1,4 @@
-package com.crawljax.plugins.csssuite.plugins.sass.colors;
+package com.crawljax.plugins.csssuite.sass.colors;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
@@ -83,7 +83,7 @@ public class ColorNameFinder
      */
     private boolean Init()
     {
-        File file = new File("./src/main/java/com/crawljax/plugins/csssuite/plugins/sass/colors/color_names_hex.txt");
+        File file = new File("./src/main/java/com/crawljax/plugins/csssuite/sass/colors/color_names_hex.txt");
 
         try (BufferedReader br = new BufferedReader(new FileReader(file)))
         {

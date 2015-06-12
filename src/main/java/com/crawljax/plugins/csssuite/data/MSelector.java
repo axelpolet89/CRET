@@ -555,6 +555,11 @@ public class MSelector
 		_properties.add(mProperty);
 	}
 
+	public void RemoveProperties(List<MProperty> properties)
+	{
+		_properties.removeAll(properties);
+	}
+
 	public void RemovePropertiesByText(List<MProperty> properties)
 	{
 		List<MProperty> toRemove = new ArrayList<>();

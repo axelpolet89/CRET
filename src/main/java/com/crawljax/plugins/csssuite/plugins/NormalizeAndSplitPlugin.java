@@ -52,12 +52,21 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
         for(MProperty mProperty : mSelector.GetProperties())
         {
-            if(mProperty.IsIgnored())
+            if(mProperty.IsIgnored() || !mProperty.GetValueVendor().isEmpty())
+            {
+                newProps.add(mProperty);
                 continue;
+            }
 
             final String name = mProperty.GetName();
             final String value = mProperty.GetValue();
             final boolean isImportant = mProperty.IsImportant();
+
+            if(value.contains("-gradient") || value.contains("progid:"))
+            {
+                newProps.add(mProperty);
+                continue;
+            }
 
             try
             {
@@ -76,13 +85,17 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                 {
                     if(name.equals("border-radius"))
                     {
-                        newProps.addAll(BorderRadiusToProps(value, isImportant));
+                        newProps.addAll(BorderRadiusToProps(value, mProperty.GetNameVendor(), isImportant));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
-                    else
+                    else if(name.equals("border"))
                     {
                         newProps.addAll(BorderToProps(name, value, isImportant));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    }
+                    else
+                    {
+                        newProps.add(mProperty);
                     }
                 }
                 else if(name.equals("outline"))
@@ -266,7 +279,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
      * @param isImportant
      * @return
      */
-    private static List<MProperty> BorderRadiusToProps(String value, boolean isImportant) throws CssSuiteException
+    private static List<MProperty> BorderRadiusToProps(String value, String vendor, boolean isImportant) throws CssSuiteException
     {
         String[] parts = value.split("/");
 
@@ -287,10 +300,10 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
         List<MProperty> result = new ArrayList<>();
 
-        result.add(CreateBorderProp("border-top-left-radius", topLeft, isImportant, "border-radius"));
-        result.add(CreateBorderProp("border-top-right-radius", topRight, isImportant, "border-radius"));
-        result.add(CreateBorderProp("border-bottom-right-radius", bottomRight, isImportant, "border-radius"));
-        result.add(CreateBorderProp("border-bottom-left-radius", bottomLeft, isImportant, "border-radius"));
+        result.add(CreateBorderProp(String.format("%sborder-top-left-radius", vendor), topLeft, isImportant, "border-radius"));
+        result.add(CreateBorderProp(String.format("%sborder-top-right-radius", vendor), topRight, isImportant, "border-radius"));
+        result.add(CreateBorderProp(String.format("%sborder-bottom-right-radius", vendor), bottomRight, isImportant, "border-radius"));
+        result.add(CreateBorderProp(String.format("%sborder-bottom-left-radius", vendor), bottomLeft, isImportant, "border-radius"));
 
         return result;
     }
@@ -385,7 +398,8 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                 if(i+1 < parts.length)
                 {
                     String part2 = parts[i + 1];
-                    if (part2.equals("top") || part2.equals("bottom") || part2.equals("center"))
+                    if (part2.equals("top") || part2.equals("bottom") || part2.equals("center") ||
+                            ContainsUnitLength(part2) || part.contains("%") || part.equals("0"))
                     {
                         position += " " + part2;
                         i++;
@@ -399,7 +413,8 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                 if(i+1 < parts.length)
                 {
                     String part2 = parts[i + 1];
-                    if (ContainsUnitLength(part2) || part.contains("%") || part.equals("0"))
+                    if (ContainsUnitLength(part2) || part.contains("%") || part.equals("0") ||
+                            part2.equals("top") || part2.equals("bottom") || part2.equals("center"))
                     {
                         position += " " + part2;
                         i++;

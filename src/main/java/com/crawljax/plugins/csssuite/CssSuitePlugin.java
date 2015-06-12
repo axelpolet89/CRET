@@ -6,10 +6,6 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-//import com.cathive.sass.SassContext;
-//import com.cathive.sass.SassFileContext;
-//import com.cathive.sass.SassOptions;
-//import com.cathive.sass.SassOutputStyle;
 import com.cathive.sass.SassContext;
 import com.cathive.sass.SassFileContext;
 import com.cathive.sass.SassOutputStyle;
@@ -83,6 +79,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_plugins.add(analyzer);
 		_postPlugins.add(new NormalizeAndSplitPlugin());
+		_postPlugins.add(new DetectClonedProperties());
 		_postPlugins.add(analyzer);
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorPlugin());

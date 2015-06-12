@@ -19,6 +19,9 @@ public class MProperty
 	private boolean _isEffective;
 	private boolean _isInvalidUndo;
 
+	private String _nameVendorPrefix;
+	private String _valueVendorPrefix;
+
 	/**
 	 * Default constructor
 	 * @param name
@@ -36,6 +39,34 @@ public class MProperty
 		_w3cError = w3cError;
 		_isIgnored = !w3cError.isEmpty();
 		_isInvalidUndo = false;
+		_nameVendorPrefix = "";
+		_valueVendorPrefix = "";
+
+		if(name.contains("-moz-") || name.contains("-webkit-") || name.contains("-ms-") || name.contains("-o-") || name.contains("-khtml-"))
+		{
+			_nameVendorPrefix = "-" + name.split("-")[1] + "-";
+		}
+
+		if(value.contains("-moz-"))
+		{
+			_valueVendorPrefix = "-moz-";
+		}
+		else if(value.contains("-webkit-"))
+		{
+			_valueVendorPrefix = "-webkit-";
+		}
+		else if(value.contains("-ms-"))
+		{
+			_valueVendorPrefix = "-ms-";
+		}
+		else if(value.contains("-o-"))
+		{
+			_valueVendorPrefix = "-o-";
+		}
+		else if(value.contains("-khtml-"))
+		{
+			_valueVendorPrefix = "-khtml-";
+		}
 	}
 
 
@@ -133,6 +164,11 @@ public class MProperty
 	/** Getter */
 	public String GetFullValue() { return _normalizedValue + (_isImportant ? " !important" : ""); }
 
+	/** Getter */
+	public String GetNameVendor() { return _nameVendorPrefix; }
+
+	/** Getter */
+	public String GetValueVendor() { return _valueVendorPrefix; }
 
 	/**
 	 *

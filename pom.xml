@@ -140,30 +140,6 @@
 			<version>3.1.0.1</version>
 		</dependency>
 
-		<!--<dependency>-->
-		<!--<groupId>io.bit3</groupId>-->
-		<!--<artifactId>jsass</artifactId>-->
-		<!--<version>1.0.0</version>-->
-		<!--</dependency>-->
-
-		<!--<dependency>-->
-		<!--<groupId>net.java.dev.jna</groupId>-->
-		<!--<artifactId>jna</artifactId>-->
-		<!--<version>4.1.0</version>-->
-		<!--</dependency>-->
-
-		<!--<dependency>-->
-		<!--<groupId>net.java.dev.jna</groupId>-->
-		<!--<artifactId>jna-platform</artifactId>-->
-		<!--<version>4.1.0</version>-->
-		<!--</dependency>-->
-
-		<!--<dependency>-->
-		<!--<groupId>com.nativelibs4java</groupId>-->
-		<!--<artifactId>jnaerator-runtime</artifactId>-->
-		<!--<version>0.11</version>-->
-		<!--</dependency>-->
-
 	</dependencies>
 
 	<developers>

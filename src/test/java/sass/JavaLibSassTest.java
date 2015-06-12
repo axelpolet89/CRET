@@ -1,5 +1,6 @@
-package analysis;
+package sass;
 
+import helpers.TestHelper;
 import com.cathive.sass.SassContext;
 import com.cathive.sass.SassFileContext;
 import com.cathive.sass.SassOutputStyle;

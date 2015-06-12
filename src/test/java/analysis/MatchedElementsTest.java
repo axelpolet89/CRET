@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import helpers.TestHelper;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;

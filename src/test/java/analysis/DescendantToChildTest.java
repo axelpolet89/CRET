@@ -6,6 +6,7 @@ import com.crawljax.plugins.csssuite.plugins.*;
 
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import helpers.TestHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;

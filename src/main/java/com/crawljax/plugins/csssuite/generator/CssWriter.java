@@ -8,6 +8,7 @@ import com.steadystate.css.parser.media.MediaQuery;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
@@ -16,42 +17,9 @@ import java.util.*;
  */
 public class CssWriter
 {
-    public void Generate(String fileName, List<MCssRule> rules) throws IOException, URISyntaxException
+    public void Generate(File file, List<MCssRule> rules) throws IOException, URISyntaxException
     {
-        int totalSelectors = 0;
-        final int[] totalProperties = {0};
-
-        for (MCssRule rule : rules)
-        {
-            totalSelectors += rule.GetSelectors().size();
-            rule.GetSelectors().forEach((s) -> totalProperties[0] += s.GetProperties().size());
-        }
-
-        LogHandler.info("[CssWriter] File: " + fileName);
-        LogHandler.info("[CssWriter] # Selectors: %d", totalSelectors);
-        LogHandler.info("[CssWriter] # Properties: %d", totalProperties[0]);
-
-        File file = null;
-        try
-        {
-            if(!fileName.contains(".css"))
-            {
-                LogHandler.info("[CssWriter] Styles not contained in a CSS file -> written to embedded_styles");
-                file = FileHelper.CreateFileAndDirs(fileName, "output\\cssfiles\\", "\\embedded_styles\\");
-            }
-            else
-            {
-                file = FileHelper.CreateFileAndDirs(fileName, "output\\cssfiles\\", "");
-            }
-        }
-        catch (IOException ex)
-        {
-            LogHandler.error(ex, "Error while creating CSS file for url '%s'", fileName.replace("%", "-PERC-"));
-            return;
-        }
-
-
-        FileWriter writer = new FileWriter(file);
+        LogHandler.info("Generating CSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
 
         Collections.sort(rules, new Comparator<MCssRule>() {
             @Override
@@ -60,6 +28,8 @@ public class CssWriter
             }
         });
 
+
+        FileWriter writer = new FileWriter(file);
         List<MediaQuery> currentMedia = new ArrayList<>();
 
         for (MCssRule rule : rules)
@@ -105,7 +75,7 @@ public class CssWriter
             }
         }
 
-        LogHandler.info("[CssWriter] New rules written to output");
+        LogHandler.info("[CssWriter] CSS code generation successful!");
 
         writer.flush();
         writer.close();

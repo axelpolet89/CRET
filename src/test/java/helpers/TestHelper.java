@@ -1,4 +1,4 @@
-package analysis;
+package helpers;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MSelector;

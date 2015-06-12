@@ -11,6 +11,7 @@ import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,49 +21,9 @@ import java.util.List;
  */
 public class SassWriter
 {
-    private final String _outputRoot;
-    private final String _siteName;
-    private final String _siteIndex;
-
-    public SassWriter(String outputRoot, String siteName, String siteIndex)
+    public File GenerateSassCode(File file, SassFile sassFile) throws URISyntaxException, IOException
     {
-        _outputRoot = outputRoot;
-        _siteName = siteName;
-        _siteIndex = siteIndex;
-    }
-
-    public File GenerateSassCode(String fileName, SassFile sassFile) throws URISyntaxException, IOException
-    {
-        File file = null;
-
-        LogHandler.info("Generating SCSS file for CSS file '%s'...", fileName.replace("%", "-PERC-"));
-
-        String replace = fileName.contains(".css") ? _siteName : _siteName + "/embedded_styles";
-
-        String fileName1 = fileName.replace(_siteIndex, replace);
-        if(fileName1.equals(replace + "/"))
-            fileName1 += "index/";
-
-        try
-        {
-            if (!fileName1.contains(".css"))
-            {
-                LogHandler.info("[CssWriter] Styles not contained in external CSS file, write as embedded styles");
-                fileName1 = fileName1.substring(0, fileName1.length() - 1).concat(".scss");
-                file = FileHelper.CreateFileAndDirs2(fileName1, _outputRoot, "");
-            }
-            else
-            {
-                fileName1 = fileName1.replace(".css", ".scss");
-                file = FileHelper.CreateFileAndDirs2(fileName1, _outputRoot, "");
-            }
-        }
-        catch (IOException ex)
-        {
-            LogHandler.error(ex, "Error while creating SCSS file for url '%s'", fileName1.replace("%", "-PERC-"));
-            return null;
-        }
-
+        LogHandler.info("Generating SCSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
 
         FileWriter writer = new FileWriter(file);
 
@@ -200,7 +161,7 @@ public class SassWriter
 
         writer.write(builder.toString());
 
-        LogHandler.info("[CssWriter] New SCSS rules written!");
+        LogHandler.info("[SassWriter] SCSS code generation successful!");
 
         writer.flush();
         writer.close();

@@ -84,7 +84,9 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
                         }
 
                         if(validUndo)
+                        {
                             break;
+                        }
 
                         for (int j = i + 1; j < effectiveSelectors.size(); j++)
                         {
@@ -136,11 +138,15 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
                             }
 
                             if(validUndo)
+                            {
                                 break;
+                            }
                         }
 
                         if(!validUndo)
+                        {
                             property.SetInvalidUndo();
+                        }
                     }
                 }
             }

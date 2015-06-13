@@ -12,15 +12,14 @@ public class MProperty
 	private final String _w3cError;
 	private final boolean _isIgnored;
 	private final boolean _isImportant;
+	private final String _nameVendorPrefix;
+	private final String _valueVendorPrefix;
 
 	protected String _normalizedValue;
 	private String _status;
-
 	private boolean _isEffective;
 	private boolean _isInvalidUndo;
 
-	private String _nameVendorPrefix;
-	private String _valueVendorPrefix;
 
 	/**
 	 * Default constructor
@@ -39,12 +38,14 @@ public class MProperty
 		_w3cError = w3cError;
 		_isIgnored = !w3cError.isEmpty();
 		_isInvalidUndo = false;
-		_nameVendorPrefix = "";
-		_valueVendorPrefix = "";
 
 		if(name.contains("-moz-") || name.contains("-webkit-") || name.contains("-ms-") || name.contains("-o-") || name.contains("-khtml-"))
 		{
 			_nameVendorPrefix = "-" + name.split("-")[1] + "-";
+		}
+		else
+		{
+			_nameVendorPrefix = "";
 		}
 
 		if(value.contains("-moz-"))
@@ -66,6 +67,10 @@ public class MProperty
 		else if(value.contains("-khtml-"))
 		{
 			_valueVendorPrefix = "-khtml-";
+		}
+		else
+		{
+			_valueVendorPrefix = "";
 		}
 	}
 
@@ -110,6 +115,8 @@ public class MProperty
 		_isIgnored = property.IsIgnored();
 		_isInvalidUndo = property.IsInvalidUndo();
 		_w3cError = property.GetW3cError();
+		_nameVendorPrefix = property.GetNameVendor();
+		_valueVendorPrefix = property.GetValueVendor();
 	}
 
 
@@ -135,6 +142,19 @@ public class MProperty
 	public boolean IsIgnored() { return _isIgnored; }
 
 	/** Getter */
+	public boolean IsImportant()
+	{
+		return _isImportant;
+	}
+
+	/** Getter */
+	public String GetNameVendor() { return _nameVendorPrefix; }
+
+	/** Getter */
+	public String GetValueVendor() { return _valueVendorPrefix; }
+
+
+	/** Getter */
 	public String GetValue() { return _normalizedValue;	}
 
 	/** Getter */
@@ -144,31 +164,19 @@ public class MProperty
 	}
 
 	/** Getter */
-	public boolean IsImportant()
-	{
-		return _isImportant;
-	}
-
-	/** Getter */
 	public boolean IsEffective()
 	{
 		return _isEffective;
 	}
 
 	/** Getter */
-	public boolean IsInvalidUndo()
+	public boolean IsInvalidUndo() { return _isInvalidUndo; }
+
+	/** Getter */
+	public String GetFullValue()
 	{
-		return _isInvalidUndo;
+		return _normalizedValue + (_isImportant ? " !important" : "");
 	}
-
-	/** Getter */
-	public String GetFullValue() { return _normalizedValue + (_isImportant ? " !important" : ""); }
-
-	/** Getter */
-	public String GetNameVendor() { return _nameVendorPrefix; }
-
-	/** Getter */
-	public String GetValueVendor() { return _valueVendorPrefix; }
 
 	/**
 	 *

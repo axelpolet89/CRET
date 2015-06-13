@@ -1,47 +1,42 @@
 package com.crawljax.plugins.csssuite.data;
 
-import org.w3c.dom.css.CSSImportRule;
-import org.w3c.dom.css.CSSPageRule;
-
-import java.util.ArrayList;
+import com.steadystate.css.dom.CSSRuleListImpl;
 import java.util.List;
 
 /**
  * Created by axel on 5/22/2015.
+ *
+ * Represents a CSS file, including MCssRules that we will analyze and CSSRuleImpl that we will ignore
+ * For example, we will ignore @page and @import rules
  */
 public class MCssFile
 {
-    private final String _url;
+    private final String _name;
+    private final List<MCssRule> _allRules;
+    private final CSSRuleListImpl _ignoredRules;
 
-    private List<CSSImportRule> _importRules;
-    private List<CSSPageRule> _pageRules;
-
-    private List<MCssRule> _allRules;
-
-    public MCssFile(String url, List<MCssRule> rules)
+    public MCssFile(String url, List<MCssRule> rules, CSSRuleListImpl ignored)
     {
-        _url = url;
+        _name = url;
         _allRules = rules;
-
-        _importRules = new ArrayList<>();
-        _pageRules = new ArrayList<>();
+        _ignoredRules = ignored;
     }
 
-    public String GetUrl(){ return _url; }
+    /** Getter */
+    public String GetName()
+    {
+        return _name;
+    }
+
+    /** Getter */
     public List<MCssRule> GetRules()
     {
         return _allRules;
     }
 
-    public void OverwriteAllRules(List<MCssRule> allRules)
+    /** Getter */
+    public CSSRuleListImpl GetIgnoredRules()
     {
-        _allRules = allRules;
-    }
-
-    public void AddImportRules(List<CSSImportRule> rules){
-        _importRules.addAll(rules);
-    }
-    public void AddPageRules(List<CSSPageRule> rules){
-        _pageRules.addAll(rules);
+        return _ignoredRules;
     }
 }

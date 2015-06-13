@@ -49,7 +49,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private final List<String> _processedCssFiles;
 	private int _originalCssLOC;
 
-	private final Map<String, MCssFile> _mcssFiles;
+	private Map<String, MCssFile> _mcssFiles;
 
 	private final List<ICssCrawlPlugin> _plugins;
 	private final List<ICssPostCrawlPlugin> _postPlugins;
@@ -254,22 +254,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	}
 
 	@Override
-	public void postCrawling(CrawlSession session, ExitStatus exitReason) {
-
-		List<CloneDetector> cloneDetectors = new ArrayList<>();
-
-		//todo: clonedetector
-//		for(String cssFile : _cssFiles.keySet())
-//		{
-//			if(!_processedCssFiles.contains(cssFile))
-//			{
-//				_processedCssFiles.add(cssFile);
-//				CloneDetector cd = new CloneDetector(cssFile);
-//				cloneDetectors.add(cd);
-//				cd.Detect(_cssRules.get(cssFile));
-//			}
-//		}
-
+	public void postCrawling(CrawlSession session, ExitStatus exitReason)
+	{
 		int totalCssRules = 0;
 		int totalCssSelectors = 0;
 		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
@@ -293,6 +279,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		int unused = PrintUnmatchedRules(bufferUnused);
 
 		Map<String, MCssFile> rules = ExecutePostTransformations();
+		_mcssFiles = rules;
 
 		int effectiveInt = PrintEffectiveSelectors(effective);
 		int ineffectiveInt = PrintIneffectiveSelectors(ineffectiveBuffer);

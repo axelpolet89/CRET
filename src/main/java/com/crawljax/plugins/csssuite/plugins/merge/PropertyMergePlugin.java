@@ -31,7 +31,7 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
             {
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
-                    MergeShortHandDeclarations(mSelector);
+                    MergePropertiesToShorthand(mSelector);
                 }
             }
         }
@@ -44,7 +44,7 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
      * Split any shorthand margin, padding, border, border-radius, outline and background property into parts
      * @param mSelector
      */
-    private static void MergeShortHandDeclarations(MSelector mSelector)
+    private static void MergePropertiesToShorthand(MSelector mSelector)
     {
         List<MProperty> newProperties = new ArrayList<>();
         List<MProperty> properties = mSelector.GetProperties();
@@ -131,7 +131,7 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
         newProperties.addAll(MergeBorderProperties(outline, new OutlineMerger("outline")));
         newProperties.addAll(MergeBorderProperties(background, new BackgroundMerger("background")));
 
-        mSelector.ReplaceProperties(newProperties);
+        mSelector.SetNewProperties(newProperties);
     }
 
 

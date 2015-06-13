@@ -58,11 +58,13 @@ public class MatchAndAnalyzePlugin implements ICssCrawlPlugin, ICssPostCrawlPlug
 
 					for (Node node : result)
 					{
-						//compare selectors containing non-structural pseudo classes on their compatibility with the node they matched
+						//compare any selector containing non-structural pseudo classes on their compatibility with the node they matched
 						if (mSelector.IsNonStructuralPseudo())
 						{
 							if (!mSelector.CheckPseudoCompatibility(node.getNodeName(), node.getAttributes()))
+							{
 								continue;
+							}
 						}
 
 						if (node instanceof Document)

@@ -44,57 +44,24 @@ public class MSelector
 	/**
 	 * Constructor
 	 *
-	 * @param selector:   the selector text (CSS).
+	 * @param w3cSelector:   the selector text (CSS).
 	 * @param properties: the properties that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
-	public MSelector(Selector selector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries)
+	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries)
 	{
-		_selector = selector;
+		_selector = w3cSelector;
 		_properties = properties;
 		_ruleNumber = ruleNumber;
-		_selectorText = selector.toString().trim();
+		_selectorText = w3cSelector.toString().trim();
 		_mediaQueries = queries;
 
 		Init();
 	}
 
-	private void Init()
-	{
-		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]");
-
-		try
-		{
-			RecursiveFilterUniversalSelector(_selector);
-		}
-		catch (Exception ex)
-		{
-			LogHandler.error(ex, "Error in filtering universal selectors in selector '%s':", _selector);
-		}
-
-		_matchedElements = new ArrayList<>();
-		_nonStructuralPseudoClasses = new LinkedHashMap<>();
-		_structuralPseudoClasses = new LinkedHashMap<>();
-		_keyPseudoClass = "";
-		_keyPseudoElement = "";
-
-		try
-		{
-			DeterminePseudo();
-		}
-		catch (Exception ex)
-		{
-			LogHandler.error(ex, "Error in determining pseudo presence in selector '%s':", _selector);
-		}
-
-		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
-				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
-				_hasPseudoElement);
-	}
-
 
 	/**
-	 * Partial copy constructor
+	 * Partial copy constructor, generate from new w3cSelector, with properties from old MSelector
 	 * @param w3cSelector
 	 * @param mSel
 	 */
@@ -131,13 +98,39 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @param mSelector
+	 * Initialize other properties, by recursively parsing w3c selector object
 	 */
-	public void MergeProperties(MSelector mSelector)
+	private void Init()
 	{
-		_properties.addAll(mSelector.GetProperties());
-		_ruleNumber = Math.max(_ruleNumber, mSelector.GetRuleNumber());
+		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]");
+
+		try
+		{
+			RecursiveFilterUniversalSelector(_selector);
+		}
+		catch (Exception ex)
+		{
+			LogHandler.error(ex, "[MSelector] Error in filtering universal selectors in selector '%s':", _selector);
+		}
+
+		_matchedElements = new ArrayList<>();
+		_nonStructuralPseudoClasses = new LinkedHashMap<>();
+		_structuralPseudoClasses = new LinkedHashMap<>();
+		_keyPseudoClass = "";
+		_keyPseudoElement = "";
+
+		try
+		{
+			DeterminePseudo();
+		}
+		catch (Exception ex)
+		{
+			LogHandler.error(ex, "[MSelector] Error in determining pseudo presence in selector '%s':", _selector);
+		}
+
+		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
+				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
+				_hasPseudoElement);
 	}
 
 
@@ -293,23 +286,6 @@ public class MSelector
 	}
 
 
-	/**
-	 *
-	 * @param attributes
-	 * @param attributeName
-	 * @return
-	 */
-	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
-	{
-		Node node = attributes.getNamedItem(attributeName);
-
-		if(node != null)
-			return node.getNodeValue();
-
-		return null;
-	}
-
-
 	/** Getter */
 	public Selector GetW3cSelector() { return _selector; }
 
@@ -351,7 +327,7 @@ public class MSelector
 
 
 	/**
-	 * @return css code that is usable to query a DOM
+	 * @return css code that is usable to query a DOM, e.g. with filtered-out pseudo selectors
 	 */
 	public String GetFilteredSelectorText()
 	{
@@ -359,6 +335,65 @@ public class MSelector
 			return _selectorTextWithoutPseudo;
 
 		return _selectorText;
+	}
+
+
+	/**
+	 * Based on the W3C CSS3 specification, some elements are compatible with some pseudo-classes and others not
+	 * @param elementType
+	 * @param attributes
+	 * @return whether the given element is compatible with the 'key' pseudo-class of this selector
+	 */
+	public boolean CheckPseudoCompatibility(String elementType, NamedNodeMap attributes)
+	{
+		switch (_keyPseudoClass)
+		{
+			case ":link":
+			case ":visited":
+				if(elementType.equalsIgnoreCase("a") && GetAttributeValue(attributes, "href") != null)
+					return true;
+				break;
+			case ":checked":
+				if(elementType.equalsIgnoreCase("input"))
+				{
+					String type = GetAttributeValue(attributes, "type");
+					if(type.equalsIgnoreCase("checkbox") || type.equalsIgnoreCase("radio") || type.equalsIgnoreCase("option"))
+						return true;
+				}
+				break;
+			case ":focus":
+			case ":active":
+				if((_keyPseudoClass.equals(":active") && elementType.equalsIgnoreCase("a")) || (elementType.equalsIgnoreCase("textarea")))
+					return true;
+				if(elementType.equalsIgnoreCase("input"))
+				{
+					String type = GetAttributeValue(attributes, "type");
+					if(type.equalsIgnoreCase("button") || type.equalsIgnoreCase("text"))
+						return true;
+				}
+				break;
+			default:
+				return true;
+		}
+
+		return false;
+	}
+
+
+	/**
+	 *
+	 * @param attributes
+	 * @param attributeName
+	 * @return
+	 */
+	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
+	{
+		Node node = attributes.getNamedItem(attributeName);
+
+		if(node != null)
+			return node.getNodeValue();
+
+		return null;
 	}
 
 
@@ -383,48 +418,6 @@ public class MSelector
 			_matchedElements.add(element);
 			_isMatched = true;
 		}
-	}
-
-
-	/**
-	 * Based on the W3C CSS3 specification, some elements are compatible with some pseudo-classes and others not
-	 * @param elementType
-	 * @param attributes
-	 * @return whether the given element is compatible with the 'key' pseudo-class of this selector
-	 */
-	public boolean CheckPseudoCompatibility(String elementType, NamedNodeMap attributes)
-	{
-		switch (_keyPseudoClass)
-		{
-			case ":link":
-			case ":visited":
-				if(elementType.equalsIgnoreCase("a") && GetAttributeValue(attributes, "href") != null)
-					return true;
-				break;
-			case ":checked":
-				if(elementType.equalsIgnoreCase("input"))
-				{
-					String type = GetAttributeValue(attributes, "type");
-					if(type.equalsIgnoreCase("checkbox") || type.equalsIgnoreCase("radio") || type.equalsIgnoreCase("option"))
-					 	return true;
-				}
-				break;
-			case ":focus":
-			case ":active":
-				if((_keyPseudoClass.equals(":active") && elementType.equalsIgnoreCase("a")) || (elementType.equalsIgnoreCase("textarea")))
-					return true;
-				if(elementType.equalsIgnoreCase("input"))
-				{
-					String type = GetAttributeValue(attributes, "type");
-					if(type.equalsIgnoreCase("button") || type.equalsIgnoreCase("text"))
-						return true;
-				}
-				break;
-			default:
-				return true;
-		}
-
-		return false;
 	}
 
 
@@ -459,7 +452,9 @@ public class MSelector
 	{
 		List<MediaQuery> commonQueries = FindCommonMediaQueries(otherSelector);
 		if(_mediaQueries.containsAll(commonQueries) && commonQueries.containsAll(_mediaQueries))
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -527,22 +522,30 @@ public class MSelector
 
 
 	/**
-	 * @return true if any property is effective
+	 * Remove any property that has not been deemed effective
 	 */
-	public boolean HasEffectiveProperties()
+	public void RemoveIneffectiveProperties()
 	{
-		return _properties.stream().anyMatch((property) -> property.IsEffective());
+		_properties.removeIf((MProperty) -> !MProperty.IsEffective());
 	}
 
 
 	/**
-	 *
-	 * @param newProps
+	 * Remove any property that performs an invalid undo
 	 */
-	public void ReplaceProperties(List<MProperty> newProps)
+	public void RemoveInvalidUndoProperties()
 	{
-		_properties.clear();
-		_properties.addAll(newProps);
+		_properties.removeIf((MProperty) -> MProperty.IsInvalidUndo());
+	}
+
+
+
+	/**
+	 * @return true if any property contained in this selector is effective
+	 */
+	public boolean HasEffectiveProperties()
+	{
+		return _properties.stream().anyMatch((property) -> property.IsEffective());
 	}
 
 
@@ -555,11 +558,32 @@ public class MSelector
 		_properties.add(mProperty);
 	}
 
+
+	/**
+	 *
+	 * @param newProps
+	 */
+	public void SetNewProperties(List<MProperty> newProps)
+	{
+		_properties.clear();
+		_properties.addAll(newProps);
+	}
+
+
+	/**
+	 *
+	 * @param properties
+	 */
 	public void RemoveProperties(List<MProperty> properties)
 	{
 		_properties.removeAll(properties);
 	}
 
+
+	/**
+	 *
+	 * @param properties
+	 */
 	public void RemovePropertiesByText(List<MProperty> properties)
 	{
 		List<MProperty> toRemove = new ArrayList<>();
@@ -568,7 +592,9 @@ public class MSelector
 			for(MProperty thisProperty : _properties)
 			{
 				if(mProperty.toString().equals(thisProperty.toString()))
+				{
 					toRemove.add(thisProperty);
+				}
 			}
 		}
 
@@ -587,24 +613,6 @@ public class MSelector
 			propsSize += prop.ComputeSizeBytes();
 		}
 		return (propsSize + _selectorText.trim().replace(" ", "").getBytes().length);
-	}
-
-
-	/**
-	 * Remove any property that has not been deemed effective
-	 */
-	public void RemoveIneffectiveProperties()
-	{
-		_properties.removeIf((MProperty) -> !MProperty.IsEffective());
-	}
-
-
-	/**
-	 * Remove any property that performs an invalid undo
-	 */
-	public void RemoveInvalidUndoProperties()
-	{
-		_properties.removeIf((MProperty) -> MProperty.IsInvalidUndo());
 	}
 
 

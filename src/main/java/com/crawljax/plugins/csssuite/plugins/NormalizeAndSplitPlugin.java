@@ -120,7 +120,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
             }
         }
 
-        mSelector.ReplaceProperties(newProps);
+        mSelector.SetNewProperties(newProps);
     }
 
 

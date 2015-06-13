@@ -23,118 +23,12 @@ public class CloneDetector
     //private final Map<String, List<CloneSet>> _allClones;
 
     //clones per set of rules, possibly more than 1 shared MProperty per ruleset
-    private final Map<String, Map<List<MSelector>, List<MProperty>>> _mixinClones;
+    //private final Map<String, Map<List<MSelector>, List<MProperty>>> _mixinClones;
 
-    public CloneDetector()
-    {
-        //_allClones = new HashMap<>();
-        _mixinClones = new HashMap<>();
-    }
-
-
-    /**
-     *
-     * @param selectors
-     * @return
-     */
-    public List<MSelector> MergeSelectors(List<MSelector> selectors)
-    {
-        Map<String, List<MSelector>> selectorClones = new HashMap<>();
-        List<MSelector> newSelectors = new ArrayList<>();
-
-        for(MSelector mSelector : selectors)
-        {
-            String selectorText = mSelector.GetSelectorText();
-
-            if(!selectorClones.containsKey(selectorText))
-            {
-                selectorClones.put(selectorText, new ArrayList<>());
-            }
-
-            selectorClones.get(selectorText).add(mSelector);
-        }
-
-        for(String selectorText : selectorClones.keySet())
-        {
-            List<MSelector> mSelectors = selectorClones.get(selectorText);
-            MSelector newSelector = new MSelector(mSelectors.get(0));
-
-            for(int i = 1; i < mSelectors.size(); i++)
-            {
-                newSelector.MergeProperties(mSelectors.get(i));
-            }
-
-            newSelectors.add(newSelector);
-        }
-
-        return newSelectors;
-    }
-
-
-
-//    /**
-//     *
-//     * @param origSelectors
-//     * @return
-//     */
-//    public List<SassTemplate> FindClonesAsSassTemplates(List<MSelector> origSelectors)
+//    public CloneDetector()
 //    {
-//        //allows for fast detection of clones (using hash compare on the keys)
-//        //HashMap<String, CloneSet> clones = new HashMap<>();
-//
-
-//
-//            for (MSelector mSelector :newSelectors)
-//            {
-//                for (MProperty mProp : mSelector.GetProperties())
-//                {
-//                    String key = mProp.toString();
-//                    if (clones.containsKey(key))
-//                    {
-//                        clones.get(key).AddRuleToSet(mSelector);
-//                    }
-//                    else
-//                    {
-//                        clones.put(key, new CloneSet(mProp));
-//                        clones.get(key).AddRuleToSet(mSelector);
-//                    }
-//                }
-//            }
-//
-//            _allClones.put(fileName, clones.values().stream().filter(cloneSet -> cloneSet.GetSelectors().size() > 1).collect(Collectors.toList()));
-//
-//            HashMap<List<MSelector>, List<MProperty>> result = new HashMap<>();
-//
-//            int idx = 1;
-//            for (CloneSet cloneSet : _allClones.get(fileName))
-//            {
-//
-//                List<MSelector> group = cloneSet.GetSelectors();
-//                if (result.containsKey(group))
-//                {
-//                    idx++;
-//                    continue;
-//                }
-//
-//                List<MProperty> props = new ArrayList<>();
-//                props.add(cloneSet.GetProperty());
-//
-//                for (int i = idx; i < _allClones.size(); i++)
-//                {
-//                    CloneSet otherCloneSet = _allClones.get(fileName).get(i);
-//                    //todo: still need to develop way by which some(at least 2) selectors match between clonesets
-//                    if (otherCloneSet.GetSelectors().containsAll(cloneSet.GetSelectors()))
-//                    {
-//                        props.add(otherCloneSet.GetProperty());
-//                    }
-//                }
-//
-//                result.put(group, props);
-//
-//                idx++;
-//            }
-//
-//            _mixinClones.put(fileName, result);
+//        //_allClones = new HashMap<>();
+//        _mixinClones = new HashMap<>();
 //    }
 
 
@@ -177,8 +71,6 @@ public class CloneDetector
                     isl.remove(todo);
             }
 
-            List<MSelector> origs = new ArrayList<>(selectors);
-            List<List<MSelector>> news = new ArrayList<>();
 
             if (todo != null)
             {
@@ -205,10 +97,6 @@ public class CloneDetector
                                 pSet = true;
                                 existing.get().addProperty(d.getProperty());
                             }
-
-//                        MSelector m = d.getSelector();
-//                        newSelectors.add(new MSelector(m.GetW3cSelector(), newProps, m.GetRuleNumber(), m.GetMediaQueries()));
-//                        m.RemoveProperties(Arrays.asList(d.getProperty()));
                         }
                     }
                     else
@@ -225,10 +113,6 @@ public class CloneDetector
                                 pSet = true;
                                 template.addProperty(d.getProperty());
                             }
-//
-//                        MSelector m = d.getSelector();
-//                        newSelectors.add(new MSelector(m.GetW3cSelector(), newProps, m.GetRuleNumber(), m.GetMediaQueries()));
-//                        m.RemoveProperties(Arrays.asList(d.getProperty()));
                         }
 
                         innerTemplates.add(template);
@@ -237,8 +121,6 @@ public class CloneDetector
 
                 templates.addAll(innerTemplates);
 
-                List<MSelector> selectorsToRemove = new ArrayList<>();
-
                 for(SassCloneMixin template : innerTemplates)
                 {
                     for(MSelector mSel : allSelectors.stream().filter(s -> template.GetRelatedSelectors().contains(s)).collect(Collectors.toList()))
@@ -246,8 +128,6 @@ public class CloneDetector
                         mSel.RemovePropertiesByText(template.GetProperties());
                     }
                 }
-
-                allSelectors.removeAll(selectorsToRemove);
 
                 results = FindDuplicationsAndFpGrowth(allSelectors);
             }
@@ -373,6 +253,111 @@ public class CloneDetector
         FPGrowth fpGrowth = new FPGrowth(false);
         return fpGrowth.mine(itemSets, 2);
     }
+
+
+
+//    /**
+//     *
+//     * @param selectors
+//     * @return
+//     */
+//    public List<MSelector> MergeSelectors(List<MSelector> selectors)
+//    {
+//        Map<String, List<MSelector>> selectorClones = new HashMap<>();
+//        List<MSelector> newSelectors = new ArrayList<>();
+//
+//        for(MSelector mSelector : selectors)
+//        {
+//            String selectorText = mSelector.GetSelectorText();
+//
+//            if(!selectorClones.containsKey(selectorText))
+//            {
+//                selectorClones.put(selectorText, new ArrayList<>());
+//            }
+//
+//            selectorClones.get(selectorText).add(mSelector);
+//        }
+//
+//        for(String selectorText : selectorClones.keySet())
+//        {
+//            List<MSelector> mSelectors = selectorClones.get(selectorText);
+//            MSelector newSelector = new MSelector(mSelectors.get(0));
+//
+//            for(int i = 1; i < mSelectors.size(); i++)
+//            {
+//                newSelector.MergeProperties(mSelectors.get(i));
+//            }
+//
+//            newSelectors.add(newSelector);
+//        }
+//
+//        return newSelectors;
+//    }
+
+//    /**
+//     *
+//     * @param origSelectors
+//     * @return
+//     */
+//    public List<SassTemplate> FindClonesAsSassTemplates(List<MSelector> origSelectors)
+//    {
+//        //allows for fast detection of clones (using hash compare on the keys)
+//        //HashMap<String, CloneSet> clones = new HashMap<>();
+//
+
+//
+//            for (MSelector mSelector :newSelectors)
+//            {
+//                for (MProperty mProp : mSelector.GetProperties())
+//                {
+//                    String key = mProp.toString();
+//                    if (clones.containsKey(key))
+//                    {
+//                        clones.get(key).AddRuleToSet(mSelector);
+//                    }
+//                    else
+//                    {
+//                        clones.put(key, new CloneSet(mProp));
+//                        clones.get(key).AddRuleToSet(mSelector);
+//                    }
+//                }
+//            }
+//
+//            _allClones.put(fileName, clones.values().stream().filter(cloneSet -> cloneSet.GetSelectors().size() > 1).collect(Collectors.toList()));
+//
+//            HashMap<List<MSelector>, List<MProperty>> result = new HashMap<>();
+//
+//            int idx = 1;
+//            for (CloneSet cloneSet : _allClones.get(fileName))
+//            {
+//
+//                List<MSelector> group = cloneSet.GetSelectors();
+//                if (result.containsKey(group))
+//                {
+//                    idx++;
+//                    continue;
+//                }
+//
+//                List<MProperty> props = new ArrayList<>();
+//                props.add(cloneSet.GetProperty());
+//
+//                for (int i = idx; i < _allClones.size(); i++)
+//                {
+//                    CloneSet otherCloneSet = _allClones.get(fileName).get(i);
+//                    //todo: still need to develop way by which some(at least 2) selectors match between clonesets
+//                    if (otherCloneSet.GetSelectors().containsAll(cloneSet.GetSelectors()))
+//                    {
+//                        props.add(otherCloneSet.GetProperty());
+//                    }
+//                }
+//
+//                result.put(group, props);
+//
+//                idx++;
+//            }
+//
+//            _mixinClones.put(fileName, result);
+//    }
 
 
 //    /**

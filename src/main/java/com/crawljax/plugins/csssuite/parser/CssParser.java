@@ -129,7 +129,7 @@ public class CssParser
 				CSSRule rule = ruleList.item(i);
 				if(rule instanceof CSSStyleRuleImpl)
 				{
-					mCssRules.add(new MCssRule(rule, w3cErrors));
+					mCssRules.add(new MCssRule((CSSStyleRuleImpl)rule, w3cErrors));
 				}
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
@@ -180,7 +180,7 @@ public class CssParser
 				CSSRule innerRule = ruleList.item(i);
 				if(innerRule instanceof CSSStyleRuleImpl)
 				{
-					result.add(new MCssRule(innerRule, w3cErrors, queries));
+					result.add(new MCssRule((CSSStyleRuleImpl)innerRule, w3cErrors, queries));
 				}
 				else if (innerRule instanceof CSSMediaRuleImpl)
 				{

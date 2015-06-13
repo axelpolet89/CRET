@@ -18,34 +18,33 @@ import java.util.stream.Collectors;
 
 public class MCssRule
 {
-	private CSSRule _rule;
-	private List<MSelector> _selectors;
+	private final CSSStyleRuleImpl _rule;
+	private final List<MSelector> _selectors;
+	private final Locator _locator;
 
-	public MCssRule(CSSRule rule, Set<Defect> w3cErrors)
+
+	/**
+	 * Constructor for any rule contained in one or more media-queries
+	 * @param rule
+	 * @param w3cErrors
+	 * @param queries
+	 */
+	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, List<MediaQuery> queries)
 	{
 		_rule = rule;
 		_selectors = new ArrayList<>();
-
-		SetSelectors(w3cErrors, new ArrayList<>());
-	}
-
-
-	public MCssRule(CSSRule rule, Set<Defect> w3cErrors, List<MediaQuery> queries)
-	{
-		_rule = rule;
-		_selectors = new ArrayList<>();
+		_locator = (Locator)_rule.getUserData(UserDataConstants.KEY_LOCATOR);
 
 		SetSelectors(w3cErrors, queries);
 	}
 
 
 	/**
-	 *
-	 * @param rule
+	 * Constructor for regular rules, not contained in media-queries
 	 */
-	public MCssRule(CSSRule rule)
+	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors)
 	{
-		this(rule, new HashSet<>());
+		this(rule, w3cErrors, new ArrayList<>());
 	}
 
 
@@ -54,11 +53,9 @@ public class MCssRule
 	 */
 	private void SetSelectors(Set<Defect> w3cErrors, List<MediaQuery> queries)
 	{
-		CSSStyleRuleImpl styleRule = (CSSStyleRuleImpl) _rule;
-
-		_selectors.addAll(((SelectorListImpl) styleRule.getSelectors())
+		_selectors.addAll(((SelectorListImpl) _rule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(styleRule, w3cErrors), GetLocator().getLineNumber(), queries))
+							.map(selector -> new MSelector(selector, ParseProperties(_rule, w3cErrors), GetLocator().getLineNumber(), queries))
 							.collect(Collectors.toList()));
 	}
 
@@ -80,10 +77,10 @@ public class MCssRule
 
 
 	/**
-	 *
+	 * Find out if the given property is related to a W3C validation error
 	 * @param property
 	 * @param w3cErrors
-	 * @return
+	 * @return W3C error, if present for given property
 	 */
 	private static String TryFindW3cError(Property property, Set<Defect> w3cErrors)
 	{
@@ -93,14 +90,16 @@ public class MCssRule
 																|| error.message().contains(property.getValue().getCssText())))
 				                                   .findFirst();
 		if(match.isPresent())
+		{
 			return match.get().message();
+		}
 
 		return "";
 	}
 
 
 	/** Getter */
-	public CSSRule GetRule()
+	public CSSStyleRuleImpl GetRule()
 	{
 		return _rule;
 	}
@@ -111,8 +110,15 @@ public class MCssRule
 		return _selectors;
 	}
 
+	/** Getter */
+	public Locator GetLocator()
+	{
+		return _locator;
+	}
+
+
 	/**
-	 * @return the _selectors that are not matched (not associated DOM elements have been detected).
+	 * @return the _selectors that are not matched (no associated DOM elements have been detected)
 	 */
 	public List<MSelector> GetUnmatchedSelectors()
 	{
@@ -121,7 +127,7 @@ public class MCssRule
 
 
 	/**
-	 * @return the _selectors that are effective (associated DOM elements have been detected).
+	 * @return the _selectors that are effective (associated DOM elements have been detected)
 	 */
 	public List<MSelector> GetMatchedSelectors()
 	{
@@ -131,7 +137,6 @@ public class MCssRule
 
 	/**
 	 * Remove the given list of selectors from the _selectors
-	 * @param selectors the list of selectors ts to remove
 	 */
 	public void RemoveSelectors(List<MSelector> selectors)
 	{
@@ -140,28 +145,13 @@ public class MCssRule
 
 
 	/**
-	 *
+	 * Replace selector with another, used in selector transformations
 	 */
 	public void ReplaceSelector(MSelector oldS, MSelector newS)
 	{
 		_selectors.remove(oldS);
 		_selectors.add(newS);
 	}
-
-
-	/**
-	 * @return the Locator of this _rule (line number, column).
-	 */
-	public Locator GetLocator()
-	{
-		if (_rule instanceof CSSStyleRuleImpl)
-		{
-			return (Locator) ((CSSStyleRuleImpl) _rule).getUserData(UserDataConstants.KEY_LOCATOR);
-		}
-
-		return null;
-	}
-
 
 	/**
 	 * Transform the current rule into valid CSS syntax
@@ -218,12 +208,11 @@ public class MCssRule
 	@Override
 	public String toString() {
 
-		SuiteStringBuilder buffer = new SuiteStringBuilder();
-		Locator locator = GetLocator();
+		SuiteStringBuilder builder = new SuiteStringBuilder();
 
-		buffer.append("[McssRule] line=" + locator.getLineNumber() + " col=" + locator.getColumnNumber());
-		buffer.appendLine("rule: " + _rule.getCssText() + "\n");
+		builder.append("[MCssRule] line=%d, col=%d", _locator.getLineNumber(), _locator.getColumnNumber());
+		builder.appendLine("rule: %s", _rule.getCssText());
 
-		return buffer.toString();
+		return builder.toString();
 	}
 }

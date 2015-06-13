@@ -243,7 +243,7 @@ public class MProperty
 	 */
 	public String Print()
 	{
-		return "{ " + _name + " : " + _normalizedValue + " " + (_isImportant ? "!important ": "") + (_isEffective ? "Effective" : "Ineffective") + " }";
+		return String.format("{ %s : %s %s }", _name, GetFullValue(), (_isEffective ? "Effective" : "Ineffective"));
 	}
 
 
@@ -252,22 +252,13 @@ public class MProperty
 	 */
 	public String AsKey()
 	{
-		String result = _name + "-" + _normalizedValue;
-		if(_isImportant)
-			return result + "-" + "!";
-
-		return result;
+		return String.format("%s-%s", _name, GetFullValue());
 	}
 
 	@Override
 	public String toString()
 	{
-		String result = _name + ": " + _normalizedValue;
-
-		if(_isImportant)
-			return result + " !important;";
-
-		return result + ";";
+		return String.format("%s: %s;", _name, GetFullValue());
 	}
 }
 

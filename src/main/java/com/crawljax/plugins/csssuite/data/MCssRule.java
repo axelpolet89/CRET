@@ -225,7 +225,7 @@ public class MCssRule
 
 		public MTuple(MSelector mSelector, List<MProperty> properties)
 		{
-			_selectors = Arrays.asList(mSelector);
+			_selectors = new ArrayList<>(Arrays.asList(mSelector));
 			_properties = properties;
 		}
 

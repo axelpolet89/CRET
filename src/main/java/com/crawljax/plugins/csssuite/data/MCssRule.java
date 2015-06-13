@@ -153,6 +153,19 @@ public class MCssRule
 		_selectors.add(newS);
 	}
 
+
+	@Override
+	public String toString() {
+
+		SuiteStringBuilder builder = new SuiteStringBuilder();
+
+		builder.append("[MCssRule] line=%d, col=%d", _locator.getLineNumber(), _locator.getColumnNumber());
+		builder.appendLine("rule: %s", _rule.getCssText());
+
+		return builder.toString();
+	}
+
+
 	/**
 	 * Transform the current rule into valid CSS syntax
 	 * It is possible that the selectors in this rule have varying properties, due to previous analyses and filters
@@ -205,14 +218,30 @@ public class MCssRule
 	}
 
 
-	@Override
-	public String toString() {
+	private class MTuple
+	{
+		private final List<MSelector> _selectors;
+		private final List<MProperty> _properties;
 
-		SuiteStringBuilder builder = new SuiteStringBuilder();
+		public MTuple(MSelector mSelector, List<MProperty> properties)
+		{
+			_selectors = Arrays.asList(mSelector);
+			_properties = properties;
+		}
 
-		builder.append("[MCssRule] line=%d, col=%d", _locator.getLineNumber(), _locator.getColumnNumber());
-		builder.appendLine("rule: %s", _rule.getCssText());
+		public void AddSelector(MSelector selector)
+		{
+			_selectors.add(selector);
+		}
 
-		return builder.toString();
+		public List<MSelector> GetSelectors()
+		{
+			return _selectors;
+		}
+
+		public List<MProperty> GetProperties()
+		{
+			return _properties;
+		}
 	}
 }

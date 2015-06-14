@@ -8,6 +8,7 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -88,7 +89,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                         newProps.addAll(BorderRadiusToProps(value, mProperty.GetNameVendor(), isImportant));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
-                    else if(name.equals("border"))
+                    else if(name.equals("border") || name.equals("border-top") || name.equals("border-right") || name.equals("border-bottom") || name.equals("border-left"))
                     {
                         newProps.addAll(BorderToProps(name, value, isImportant));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
@@ -372,6 +373,9 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
         String[] parts = value.split("\\s");
 
+        boolean originSet = false;
+        boolean positionSet = false;
+
         for(int i = 0; i < parts.length; i++)
         {
             String part = parts[i];
@@ -388,39 +392,86 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
             {
                 props.add(new MProperty("background-attachment", part, isImportant));
             }
+            else if(part.equals("padding-box") || part.equals("border-box") || part.equals("content-box"))
+            {
+                if(!originSet)
+                {
+                    props.add(new MProperty("background-origin", part, isImportant));
+                    originSet = true;
+                }
+                else
+                {
+                    props.add(new MProperty("background-clip", part, isImportant));
+                }
+            }
             else if (part.contains("url") || part.equals("none"))
             {
                 props.add(new MProperty("background-image", part, isImportant));
             }
-            else if (part.equals("left") || parts.equals("right") || part.equals("center"))
+            else if (part.equals("left") || part.equals("right") || part.equals("center") || part.equals("bottom") || part.equals("top") ||
+                        ContainsUnitLength(part) || part.contains("%") || part.equals("0") || (!part.contains("url") && part.contains("/")))
             {
-                String position = part;
-                if(i+1 < parts.length)
+                String position = "";
+                String size = "";
+
+                boolean sizeProp = false;
+
+                int j;
+                for(j = i; j < parts.length; j++)
                 {
-                    String part2 = parts[i + 1];
-                    if (part2.equals("top") || part2.equals("bottom") || part2.equals("center") ||
-                            ContainsUnitLength(part2) || part.contains("%") || part.equals("0"))
+                    String part2 = parts[j];
+
+                    if(part2.equals("/"))
                     {
-                        position += " " + part2;
-                        i++;
+                        sizeProp = true;
                     }
+                    else if (!part2.contains("url") && part2.contains("/"))
+                    {
+                        position += " " + part2.split("/")[0];
+                        size = part2.split("/")[1];
+                        sizeProp = true;
+                    }
+                    else if(sizeProp)
+                    {
+                        if(ContainsUnitLength(part2) || part2.contains("%") || part2.equals("0"))
+                        {
+                            size += " " + part2;
+                        }
+                        else
+                        {
+                            i = j;
+                            break;
+                        }
+                    }
+                    else if (part2.equals("left") || part2.equals("right") || part2.equals("center") || part2.equals("bottom") || part2.equals("top") ||
+                            ContainsUnitLength(part2) || part2.contains("%") || part2.equals("0"))
+                    {
+                        if(!position.isEmpty())
+                        {
+                            position += " " + part2;
+                        }
+                        else
+                        {
+                            position = part2;
+                        }
+                    }
+                    else
+                    {
+                        i = j;
+                        break;
+                    }
+
+                    i++;
                 }
+
+                i--;
+
                 props.add(new MProperty("background-position", position, isImportant));
-            }
-            else if (ContainsUnitLength(part) || part.contains("%") || part.equals("0"))
-            {
-                String position = part;
-                if(i+1 < parts.length)
+
+                if(!size.isEmpty())
                 {
-                    String part2 = parts[i + 1];
-                    if (ContainsUnitLength(part2) || part.contains("%") || part.equals("0") ||
-                            part2.equals("top") || part2.equals("bottom") || part2.equals("center"))
-                    {
-                        position += " " + part2;
-                        i++;
-                    }
+                    props.add(new MProperty("background-size", size, isImportant));
                 }
-                props.add(new MProperty("background-position", position, isImportant));
             }
             else
             {
@@ -439,7 +490,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
      */
     private static boolean ContainsUnitLength(String value)
     {
-        return value.contains("px") || value.equals("pt") || value.equals("pc") || value.equals("in") || value.equals("mm") || value.equals("cm") || //absolute
-                value.equals("em") || value.equals("rem") || value.equals("ex") || value.equals("ch") || value.equals("vw") || value.equals("vh") || value.equals("vmin") || value.equals("vmax"); //relative
+        return value.contains("px") || value.contains("pt") || value.contains("pc") || value.contains("in") || value.contains("mm") || value.contains("cm") || //absolute
+                value.contains("em") || value.contains("rem") || value.contains("ex") || value.contains("ch") || value.contains("vw") || value.contains("vh") || value.contains("vmin") || value.contains("vmax"); //relative
     }
 }

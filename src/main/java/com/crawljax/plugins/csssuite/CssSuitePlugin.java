@@ -17,10 +17,9 @@ import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
-import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
+import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.sass.SassFile;
-import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
@@ -79,11 +78,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_plugins.add(analyzer);
 		_postPlugins.add(new NormalizeAndSplitPlugin());
-		_postPlugins.add(new DetectClonedProperties());
+		_postPlugins.add(new DetectClonedPropertiesPlugin());
 		_postPlugins.add(analyzer);
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorPlugin());
-		_postPlugins.add(new PropertyMergePlugin());
+		_postPlugins.add(new NormalizeAndMergePlugin());
 	}
 
 	public void EnableDebug()

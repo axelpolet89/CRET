@@ -17,7 +17,7 @@ import java.util.*;
  *
  * This class is responsible for merging split-up properties into their shorthand equivalents
  */
-public class PropertyMergePlugin implements ICssPostCrawlPlugin
+public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
 {
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)

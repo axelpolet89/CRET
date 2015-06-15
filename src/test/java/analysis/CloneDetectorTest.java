@@ -2,7 +2,7 @@ package analysis;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
-import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
+import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 
 import helpers.TestHelper;
 import org.apache.log4j.Level;
@@ -42,7 +42,7 @@ public class CloneDetectorTest
         files.put("clonedetector_test.css", externalFile2);
         files.put("clonedetector_3_test.css", externalFile3);
 
-        PropertyMergePlugin normalizer = new PropertyMergePlugin();
+        NormalizeAndMergePlugin normalizer = new NormalizeAndMergePlugin();
         normalizer.Transform(files);
 
         SassBuilder gen = new SassBuilder();

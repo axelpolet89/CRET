@@ -6,7 +6,7 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
-import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
+import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import helpers.TestHelper;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
@@ -252,7 +252,7 @@ public class NormalizeTest
         Assert.assertEquals("background-attachment", properties.get(4).GetName());
         Assert.assertEquals("fixed", properties.get(4).GetValue());
 
-        PropertyMergePlugin pmp = new PropertyMergePlugin();
+        NormalizeAndMergePlugin pmp = new NormalizeAndMergePlugin();
         pmp.Transform(files);
 
         properties = selectors.get(0).GetProperties();

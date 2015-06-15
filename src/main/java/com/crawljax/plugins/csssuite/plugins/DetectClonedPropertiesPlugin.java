@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by axel on 6/12/2015.
  */
-public class DetectClonedProperties implements ICssPostCrawlPlugin
+public class DetectClonedPropertiesPlugin implements ICssPostCrawlPlugin
 {
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)

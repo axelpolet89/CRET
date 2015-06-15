@@ -29,6 +29,7 @@ public class MCssRuleBase
         this(rule, new ArrayList<>());
     }
 
+
     public int GetLineNumber()
     {
         return _locator.getLineNumber();
@@ -37,5 +38,15 @@ public class MCssRuleBase
     public List<MediaQuery> GetMediaQueries()
     {
         return _mediaQueries;
+    }
+
+    public boolean IsEmpty()
+    {
+        return false;
+    }
+
+    public String Print()
+    {
+        return _rule.toString() + "\n\n";
     }
 }

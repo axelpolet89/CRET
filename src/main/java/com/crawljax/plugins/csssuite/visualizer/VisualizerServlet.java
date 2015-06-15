@@ -221,11 +221,11 @@ public class VisualizerServlet extends VelocityViewServlet {
 				// First print out the unmatched rules
 				List<MSelector> unmatched = rule.GetUnmatchedSelectors();
 				if (unmatched.size() > 0) {
-					unmatchedBuffer.append("CSS rule: " + rule.GetRule().getCssText() + "<br>");
+					unmatchedBuffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "<br>");
 					unmatchedBuffer.append("at line: " + rule.GetLocator().getLineNumber()
 					        + "<br><br>");
 
-					updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule.GetRule()
+					updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule.GetStyleRule()
 					        .getCssText(), HighlightColor.UNMATCHED);
 				} else {
 					// unmatchedBuffer.append("(none) <br><br>");
@@ -236,7 +236,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 				if (matched.size() > 0) {
 					for (MSelector sel : matched) {
 						if (!sel.HasEffectiveProperties() && !sel.IsIgnored()) {
-							ineffectiveBuffer.append("CSS rule: " + rule.GetRule().getCssText()
+							ineffectiveBuffer.append("CSS rule: " + rule.GetStyleRule().getCssText()
 							        + "<br>");
 
 							ineffectiveBuffer.append("at line: "
@@ -245,9 +245,9 @@ public class VisualizerServlet extends VelocityViewServlet {
 							        + "<br><br>");
 
 							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule
-							        .GetRule().getCssText(), HighlightColor.INEFFECTIVE);
+							        .GetStyleRule().getCssText(), HighlightColor.INEFFECTIVE);
 						} else if (sel.HasEffectiveProperties()) {
-							effectiveBuffer.append("CSS rule: " + rule.GetRule().getCssText()
+							effectiveBuffer.append("CSS rule: " + rule.GetStyleRule().getCssText()
 							        + "<br>");
 							effectiveBuffer.append("at line: "
 							        + rule.GetLocator().getLineNumber() + "<br>");
@@ -255,7 +255,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 							        + "<br><br>");
 
 							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule
-							        .GetRule().getCssText(), HighlightColor.EFFECTIVE);
+							        .GetStyleRule().getCssText(), HighlightColor.EFFECTIVE);
 						}
 
 					}
@@ -354,7 +354,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 						colorMap = new HashMap<Integer, HighlightColor>();
 						line = rule.GetLocator().getLineNumber();
 						System.err.println("LOCATOR FOUND: " + rule.GetLocator().getLineNumber());
-						parsedRule = rule.GetRule().getCssText();
+						parsedRule = rule.GetStyleRule().getCssText();
 						colorMap.put(line, HighlightColor.NONE);
 						ruleMap.put(parsedRule, colorMap);
 					} else {

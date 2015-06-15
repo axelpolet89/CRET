@@ -54,7 +54,7 @@ public class MCssRule extends MCssRuleBase
 	{
 		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLocator().getLineNumber(), mediaQueries))
+							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), mediaQueries))
 							.collect(Collectors.toList()));
 	}
 
@@ -98,7 +98,7 @@ public class MCssRule extends MCssRuleBase
 
 
 	/** Getter */
-	public CSSStyleRuleImpl GetRule()
+	public CSSStyleRuleImpl GetStyleRule()
 	{
 		return _styleRule;
 	}
@@ -114,6 +114,10 @@ public class MCssRule extends MCssRuleBase
 	{
 		return _locator;
 	}
+
+	/** Getter */
+	@Override
+	public boolean IsEmpty() { return _selectors.size() == 0; }
 
 
 	/**
@@ -171,6 +175,7 @@ public class MCssRule extends MCssRuleBase
 	 * So we need to find selectors for this rule that have properties in common and output them as a group
 	 * @return
 	 */
+	@Override
 	public String Print()
 	{
 		Map<String, MTuple> combinations = new HashMap<>();

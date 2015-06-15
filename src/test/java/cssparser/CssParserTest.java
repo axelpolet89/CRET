@@ -89,13 +89,13 @@ public class CssParserTest
 		Assert.assertEquals(0, parser.GetParseErrors().size());
 
 		MCssRule mRule = rules.get(0);
-		Assert.assertEquals(1, mRule.GetLocator().getLineNumber());
+		Assert.assertEquals(1, mRule.GetLineNumber());
 
 		mRule = rules.get(1);
-		Assert.assertEquals(3, mRule.GetLocator().getLineNumber());
+		Assert.assertEquals(3, mRule.GetLineNumber());
 
 		mRule = rules.get(2);
-		Assert.assertEquals(4, mRule.GetLocator().getLineNumber());
+		Assert.assertEquals(4, mRule.GetLineNumber());
 	}
 
 	@Test

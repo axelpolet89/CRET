@@ -442,7 +442,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			try
 			{
-				writer.Generate(cssFiles.get(fileName), source.get(fileName).GetRules());
+				writer.Generate(cssFiles.get(fileName), source.get(fileName));
 			}
 			catch (Exception e)
 			{
@@ -533,7 +533,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				{
 					if (selector.HasEffectiveProperties())
 					{
-						buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
+						buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
 						buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
 						buffer.append("   Selector: " + selector.GetSelectorText() + "\n");
 
@@ -582,7 +582,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					if (!selector.HasEffectiveProperties() && !selector.IsIgnored())
 					{
 						buffer.append("Ineffective: ");
-						buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
+						buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
 
 						buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
 						buffer.append(" Selector: " + selector.GetSelectorText() + "\n\n");
@@ -620,7 +620,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				if (selectors.size() > 0)
 				{
 					buffer.append("Unmatched: ");
-					buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
+					buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
 					buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
 
 					for (MSelector selector : selectors)
@@ -658,7 +658,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				if (selectors.size() > 0)
 				{
 					buffer.append("Matched: ");
-					buffer.append("CSS rule: " + rule.GetRule().getCssText() + "\n");
+					buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
 					buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
 
 					for (MSelector selector : selectors)
@@ -768,7 +768,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			for (MCssRule mRule : entry.getValue().GetRules())
 			{
-				result += mRule.GetRule().getCssText().trim().replace("{", "").replace("}", "")
+				result += mRule.GetStyleRule().getCssText().trim().replace("{", "").replace("}", "")
 				                .replace(",", "").replace(" ", "").getBytes().length;
 
 			}

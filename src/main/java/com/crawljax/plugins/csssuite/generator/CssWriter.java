@@ -1,7 +1,9 @@
 package com.crawljax.plugins.csssuite.generator;
 
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
+import com.crawljax.plugins.csssuite.data.MCssRuleBase;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
@@ -11,20 +13,24 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Created by axel on 5/17/2015.
  */
 public class CssWriter
 {
-    public void Generate(File file, List<MCssRule> rules) throws IOException, URISyntaxException
+    public void Generate(File file, MCssFile mCssFile) throws IOException, URISyntaxException
     {
         LogHandler.info("Generating CSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
 
-        Collections.sort(rules, new Comparator<MCssRule>() {
+        List<MCssRuleBase> rules = mCssFile.GetAllRules().stream().filter(r -> !r.IsEmpty()).collect(Collectors.toList());
+
+        Collections.sort(rules, new Comparator<MCssRuleBase>() {
             @Override
-            public int compare(MCssRule mCssRule, MCssRule t1) {
-                return Integer.compare(mCssRule.GetLocator().getLineNumber(), t1.GetLocator().getLineNumber());
+            public int compare(MCssRuleBase m1, MCssRuleBase m2) {
+                return Integer.compare(m1.GetLineNumber(), m2.GetLineNumber());
             }
         });
 
@@ -32,11 +38,11 @@ public class CssWriter
         FileWriter writer = new FileWriter(file);
         List<MediaQuery> currentMedia = new ArrayList<>();
 
-        for (MCssRule rule : rules)
+        for (MCssRuleBase rule : rules)
         {
-            if(rule.GetSelectors().size() > 0 && rule.GetSelectors().stream().allMatch(s -> s.GetMediaQueries().size() > 0))
+            if(rule.GetMediaQueries().size() > 0)
             {
-                List<MediaQuery> media = rule.GetSelectors().get(0).GetMediaQueries();
+                List<MediaQuery> media = rule.GetMediaQueries();
 
                 if(currentMedia.containsAll(media) && media.containsAll(currentMedia))
                 {

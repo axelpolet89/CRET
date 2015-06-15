@@ -10,9 +10,9 @@ import java.util.List;
  */
 public class BorderMerger extends MergerBase
 {
-    private String _width;
-    private String _style;
-    private String _color;
+    protected String _width;
+    protected String _style;
+    protected String _color;
 
     public BorderMerger(String name)
     {

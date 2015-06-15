@@ -427,8 +427,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                     }
                     else if (!part2.contains("url") && part2.contains("/"))
                     {
-                        position += " " + part2.split("/")[0];
-                        size = part2.split("/")[1];
+                        position += " " + part2.replace("/", "");
                         sizeProp = true;
                     }
                     else if(sizeProp)

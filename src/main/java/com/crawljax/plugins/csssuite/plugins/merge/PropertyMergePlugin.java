@@ -8,9 +8,8 @@ import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Array;
+import java.util.*;
 
 
 /**
@@ -60,6 +59,10 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
         List<MProperty> outline = new ArrayList<>();
         List<MProperty> background = new ArrayList<>();
 
+        Set<MProperty> borderStyles = new HashSet<>();
+        Set<MProperty> borderColors = new HashSet<>();
+        Set<MProperty> borderWidths = new HashSet<>();
+
         for(int i = 0; i < properties.size(); i++)
         {
             MProperty mProperty = properties.get(i);
@@ -87,18 +90,46 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
                 }
                 else if(name.contains("top"))
                 {
+                    if(name.contains("style"))
+                        borderStyles.add(mProperty);
+                    else if(name.contains("width"))
+                        borderWidths.add(mProperty);
+                    else
+                        borderColors.add(mProperty);
+
                     borderTop.add(mProperty);
                 }
                 else if (name.contains("right"))
                 {
+                    if(name.contains("style"))
+                        borderStyles.add(mProperty);
+                    else if(name.contains("width"))
+                        borderWidths.add(mProperty);
+                    else
+                        borderColors.add(mProperty);
+
                     borderRight.add(mProperty);
                 }
                 else if (name.contains("bottom"))
                 {
+                    if(name.contains("style"))
+                        borderStyles.add(mProperty);
+                    else if(name.contains("width"))
+                        borderWidths.add(mProperty);
+                    else
+                        borderColors.add(mProperty);
+
                     borderBottom.add(mProperty);
                 }
                 else if (name.contains("left"))
                 {
+                    if(name.contains("style"))
+                        borderStyles.add(mProperty);
+                    else if(name.contains("width"))
+                        borderWidths.add(mProperty);
+                    else
+                        borderColors.add(mProperty);
+
                     borderLeft.add(mProperty);
                 }
                 else
@@ -123,10 +154,27 @@ public class PropertyMergePlugin implements ICssPostCrawlPlugin
         newProperties.addAll(MergeBoxProperties(margins, new BoxMerger("margin")));
         newProperties.addAll(MergeBoxProperties(paddings, new BoxMerger("padding")));
         newProperties.addAll(MergeBorderProperties(border, new BorderMerger("border")));
-        newProperties.addAll(MergeBorderProperties(borderTop, new BorderMerger("border-top")));
-        newProperties.addAll(MergeBorderProperties(borderRight, new BorderMerger("border-right")));
-        newProperties.addAll(MergeBorderProperties(borderBottom, new BorderMerger("border-bottom")));
-        newProperties.addAll(MergeBorderProperties(borderLeft, new BorderMerger("border-left")));
+
+        if(borderWidths.size() == (borderTop.size() + borderBottom.size() + borderLeft.size() + borderRight.size()))
+        {
+            newProperties.addAll(MergeBoxProperties(new ArrayList<>(borderWidths), new BoxMerger("border-width")));
+        }
+        else if (borderStyles.size() == (borderTop.size() + borderBottom.size() + borderLeft.size() + borderRight.size()))
+        {
+            newProperties.addAll(MergeBoxProperties(new ArrayList<>(borderStyles), new BoxMerger("border-style")));
+        }
+        else if (borderColors.size() == (borderTop.size() + borderBottom.size() + borderLeft.size() + borderRight.size()))
+        {
+            newProperties.addAll(MergeBoxProperties(new ArrayList<>(borderColors), new BoxMerger("border-color")));
+        }
+        else
+        {
+            newProperties.addAll(MergeBorderProperties(borderTop, new BorderSideMerger("border-top")));
+            newProperties.addAll(MergeBorderProperties(borderRight, new BorderSideMerger("border-right")));
+            newProperties.addAll(MergeBorderProperties(borderBottom, new BorderSideMerger("border-bottom")));
+            newProperties.addAll(MergeBorderProperties(borderLeft, new BorderSideMerger("border-left")));
+        }
+
         newProperties.addAll(MergeBoxProperties(borderRadii, new BorderRadiusMerger("border-radius")));
         newProperties.addAll(MergeBorderProperties(outline, new OutlineMerger("outline")));
         newProperties.addAll(MergeBorderProperties(background, new BackgroundMerger("background")));

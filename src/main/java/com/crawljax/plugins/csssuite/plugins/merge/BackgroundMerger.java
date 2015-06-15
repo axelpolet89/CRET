@@ -2,6 +2,7 @@ package com.crawljax.plugins.csssuite.plugins.merge;
 
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,6 +14,9 @@ public class BackgroundMerger extends MergerBase
     private String _color;
     private String _image;
     private String _position;
+    private String _size;
+    private String _origin;
+    private String _clip;
     private String _repeat;
     private String _attachment;
 
@@ -23,6 +27,9 @@ public class BackgroundMerger extends MergerBase
         _color = "";
         _image = "";
         _position = "";
+        _size = "";
+        _origin = "";
+        _clip = "";
         _repeat = "";
         _attachment = "";
     }
@@ -46,6 +53,15 @@ public class BackgroundMerger extends MergerBase
             case "position":
                 _position = value;
                 break;
+            case "size":
+                _size = value;
+                break;
+            case "origin":
+                _origin = value;
+                break;
+            case "clip":
+                _clip = value;
+                break;
             case "repeat":
                 _repeat = value;
                 break;
@@ -61,6 +77,8 @@ public class BackgroundMerger extends MergerBase
     @Override
     public List<MProperty> BuildMProperties()
     {
+        List<MProperty> result = new ArrayList<>();
+
         String value = "";
 
         if(!_color.isEmpty())
@@ -70,7 +88,24 @@ public class BackgroundMerger extends MergerBase
             value += " " + _image;
 
         if(!_position.isEmpty())
+        {
             value += " " + _position;
+
+            if(!_size.isEmpty())
+            {
+                value += "/" + _size;
+            }
+        }
+        else if (!_size.isEmpty())
+        {
+            result.add(new MProperty("background-size", _size, IsImportant()));
+        }
+
+        if(!_origin.isEmpty())
+            value += " " + _origin;
+
+        if(!_clip.isEmpty())
+             value += " " + _clip;
 
         if(!_repeat.isEmpty())
             value += " " + _repeat;
@@ -78,6 +113,7 @@ public class BackgroundMerger extends MergerBase
         if(!_attachment.isEmpty())
             value += " " + _attachment;
 
-        return Arrays.asList(new MProperty(_name, value, _isImportant, true));
+        result.add(new MProperty(_name, value, _isImportant, true));
+        return result;
     }
 }

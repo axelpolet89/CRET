@@ -6,6 +6,7 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.csssuite.plugins.merge.PropertyMergePlugin;
 import helpers.TestHelper;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
@@ -215,5 +216,147 @@ public class NormalizeTest
         Assert.assertEquals("solid", properties.get(1).GetValue());
         Assert.assertEquals("border-top-color", properties.get(2).GetName());
         Assert.assertEquals("white", properties.get(2).GetValue());
+
+        properties = selectors.get(17).GetProperties();
+        Assert.assertEquals(4, properties.size());
+        Assert.assertEquals("background-image", properties.get(0).GetName());
+        Assert.assertEquals("url(google.nl)", properties.get(0).GetValue());
+        Assert.assertEquals("background-position", properties.get(1).GetName());
+        Assert.assertEquals("100px", properties.get(1).GetValue());
+        Assert.assertEquals("background-size", properties.get(2).GetName());
+        Assert.assertEquals("50% 50%", properties.get(2).GetValue());
+        Assert.assertEquals("background-repeat", properties.get(3).GetName());
+        Assert.assertEquals("repeat", properties.get(3).GetValue());
+
+        properties = selectors.get(18).GetProperties();
+        Assert.assertEquals(4, properties.size());
+        Assert.assertEquals("background-image", properties.get(0).GetName());
+        Assert.assertEquals("url(google.nl)", properties.get(0).GetValue());
+        Assert.assertEquals("background-position", properties.get(1).GetName());
+        Assert.assertEquals("left top", properties.get(1).GetValue());
+        Assert.assertEquals("background-size", properties.get(2).GetName());
+        Assert.assertEquals("100px", properties.get(2).GetValue());
+        Assert.assertEquals("background-repeat", properties.get(3).GetName());
+        Assert.assertEquals("repeat", properties.get(3).GetValue());
+
+        properties = selectors.get(19).GetProperties();
+        Assert.assertEquals(5, properties.size());
+        Assert.assertEquals("background-image", properties.get(0).GetName());
+        Assert.assertEquals("url(google.nl)", properties.get(0).GetValue());
+        Assert.assertEquals("background-position", properties.get(1).GetName());
+        Assert.assertEquals("100px", properties.get(1).GetValue());
+        Assert.assertEquals("background-size", properties.get(2).GetName());
+        Assert.assertEquals("contain", properties.get(2).GetValue());
+        Assert.assertEquals("background-repeat", properties.get(3).GetName());
+        Assert.assertEquals("no-repeat", properties.get(3).GetValue());
+        Assert.assertEquals("background-attachment", properties.get(4).GetName());
+        Assert.assertEquals("fixed", properties.get(4).GetValue());
+
+        PropertyMergePlugin pmp = new PropertyMergePlugin();
+        pmp.Transform(files);
+
+        properties = selectors.get(0).GetProperties();
+        Assert.assertEquals(2, properties.size());
+        Assert.assertEquals("margin", properties.get(0).GetName());
+        Assert.assertEquals("0 px", properties.get(0).GetValue());
+        Assert.assertEquals("padding", properties.get(1).GetName());
+        Assert.assertEquals("0", properties.get(1).GetValue());
+
+        properties = selectors.get(1).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("border", properties.get(0).GetName());
+        Assert.assertEquals("1px solid rgb(236, 236, 236)", properties.get(0).GetValue());
+
+        properties = selectors.get(2).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("border", properties.get(0).GetName());
+        Assert.assertEquals("2px dotted", properties.get(0).GetValue());
+
+        properties = selectors.get(3).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("border", properties.get(0).GetName());
+        Assert.assertEquals("2px solid rgba(255, 255, 255, .7)", properties.get(0).GetValue());
+
+        properties = selectors.get(4).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("background", properties.get(0).GetName());
+        Assert.assertEquals("rgb(100, 100, 100) none 100px 100px repeat fixed", properties.get(0).GetValue());
+
+        properties = selectors.get(5).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("background", properties.get(0).GetName());
+        Assert.assertEquals("rgb(236, 236, 236) url(www.google.nl) left top no-repeat", properties.get(0).GetValue());
+
+        properties = selectors.get(6).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("background", properties.get(0).GetName());
+        Assert.assertEquals("rgb(236, 236, 236) url(www.google.nl) left no-repeat", properties.get(0).GetValue());
+
+        properties = selectors.get(7).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("background", properties.get(0).GetName());
+        Assert.assertEquals("black url(test) 75% 75%", properties.get(0).GetValue());
+
+        properties = selectors.get(8).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("margin", properties.get(0).GetName());
+        Assert.assertEquals("5px", properties.get(0).GetValue());
+
+        properties = selectors.get(9).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("margin", properties.get(0).GetName());
+        Assert.assertEquals("5px 10px", properties.get(0).GetValue());
+
+        properties = selectors.get(10).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("margin", properties.get(0).GetName());
+        Assert.assertEquals("5px 10px 20px", properties.get(0).GetValue());
+
+        properties = selectors.get(11).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("margin", properties.get(0).GetName());
+        Assert.assertEquals("5px 10px 20px 30px", properties.get(0).GetValue());
+
+        properties = selectors.get(12).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("border-style", properties.get(0).GetName());
+        Assert.assertEquals("solid dotted", properties.get(0).GetValue());
+
+        properties = selectors.get(13).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("border-width", properties.get(0).GetName());
+        Assert.assertEquals("5px 10px 20px 30px", properties.get(0).GetValue());
+
+        properties = selectors.get(14).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("border-color", properties.get(0).GetName());
+        Assert.assertEquals("black", properties.get(0).GetValue());
+
+        properties = selectors.get(15).GetProperties();
+        Assert.assertEquals(2, properties.size());
+        Assert.assertEquals("border-width", properties.get(0).GetName());
+        Assert.assertEquals("0", properties.get(0).GetValue());
+        Assert.assertEquals("border-radius", properties.get(1).GetName());
+        Assert.assertEquals("0", properties.get(1).GetValue());
+
+        properties = selectors.get(16).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("border-top", properties.get(0).GetName());
+        Assert.assertEquals("0 solid white", properties.get(0).GetValue());
+
+        properties = selectors.get(17).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("background", properties.get(0).GetName());
+        Assert.assertEquals("url(google.nl) 100px/50% 50% repeat", properties.get(0).GetValue());
+
+        properties = selectors.get(18).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("background", properties.get(0).GetName());
+        Assert.assertEquals("url(google.nl) left top/100px repeat", properties.get(0).GetValue());
+
+        properties = selectors.get(19).GetProperties();
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("background", properties.get(0).GetName());
+        Assert.assertEquals("url(google.nl) 100px/contain no-repeat fixed", properties.get(0).GetValue());
     }
 }

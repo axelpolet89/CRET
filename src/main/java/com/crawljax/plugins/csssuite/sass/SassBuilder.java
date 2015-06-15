@@ -265,7 +265,7 @@ public class SassBuilder
     private List<SassMediaRule> GenerateMediaRules(List<SassRule> sassRules)
     {
         List<SassMediaRule> mediaRules = new ArrayList<>();
-        Map<List<MediaQuery>, List<SassRule>> mediaGroups = new LinkedHashMap<>();
+        Map<List<MediaQuery>, List<SassRule>> mediaGroups = new LinkedHashMap<>(); // preserve order
         List<MediaQuery> currentMedia = new ArrayList<>();
 
         // find all sass rules that are contained inside one or more media-queries
@@ -290,7 +290,10 @@ public class SassBuilder
 
             List<SassRule> rulesInMedia = mediaGroups.get(mediaQueries);
 
-            mediaRules.add(new SassMediaRule(mediaQueries, rulesInMedia));
+            // set media-query line number to be the first rule's line no minus 1
+            int mediaLineNo = rulesInMedia.get(0).GetLineNumber() - 1;
+
+            mediaRules.add(new SassMediaRule(mediaLineNo, mediaQueries, rulesInMedia));
 
             rulesInMedia.forEach(sassRules::remove);
         }

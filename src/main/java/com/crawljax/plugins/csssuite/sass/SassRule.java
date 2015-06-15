@@ -10,15 +10,15 @@ import java.util.List;
 /**
  * Created by axel on 6/9/2015.
  */
-public class SassRule
+public class SassRule extends SassRuleBase
 {
-    private final int _lineNumber;
     private final List<SassSelector> _sassSelectors;
     private final List<MediaQuery> _mediaQueries;
 
     public SassRule(int lineNumber, List<SassSelector> sassSelectors)
     {
-        _lineNumber = lineNumber;
+        super(lineNumber);
+
         _sassSelectors = sassSelectors;
         _mediaQueries = new ArrayList<>();
 
@@ -42,8 +42,6 @@ public class SassRule
     {
         return _mediaQueries;
     }
-
-    public int GetLineNumber() { return _lineNumber; }
 
     public void Print(SuiteStringBuilder builder, String prefix)
     {

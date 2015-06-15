@@ -8,18 +8,20 @@ import java.util.List;
 /**
  * Created by axel on 6/9/2015.
  */
-public class SassMediaRule
+public class SassMediaRule extends SassRuleBase
 {
     private final List<MediaQuery> _mediaQueries;
     private final List<SassRule> _sassRules;
 
-    public SassMediaRule(List<MediaQuery> queries, List<SassRule> rules)
+    public SassMediaRule(int lineNumber, List<MediaQuery> queries, List<SassRule> rules)
     {
+        super(lineNumber);
+
         _mediaQueries = queries;
         _sassRules = rules;
     }
 
-    public void Print(SuiteStringBuilder builder)
+    public void Print(SuiteStringBuilder builder, String prefix)
     {
         builder.append("@media");
         for(MediaQuery mq : _mediaQueries)

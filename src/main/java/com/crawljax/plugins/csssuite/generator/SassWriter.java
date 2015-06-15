@@ -15,6 +15,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * Created by axel on 5/17/2015.
@@ -133,30 +135,14 @@ public class SassWriter
         }
 
 
-        List<SassRule> sassRules = sassFile.getRules();
+        List<SassRuleBase> sassRules = sassFile.getRules().stream().sorted((r1, r2) -> Integer.compare(r1.GetLineNumber(), r2.GetLineNumber())).collect(Collectors.toList());
         for (int i = 0; i < sassRules.size(); i++)
         {
-            SassRule sr = sassRules.get(i);
+            SassRuleBase sr = sassRules.get(i);
             sr.Print(builder, "");
 
             if(i < sassRules.size() - 1)
                 builder.append("\n\n");
-        }
-
-        List<SassMediaRule> mediaRules = sassFile.getMediaRules();
-
-        if(mediaRules.size() > 0)
-        {
-            builder.append("\n\n");
-
-            for (int i = 0; i < mediaRules.size(); i++)
-            {
-                SassMediaRule smr = mediaRules.get(i);
-                smr.Print(builder);
-
-                if (i < mediaRules.size() - 1)
-                    builder.append("\n\n");
-            }
         }
 
         writer.write(builder.toString());

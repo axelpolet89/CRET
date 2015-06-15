@@ -1,7 +1,8 @@
 package com.crawljax.plugins.csssuite.data;
 
-import com.steadystate.css.dom.CSSRuleListImpl;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by axel on 5/22/2015.
@@ -13,9 +14,9 @@ public class MCssFile
 {
     private final String _name;
     private final List<MCssRule> _allRules;
-    private final CSSRuleListImpl _ignoredRules;
+    private final List<MCssRuleBase> _ignoredRules;
 
-    public MCssFile(String url, List<MCssRule> rules, CSSRuleListImpl ignored)
+    public MCssFile(String url, List<MCssRule> rules, List<MCssRuleBase> ignored)
     {
         _name = url;
         _allRules = rules;
@@ -35,8 +36,19 @@ public class MCssFile
     }
 
     /** Getter */
-    public CSSRuleListImpl GetIgnoredRules()
+    public List<MCssRuleBase>  GetIgnoredRules()
     {
         return _ignoredRules;
+    }
+
+    /** Getter */
+    public List<MCssRuleBase> GetAllRules()
+    {
+        List<MCssRuleBase> result = new ArrayList<>();
+
+        result.addAll(_allRules);
+        result.addAll(_ignoredRules);
+
+        return result.stream().sorted((r1, r2) -> Integer.compare(r1.GetLineNumber(), r2.GetLineNumber())).collect(Collectors.toList());
     }
 }

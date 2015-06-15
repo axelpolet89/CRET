@@ -11,14 +11,12 @@ import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 
+import com.crawljax.plugins.csssuite.data.MCssRuleBase;
 import com.jcabi.w3c.Defect;
 import com.jcabi.w3c.ValidationResponse;
 
-import com.steadystate.css.dom.CSSMediaRuleImpl;
-import com.steadystate.css.dom.CSSRuleListImpl;
-import com.steadystate.css.dom.CSSStyleRuleImpl;
+import com.steadystate.css.dom.*;
 
-import com.steadystate.css.dom.MediaListImpl;
 import com.steadystate.css.parser.media.MediaQuery;
 import com.sun.webkit.dom.CSSRuleImpl;
 import org.w3c.css.sac.InputSource;
@@ -120,7 +118,7 @@ public class CssParser
 		}
 
 		List<MCssRule> mCssRules = new ArrayList<>();
-		CSSRuleListImpl ignoredRules = new CSSRuleListImpl();
+		List<MCssRuleBase> ignoredRules = new ArrayList<>();
 
 		for (int i = 0; i < ruleList.getLength(); i++)
 		{
@@ -137,7 +135,7 @@ public class CssParser
 				}
 				else
 				{
-					ignoredRules.add(rule);
+					ignoredRules.add(new MCssRuleBase((AbstractCSSRuleImpl)rule));
 				}
 			}
 			catch (Exception ex)
@@ -159,7 +157,7 @@ public class CssParser
 	 *                        that is not regular style or another media, should be ignored
 	 * @return List of parsed media rules
 	 */
-	private static List<MCssRule> RecursiveParseMediaRules(CSSRule rule, Set<Defect> w3cErrors, CSSRuleListImpl ignoredRules)
+	private static List<MCssRule> RecursiveParseMediaRules(CSSRule rule, Set<Defect> w3cErrors, List<MCssRuleBase> ignoredRules)
 	{
 		List<MCssRule> result = new ArrayList<>();
 
@@ -188,7 +186,7 @@ public class CssParser
 				}
 				else
 				{
-					ignoredRules.add(innerRule);
+					ignoredRules.add(new MCssRuleBase((AbstractCSSRuleImpl)innerRule, queries));
 				}
 			}
 			catch (Exception ex)

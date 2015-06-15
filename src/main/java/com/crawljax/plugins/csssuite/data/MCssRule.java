@@ -6,7 +6,6 @@ import com.jcabi.w3c.Defect;
 import com.steadystate.css.dom.Property;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.w3c.css.sac.Locator;
-import org.w3c.dom.css.CSSRule;
 
 import com.steadystate.css.dom.CSSStyleRuleImpl;
 import com.steadystate.css.userdata.UserDataConstants;
@@ -16,26 +15,26 @@ import com.steadystate.css.parser.SelectorListImpl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MCssRule
+public class MCssRule extends MCssRuleBase
 {
-	private final CSSStyleRuleImpl _rule;
+	private final CSSStyleRuleImpl _styleRule;
 	private final List<MSelector> _selectors;
-	private final Locator _locator;
 
 
 	/**
 	 * Constructor for any rule contained in one or more media-queries
 	 * @param rule
 	 * @param w3cErrors
-	 * @param queries
+	 * @param mediaQueries
 	 */
-	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, List<MediaQuery> queries)
+	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, List<MediaQuery> mediaQueries)
 	{
-		_rule = rule;
-		_selectors = new ArrayList<>();
-		_locator = (Locator)_rule.getUserData(UserDataConstants.KEY_LOCATOR);
+		super(rule, mediaQueries);
 
-		SetSelectors(w3cErrors, queries);
+		_styleRule = rule;
+		_selectors = new ArrayList<>();
+
+		SetSelectors(w3cErrors, mediaQueries);
 	}
 
 
@@ -51,11 +50,11 @@ public class MCssRule
 	/**
 	 * Parse all selectors from this _rule and add them to the _selectors
 	 */
-	private void SetSelectors(Set<Defect> w3cErrors, List<MediaQuery> queries)
+	private void SetSelectors(Set<Defect> w3cErrors, List<MediaQuery> mediaQueries)
 	{
-		_selectors.addAll(((SelectorListImpl) _rule.getSelectors())
+		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(_rule, w3cErrors), GetLocator().getLineNumber(), queries))
+							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLocator().getLineNumber(), mediaQueries))
 							.collect(Collectors.toList()));
 	}
 
@@ -101,7 +100,7 @@ public class MCssRule
 	/** Getter */
 	public CSSStyleRuleImpl GetRule()
 	{
-		return _rule;
+		return _styleRule;
 	}
 
 	/** Getter */
@@ -160,7 +159,7 @@ public class MCssRule
 		SuiteStringBuilder builder = new SuiteStringBuilder();
 
 		builder.append("[MCssRule] line=%d, col=%d", _locator.getLineNumber(), _locator.getColumnNumber());
-		builder.appendLine("rule: %s", _rule.getCssText());
+		builder.appendLine("rule: %s", _styleRule.getCssText());
 
 		return builder.toString();
 	}

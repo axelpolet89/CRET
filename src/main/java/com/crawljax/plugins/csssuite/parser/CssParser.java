@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
+import com.crawljax.plugins.csssuite.data.MCssMediaRule;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 
 import com.crawljax.plugins.csssuite.data.MCssRuleBase;
@@ -117,25 +118,27 @@ public class CssParser
 			LogHandler.info("[W3C Validator] # warnings found: %d", w3cWarnings.size());
 		}
 
-		List<MCssRule> mCssRules = new ArrayList<>();
+		List<MCssRule> styleRules = new ArrayList<>();
+		List<MCssMediaRule> mediaRules = new ArrayList<>();
 		List<MCssRuleBase> ignoredRules = new ArrayList<>();
 
 		for (int i = 0; i < ruleList.getLength(); i++)
 		{
 			try
 			{
-				CSSRule rule = ruleList.item(i);
+				AbstractCSSRuleImpl rule = (AbstractCSSRuleImpl)ruleList.item(i);
 				if(rule instanceof CSSStyleRuleImpl)
 				{
-					mCssRules.add(new MCssRule((CSSStyleRuleImpl)rule, w3cErrors));
+					styleRules.add(new MCssRule((CSSStyleRuleImpl) rule, w3cErrors));
 				}
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
-					mCssRules.addAll(RecursiveParseMediaRules(rule, w3cErrors, ignoredRules));
+					// pass styleRules and ignoredRules also, to collect any of them within the media-query
+					mediaRules.add(RecursiveParseMediaRules(rule, null, styleRules, ignoredRules, w3cErrors));
 				}
 				else
 				{
-					ignoredRules.add(new MCssRuleBase((AbstractCSSRuleImpl)rule));
+					ignoredRules.add(new MCssRuleBase(rule));
 				}
 			}
 			catch (Exception ex)
@@ -144,8 +147,7 @@ public class CssParser
 			}
 		}
 
-
-		return new MCssFile(url, mCssRules, ignoredRules);
+		return new MCssFile(url, styleRules, mediaRules, ignoredRules);
 	}
 
 
@@ -157,9 +159,8 @@ public class CssParser
 	 *                        that is not regular style or another media, should be ignored
 	 * @return List of parsed media rules
 	 */
-	private static List<MCssRule> RecursiveParseMediaRules(CSSRule rule, Set<Defect> w3cErrors, List<MCssRuleBase> ignoredRules)
+	private static MCssMediaRule RecursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssRuleBase parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)
 	{
-		List<MCssRule> result = new ArrayList<>();
 
 		CSSMediaRuleImpl mediaRule = (CSSMediaRuleImpl) rule;
 
@@ -170,23 +171,29 @@ public class CssParser
 			queries.add(list.mediaQuery(i));
 		}
 
+		MCssMediaRule result = new MCssMediaRule(mediaRule, queries, parent);
+
+		List<MCssRuleBase> innerRules = new ArrayList<>();
+
 		CSSRuleList ruleList = mediaRule.getCssRules();
 		for (int i = 0; i < ruleList.getLength(); i++)
 		{
 			try
 			{
-				CSSRule innerRule = ruleList.item(i);
+				AbstractCSSRuleImpl innerRule = (AbstractCSSRuleImpl)ruleList.item(i);
 				if(innerRule instanceof CSSStyleRuleImpl)
 				{
-					result.add(new MCssRule((CSSStyleRuleImpl)innerRule, w3cErrors, queries));
+					MCssRule styleRule = new MCssRule((CSSStyleRuleImpl)innerRule, w3cErrors, queries, result);
+					styleRules.add(styleRule);
+					innerRules.add(styleRule);
 				}
 				else if (innerRule instanceof CSSMediaRuleImpl)
 				{
-					result.addAll(RecursiveParseMediaRules(innerRule, w3cErrors, ignoredRules));
+					innerRules.add(RecursiveParseMediaRules(innerRule, result, styleRules, ignoredRules, w3cErrors));
 				}
 				else
 				{
-					ignoredRules.add(new MCssRuleBase((AbstractCSSRuleImpl)innerRule, queries));
+					ignoredRules.add(new MCssRuleBase(innerRule, queries, result));
 				}
 			}
 			catch (Exception ex)
@@ -195,6 +202,7 @@ public class CssParser
 			}
 		}
 
+		result.SetInnerRules(innerRules);
 		return result;
 	}
 }

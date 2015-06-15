@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite.sass;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
+import com.crawljax.plugins.csssuite.data.MCssRuleBase;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -28,21 +30,25 @@ public class SassBuilder
 {
     private final int minPropCount = 2;
 
-    public Map<String, SassFile> CssToSass(Map<String, MCssFile> cssRules)
+    public Map<String, SassFile> CssToSass(Map<String, MCssFile> cssFiles)
     {
         Map<String, SassFile> sassFiles = new HashMap<>();
         CloneDetector cd = new CloneDetector();
 
-        for(String fileName : cssRules.keySet())
+        for(String fileName : cssFiles.keySet())
         {
-            List<MCssRule> rules = cssRules.get(fileName).GetRules();
+            List<MCssRule> cssRules = cssFiles.get(fileName).GetRules();
+            List<MCssRuleBase> ignoredRules = cssFiles.get(fileName).GetIgnoredRules();
 
             // copy all MSelectors, so we won't affect the original rules
             List<MSelector> allSelectors = new ArrayList<>();
-            for(MCssRule rule : rules)
+            for(MCssRule rule : cssRules)
             {
                 allSelectors.addAll(rule.GetSelectors().stream().map(selector -> new MSelector((selector))).collect(Collectors.toList()));
             }
+
+            LogHandler.debug("[SassGenerator] Generate SASS for ignored CSS rules...");
+
 
             LogHandler.debug("[SassGenerator] Generate SASS variables...");
             List<SassVariable> sassVariables = GenerateVariables(allSelectors);
@@ -74,6 +80,12 @@ public class SassBuilder
 
         return sassFiles;
     }
+
+
+//    private List<SassIgnoredRule> GenerateIgnoredRules(List<MCssRuleBase> ignoredCssRules)
+//    {
+//        return ignoredCssRules.stream().map(icr -> new SassIgnoredRule(icr.GetLineNumber(), icr.GetAbstractRule())).collect(Collectors.toList());
+//    }
 
 
     private List<SassCloneMixin> FilterValidCloneMixins(List<SassCloneMixin> mixins)

@@ -297,6 +297,6 @@ public class MatchAndAnalyzePlugin implements ICssCrawlPlugin, ICssPostCrawlPlug
 			}
 		}
 
-		return new MCssFile(file.GetName(), newRules, file.GetIgnoredRules());
+		return new MCssFile(newRules, file);
 	}
 }

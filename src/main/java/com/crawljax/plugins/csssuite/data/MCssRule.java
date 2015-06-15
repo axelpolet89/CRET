@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite.data;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.jcabi.w3c.Defect;
+import com.steadystate.css.dom.AbstractCSSRuleImpl;
 import com.steadystate.css.dom.Property;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.w3c.css.sac.Locator;
@@ -27,9 +28,9 @@ public class MCssRule extends MCssRuleBase
 	 * @param w3cErrors
 	 * @param mediaQueries
 	 */
-	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, List<MediaQuery> mediaQueries)
+	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, List<MediaQuery> mediaQueries, MCssRuleBase parent)
 	{
-		super(rule, mediaQueries);
+		super(rule, mediaQueries, parent);
 
 		_styleRule = rule;
 		_selectors = new ArrayList<>();
@@ -43,7 +44,7 @@ public class MCssRule extends MCssRuleBase
 	 */
 	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors)
 	{
-		this(rule, w3cErrors, new ArrayList<>());
+		this(rule, w3cErrors, new ArrayList<>(), null);
 	}
 
 

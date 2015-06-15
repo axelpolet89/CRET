@@ -14,13 +14,23 @@ public class MCssFile
 {
     private final String _name;
     private final List<MCssRule> _allRules;
+    private final List<MCssMediaRule> _mediaRules;
     private final List<MCssRuleBase> _ignoredRules;
 
-    public MCssFile(String url, List<MCssRule> rules, List<MCssRuleBase> ignored)
+    public MCssFile(String url, List<MCssRule> rules, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignored)
     {
         _name = url;
         _allRules = rules;
+        _mediaRules = mediaRules;
         _ignoredRules = ignored;
+    }
+
+    /**
+     * Convenience constructor for a new set of style rules on a previously defined file
+     */
+    public MCssFile(List<MCssRule> newRules, MCssFile oldFile)
+    {
+        this(oldFile.GetName(), newRules, oldFile.GetMediaRules(), oldFile.GetIgnoredRules());
     }
 
     /** Getter */
@@ -33,6 +43,12 @@ public class MCssFile
     public List<MCssRule> GetRules()
     {
         return _allRules;
+    }
+
+    /** Getter */
+    public List<MCssMediaRule> GetMediaRules()
+    {
+        return _mediaRules;
     }
 
     /** Getter */

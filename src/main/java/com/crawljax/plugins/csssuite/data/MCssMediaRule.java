@@ -11,20 +11,19 @@ import java.util.List;
  */
 public class MCssMediaRule extends MCssRuleBase
 {
-    private final List<MediaQuery> _mediaQueries;
     private List<MCssRuleBase> _innerRules;
 
     public MCssMediaRule(CSSMediaRuleImpl rule, List<MediaQuery> queries, MCssRuleBase parent)
     {
         super(rule, queries, parent);
-
-        _mediaQueries = queries;
     }
 
     public void SetInnerRules(List<MCssRuleBase> innerRules)
     {
         _innerRules = innerRules;
     }
+
+    public List<MCssRuleBase> GetInnerRules(){ return _innerRules; }
 
     public void Print(SuiteStringBuilder builder, String prefix)
     {

@@ -17,10 +17,10 @@ public class MCssFile
     private final List<MCssMediaRule> _mediaRules;
     private final List<MCssRuleBase> _ignoredRules;
 
-    public MCssFile(String url, List<MCssRule> rules, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignored)
+    public MCssFile(String url, List<MCssRule> styleAndMediaRules, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignored)
     {
         _name = url;
-        _allRules = rules;
+        _allRules = styleAndMediaRules;
         _mediaRules = mediaRules;
         _ignoredRules = ignored;
     }

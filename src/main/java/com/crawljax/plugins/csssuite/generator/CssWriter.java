@@ -53,7 +53,7 @@ public class CssWriter
                     if(!currentMedia.isEmpty())
                         writer.write("\n}\n");
 
-                    currentMedia = media;
+                    currentMedia = new ArrayList<>(media);
 
                     String mediaQueryText = "@media";
 
@@ -74,7 +74,7 @@ public class CssWriter
                 if(!currentMedia.isEmpty())
                 {
                     writer.write("\n}\n");
-                    currentMedia.clear();
+                    currentMedia = new ArrayList<>();
                 }
 
                 writer.write(rule.Print());

@@ -17,7 +17,7 @@ public class SassFile
     private final List<SassMixinBase> _mixins;
     private final List<SassRuleBase> _rules;
 
-    public SassFile(List<SassVariable> variables, List<SassCloneMixin> cloneMixins, List<SassMixinBase> mixins, List<SassRule> rules, List<SassMediaRule> mediaRules)
+    public SassFile(List<SassVariable> variables, List<SassCloneMixin> cloneMixins, List<SassMixinBase> mixins, List<SassRuleBase> rules)
     {
         _variables = variables;
         _cloneMixins = cloneMixins;
@@ -25,7 +25,6 @@ public class SassFile
 
         _rules = new ArrayList<>();
         _rules.addAll(rules);
-        _rules.addAll(mediaRules);
         _rules.sort((r1, r2 ) -> Integer.compare(r1.GetLineNumber(), r2.GetLineNumber()));
     }
 

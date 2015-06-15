@@ -13,6 +13,7 @@ import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
+import javax.print.attribute.standard.Media;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,8 +36,6 @@ public class SassBuilder
         for(String fileName : cssFiles.keySet())
         {
             List<MCssRule> cssRules = cssFiles.get(fileName).GetRules();
-//            List<MCssMediaRule> mediaRules = cssFiles.get(fileName).GetMediaRules();
-//            List<MCssRuleBase> ignoredRules = cssFiles.get(fileName).GetIgnoredRules();
 
             // copy all MSelectors, so we won't affect the original rules
             List<MSelector> allSelectors = new ArrayList<>();
@@ -68,22 +67,13 @@ public class SassBuilder
             List<SassMixinBase> sassMixins = GenerateConvenienceMixins(sassSelectors);
 
             LogHandler.debug("[SassGenerator] Generate SASS rules...");
-            List<SassRule> sassRules = GenerateSassRules(sassSelectors);
+            List<SassRuleBase> sassRules = GenerateSassRules(sassSelectors, cssFiles.get(fileName).GetMediaRules(), cssFiles.get(fileName).GetIgnoredRules());
 
-            LogHandler.debug("[SassGenerator] Generate SASS media rules...");
-            List<SassMediaRule> mediaRules = GenerateMediaRules(sassRules);
-
-            sassFiles.put(fileName, new SassFile(sassVariables, validMixins, sassMixins, sassRules, mediaRules));
+            sassFiles.put(fileName, new SassFile(sassVariables, validMixins, sassMixins, sassRules));
         }
 
         return sassFiles;
     }
-
-
-//    private List<SassIgnoredRule> GenerateIgnoredRules(List<MCssRuleBase> ignoredCssRules)
-//    {
-//        return ignoredCssRules.stream().map(icr -> new SassIgnoredRule(icr.GetLineNumber(), icr.GetAbstractRule())).collect(Collectors.toList());
-//    }
 
 
     private List<SassCloneMixin> FilterValidCloneMixins(List<SassCloneMixin> mixins)
@@ -217,11 +207,11 @@ public class SassBuilder
         return results;
     }
 
-    private List<SassRule> GenerateSassRules(List<SassSelector> sassSelectors)
+    private List<SassRuleBase> GenerateSassRules(List<SassSelector> sassSelectors, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignoredRules)
     {
         // group selectors by their line number, maintain order by using LinkedHashMap
         Map<Integer, List<SassSelector>> lineNoSelectorMap = new LinkedHashMap<>();
-        sassSelectors.stream()
+        sassSelectors.stream().filter(s -> s.GetMediaQueries().isEmpty())
                 .sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber()))
                 .forEach((s) -> {
                     int lineNumber = s.GetRuleNumber();
@@ -233,7 +223,7 @@ public class SassBuilder
                     lineNoSelectorMap.get(lineNumber).add(s);
                 });
 
-        List<SassRule> sassRules = new ArrayList<>();
+        List<SassRuleBase> sassRules = new ArrayList<>();
 
         // final merge, verify that properties previously contained in the same rule (e.g. equal line number)
         // do not have the same declarations (e.g. all sass declarations and regular properties
@@ -269,7 +259,57 @@ public class SassBuilder
             }
         }
 
+        for(MCssRuleBase ignoredRule : ignoredRules.stream().filter(r -> r.GetMediaQueries().isEmpty()).collect(Collectors.toList()))
+        {
+            sassRules.add(new SassIgnoredRule(ignoredRule.GetLineNumber(), ignoredRule.GetAbstractRule()));
+        }
+
+        // now process selectors held in media-queries
+        List<SassSelector> mediaSelectors = sassSelectors.stream().filter(s -> s.GetMediaQueries().size() > 0).collect(Collectors.toList());
+
+        for(MCssMediaRule mediaRule : mediaRules)
+        {
+            SassMediaRule sassMediaRule = RecursiveGenerateMediaRules(mediaRule, mediaSelectors, ignoredRules);
+            if(sassMediaRule != null)
+            {
+                sassRules.add(sassMediaRule);
+            }
+        }
+
         return sassRules;
+    }
+
+
+    private SassMediaRule RecursiveGenerateMediaRules(MCssMediaRule mediaRule, List<SassSelector> selectors, List<MCssRuleBase> ignoredRules)
+    {
+        List<SassRuleBase> innerRules = new ArrayList<>();
+
+        for(MCssRuleBase mRule : mediaRule.GetInnerRules())
+        {
+            if(mRule instanceof MCssMediaRule)
+            {
+                innerRules.add(RecursiveGenerateMediaRules((MCssMediaRule)mRule, selectors, ignoredRules));
+            }
+            else if (mRule instanceof MCssRule)
+            {
+                List<SassSelector> relatedSelectors = selectors.stream().filter(s -> s.GetParent().equals(mRule)).collect(Collectors.toList());
+                if(!relatedSelectors.isEmpty())
+                {
+                    innerRules.add(new SassRule(mRule.GetLineNumber(), relatedSelectors));
+                }
+            }
+            else
+            {
+                innerRules.add(new SassIgnoredRule(mRule.GetLineNumber(), mRule.GetAbstractRule()));
+            }
+        }
+
+        if(innerRules.isEmpty())
+        {
+            return null;
+        }
+
+        return new SassMediaRule(mediaRule.GetLineNumber(), mediaRule.GetMediaQueries(), innerRules);
     }
 
     private List<SassMediaRule> GenerateMediaRules(List<SassRule> sassRules)

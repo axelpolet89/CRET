@@ -118,7 +118,7 @@ public class CssParser
 			LogHandler.info("[W3C Validator] # warnings found: %d", w3cWarnings.size());
 		}
 
-		List<MCssRule> styleRules = new ArrayList<>();
+		List<MCssRule> styleAndMediaRules = new ArrayList<>();
 		List<MCssMediaRule> mediaRules = new ArrayList<>();
 		List<MCssRuleBase> ignoredRules = new ArrayList<>();
 
@@ -129,12 +129,12 @@ public class CssParser
 				AbstractCSSRuleImpl rule = (AbstractCSSRuleImpl)ruleList.item(i);
 				if(rule instanceof CSSStyleRuleImpl)
 				{
-					styleRules.add(new MCssRule((CSSStyleRuleImpl) rule, w3cErrors));
+					styleAndMediaRules.add(new MCssRule((CSSStyleRuleImpl) rule, w3cErrors));
 				}
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
 					// pass styleRules and ignoredRules also, to collect any of them within the media-query
-					mediaRules.add(RecursiveParseMediaRules(rule, null, styleRules, ignoredRules, w3cErrors));
+					mediaRules.add(RecursiveParseMediaRules(rule, null, styleAndMediaRules, ignoredRules, w3cErrors));
 				}
 				else
 				{
@@ -147,7 +147,7 @@ public class CssParser
 			}
 		}
 
-		return new MCssFile(url, styleRules, mediaRules, ignoredRules);
+		return new MCssFile(url, styleAndMediaRules, mediaRules, ignoredRules);
 	}
 
 

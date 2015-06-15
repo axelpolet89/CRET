@@ -1,5 +1,6 @@
 package com.crawljax.plugins.csssuite.sass;
 
+import com.crawljax.plugins.csssuite.data.MCssRuleBase;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
@@ -72,6 +73,8 @@ public class SassSelector
     }
 
     public List<MediaQuery> GetMediaQueries() { return _original.GetMediaQueries();}
+
+    public MCssRuleBase GetParent() { return _original.GetParent(); }
 
     public boolean HasEqualDeclarationsByText(SassSelector other)
     {

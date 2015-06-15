@@ -22,6 +22,8 @@ public class MSelector
 	private final Selector _selector;
 	private final List<MProperty> _properties;
 	private final List<MediaQuery> _mediaQueries;
+	private final MCssRuleBase _parent;
+
 	private String _selectorText; // possibly updatet in filtering universal selectors
 	private int _ruleNumber; // possibly updatet by MergeProperties
 
@@ -48,13 +50,14 @@ public class MSelector
 	 * @param properties: the properties that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
-	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries)
+	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries, MCssRuleBase parent)
 	{
 		_selector = w3cSelector;
 		_properties = properties;
 		_ruleNumber = ruleNumber;
 		_selectorText = w3cSelector.toString().trim();
 		_mediaQueries = queries;
+		_parent = parent;
 
 		Init();
 	}
@@ -67,7 +70,7 @@ public class MSelector
 	 */
 	public MSelector(Selector w3cSelector, MSelector mSel)
 	{
-		this(w3cSelector, mSel.GetProperties(), mSel.GetRuleNumber(), mSel.GetMediaQueries());
+		this(w3cSelector, mSel.GetProperties(), mSel.GetRuleNumber(), mSel.GetMediaQueries(), mSel.GetParent());
 
 		// set additional properties, left empty by default constructor
 		_isMatched = mSel.IsMatched();
@@ -85,6 +88,7 @@ public class MSelector
 		_mediaQueries = new ArrayList<>();
 		_mediaQueries.addAll(mSel.GetMediaQueries());
 		_ruleNumber = mSel.GetRuleNumber();
+		_parent = mSel.GetParent();
 
 		//copy construct properties
 		_properties = mSel.GetProperties().stream().map(MProperty::new).collect(Collectors.toList());
@@ -300,6 +304,9 @@ public class MSelector
 
 	/** Getter */
 	public List<MediaQuery> GetMediaQueries() { return _mediaQueries; }
+
+	/** Getter */
+	public MCssRuleBase GetParent() { return _parent; };
 
 	/** Getter */
 	public boolean IsIgnored() { return _isIgnored; }

@@ -55,7 +55,7 @@ public class MCssRule extends MCssRuleBase
 	{
 		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), mediaQueries))
+							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), mediaQueries, this))
 							.collect(Collectors.toList()));
 	}
 

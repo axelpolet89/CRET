@@ -1,10 +1,7 @@
 package com.crawljax.plugins.csssuite.sass;
 
 import com.crawljax.plugins.csssuite.LogHandler;
-import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MCssRuleBase;
-import com.crawljax.plugins.csssuite.data.MSelector;
+import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.csssuite.sass.colors.ColorNameFinder;
@@ -38,7 +35,8 @@ public class SassBuilder
         for(String fileName : cssFiles.keySet())
         {
             List<MCssRule> cssRules = cssFiles.get(fileName).GetRules();
-            List<MCssRuleBase> ignoredRules = cssFiles.get(fileName).GetIgnoredRules();
+//            List<MCssMediaRule> mediaRules = cssFiles.get(fileName).GetMediaRules();
+//            List<MCssRuleBase> ignoredRules = cssFiles.get(fileName).GetIgnoredRules();
 
             // copy all MSelectors, so we won't affect the original rules
             List<MSelector> allSelectors = new ArrayList<>();
@@ -277,7 +275,7 @@ public class SassBuilder
     private List<SassMediaRule> GenerateMediaRules(List<SassRule> sassRules)
     {
         List<SassMediaRule> mediaRules = new ArrayList<>();
-        Map<List<MediaQuery>, List<SassRule>> mediaGroups = new LinkedHashMap<>(); // preserve order
+        Map<List<MediaQuery>, List<SassRuleBase>> mediaGroups = new LinkedHashMap<>(); // preserve order
         List<MediaQuery> currentMedia = new ArrayList<>();
 
         // find all sass rules that are contained inside one or more media-queries
@@ -300,7 +298,7 @@ public class SassBuilder
             if(mediaQueries.isEmpty())
                 continue;
 
-            List<SassRule> rulesInMedia = mediaGroups.get(mediaQueries);
+            List<SassRuleBase> rulesInMedia = mediaGroups.get(mediaQueries);
 
             // set media-query line number to be the first rule's line no minus 1
             int mediaLineNo = rulesInMedia.get(0).GetLineNumber() - 1;

@@ -11,9 +11,9 @@ import java.util.List;
 public class SassMediaRule extends SassRuleBase
 {
     private final List<MediaQuery> _mediaQueries;
-    private final List<SassRule> _sassRules;
+    private final List<SassRuleBase> _sassRules;
 
-    public SassMediaRule(int lineNumber, List<MediaQuery> queries, List<SassRule> rules)
+    public SassMediaRule(int lineNumber, List<MediaQuery> queries, List<SassRuleBase> rules)
     {
         super(lineNumber);
 
@@ -32,7 +32,7 @@ public class SassMediaRule extends SassRuleBase
 
         for(int i = 0; i < _sassRules.size(); i++)
         {
-            SassRule sr = _sassRules.get(i);
+            SassRuleBase sr = _sassRules.get(i);
             sr.Print(builder, "\t");
 
             if(i < _sassRules.size() -1)

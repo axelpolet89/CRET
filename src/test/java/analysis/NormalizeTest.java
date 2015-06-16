@@ -359,4 +359,36 @@ public class NormalizeTest
         Assert.assertEquals("background", properties.get(0).GetName());
         Assert.assertEquals("url(google.nl) 100px/contain no-repeat fixed", properties.get(0).GetValue());
     }
+
+    @Test
+    public void TestPropertyOrder()
+    {
+        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/normalize_property_order_test.css");
+        Assert.assertNotNull(externalFile);
+
+        Map<String, MCssFile> files = new HashMap();
+        files.put("external", externalFile);
+
+        NormalizeAndSplitPlugin cssSplitter = new NormalizeAndSplitPlugin();
+        cssSplitter.Transform(files);
+
+        List<MSelector> selectors = new ArrayList<>();
+        for(MCssRule rule : files.get("external").GetRules())
+        {
+            selectors.addAll(rule.GetSelectors());
+        }
+
+        List<MProperty> props = selectors.get(0).GetProperties();
+        Assert.assertEquals("border-width", props.get(0).GetName());
+        Assert.assertEquals("border-bottom-width", props.get(1).GetName());
+        Assert.assertEquals("border-bottom-style", props.get(2).GetName());
+        Assert.assertEquals("border-bottom-color", props.get(3).GetName());
+
+        NormalizeAndMergePlugin cssMerger = new NormalizeAndMergePlugin();
+        cssMerger.Transform(files);
+
+        props = selectors.get(0).GetProperties();
+        Assert.assertEquals("border-width", props.get(0).GetName());
+        Assert.assertEquals("border-bottom", props.get(1).GetName());
+    }
 }

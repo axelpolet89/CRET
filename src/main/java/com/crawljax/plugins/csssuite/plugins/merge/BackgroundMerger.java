@@ -98,7 +98,7 @@ public class BackgroundMerger extends MergerBase
         }
         else if (!_size.isEmpty())
         {
-            result.add(new MProperty("background-size", _size, IsImportant()));
+            result.add(new MProperty("background-size", _size, IsImportant(), true, _order));
         }
 
         if(!_origin.isEmpty())
@@ -113,7 +113,7 @@ public class BackgroundMerger extends MergerBase
         if(!_attachment.isEmpty())
             value += " " + _attachment;
 
-        result.add(new MProperty(_name, value, _isImportant, true));
+        result.add(new MProperty(_name, value, _isImportant, true, _order));
         return result;
     }
 }

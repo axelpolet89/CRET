@@ -14,6 +14,7 @@ public class MProperty
 	private final boolean _isImportant;
 	private final String _nameVendorPrefix;
 	private final String _valueVendorPrefix;
+	private final int _order;
 
 	protected String _normalizedValue;
 	private String _status;
@@ -28,7 +29,7 @@ public class MProperty
 	 * @param isImportant
 	 * @param w3cError
 	 */
-	public MProperty(String name, String value, boolean isImportant, String w3cError)
+	public MProperty(String name, String value, boolean isImportant, String w3cError, int order)
 	{
 		_name = name;
 		_originalValue = value.trim();
@@ -38,6 +39,7 @@ public class MProperty
 		_w3cError = w3cError;
 		_isIgnored = !w3cError.isEmpty();
 		_isInvalidUndo = false;
+		_order = order;
 
 		if(name.contains("-moz-") || name.contains("-webkit-") || name.contains("-ms-") || name.contains("-o-") || name.contains("-khtml-"))
 		{
@@ -81,9 +83,9 @@ public class MProperty
 	 * @param value
 	 * @param isImportant
 	 */
-	public MProperty(String name, String value, boolean isImportant)
+	public MProperty(String name, String value, boolean isImportant, int order)
 	{
-		this(name, value, isImportant, "");
+		this(name, value, isImportant, "", order);
 	}
 
 
@@ -93,9 +95,9 @@ public class MProperty
 	 * @param value
 	 * @param isImportant
 	 */
-	public MProperty(String name, String value, boolean isImportant, boolean isEffective)
+	public MProperty(String name, String value, boolean isImportant, boolean isEffective, int order)
 	{
-		this(name, value, isImportant, "");
+		this(name, value, isImportant, "", order);
 		_isEffective = isEffective;
 	}
 
@@ -117,6 +119,7 @@ public class MProperty
 		_w3cError = property.GetW3cError();
 		_nameVendorPrefix = property.GetNameVendor();
 		_valueVendorPrefix = property.GetValueVendor();
+		_order = property.GetOrder();
 	}
 
 
@@ -152,6 +155,9 @@ public class MProperty
 
 	/** Getter */
 	public String GetValueVendor() { return _valueVendorPrefix; }
+
+	/** Getter */
+	public int GetOrder() { return _order; }
 
 
 	/** Getter */

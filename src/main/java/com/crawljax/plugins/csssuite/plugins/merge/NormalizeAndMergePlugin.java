@@ -31,6 +31,9 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
                     MergePropertiesToShorthand(mSelector);
+
+                    //sort properties again
+                    mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
                 }
             }
         }
@@ -203,12 +206,12 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
             {
                 try
                 {
-                    merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant());
+                    merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant(), mProperty.GetOrder());
                 }
                 catch (CssSuiteException e)
                 {
                     result.add(mProperty);
-                    LogHandler.warn("Cannot parse single property %s into shorthand equivalent, just add it to result", mProperty);
+                    LogHandler.error(e, "Cannot parse single property %s into shorthand equivalent, just add it to result", mProperty);
                 }
             }
 
@@ -240,16 +243,16 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
 
         List<MProperty> result = new ArrayList<>();
 
-        for (MProperty property : properties)
+        for (MProperty mProperty : properties)
         {
             try
             {
-                merger.Parse(property.GetName(), property.GetValue(), property.IsImportant());
+                merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant(), mProperty.GetOrder());
             }
             catch (CssSuiteException e)
             {
-                result.add(property);
-                LogHandler.warn("Cannot parse single property %s into shorthand equivalent, just add it to result", property);
+                result.add(mProperty);
+                LogHandler.error(e, "Cannot parse single property %s into shorthand equivalent, just add it to result", mProperty);
             }
         }
 

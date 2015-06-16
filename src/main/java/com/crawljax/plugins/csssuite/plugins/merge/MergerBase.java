@@ -10,8 +10,9 @@ import java.util.List;
  */
 public abstract class MergerBase
 {
-    protected String _name;
+    protected final String _name;
     protected boolean _isImportant;
+    protected int _order;
     protected boolean _isSet;
 
     /**
@@ -50,19 +51,23 @@ public abstract class MergerBase
      * @param isImportant
      * @throws CssSuiteException
      */
-    public final void Parse(String name, String value, boolean isImportant) throws CssSuiteException
+    public final void Parse(String name, String value, boolean isImportant, int order) throws CssSuiteException
     {
         if(!_isSet)
         {
             _isImportant = isImportant;
+            _order = order;
+            _isSet = true;
         }
-        else if (_isSet && _isImportant != isImportant)
+        else if (_isImportant != isImportant)
         {
             throw new CssSuiteException("Cannot normalize value '%s' for name '%s', because another property was previously parsed " +
                                             "with important=%s and this property has important=%s, while this one is.", value, name, _isImportant, isImportant);
         }
 
+        _order = Math.min(order, _order);
         ParseFromSingle(name, value);
+        _isSet = true;
     }
 
 

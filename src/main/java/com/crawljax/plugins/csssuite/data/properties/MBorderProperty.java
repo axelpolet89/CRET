@@ -9,9 +9,9 @@ public class MBorderProperty extends MProperty
 {
 	private final String _allowedWith;
 
-	public MBorderProperty(String name, String value, boolean isImportant, String allowedWith)
+	public MBorderProperty(String name, String value, boolean isImportant, int order, String allowedWith)
 	{
-		super(name, value, isImportant, "");
+		super(name, value, isImportant, "", order);
 		_allowedWith = allowedWith;
 	}
 

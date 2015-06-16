@@ -69,8 +69,9 @@ public class MCssRule extends MCssRuleBase
 	private static List<MProperty> ParseProperties(CSSStyleRuleImpl styleRule, Set<Defect> w3cErrors)
 	{
 		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
-		return styleDeclaration.getProperties().stream()
-				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cError(property, w3cErrors)))
+		List<Property> properties = styleDeclaration.getProperties();
+		return properties.stream()
+				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cError(property, w3cErrors), properties.indexOf(property) + 1))
 				.collect(Collectors.toList());
 	}
 

@@ -159,13 +159,20 @@ public class CssParser
 	 *                        that is not regular style or another media, should be ignored
 	 * @return List of parsed media rules
 	 */
-	private static MCssMediaRule RecursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssRuleBase parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)
+	private static MCssMediaRule RecursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssMediaRule parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)
 	{
 
 		CSSMediaRuleImpl mediaRule = (CSSMediaRuleImpl) rule;
 
 		MediaListImpl list = (MediaListImpl)mediaRule.getMedia();
 		List<MediaQuery> queries = new ArrayList<>();
+
+		// in case of nested media-queries, also include other queries to next media-rule
+		if(parent != null)
+		{
+			queries.addAll(parent.GetMediaQueries());
+		}
+		
 		for(int i = 0; i < list.getLength(); i++)
 		{
 			queries.add(list.mediaQuery(i));

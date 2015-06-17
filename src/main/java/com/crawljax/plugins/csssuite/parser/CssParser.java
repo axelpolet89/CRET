@@ -106,8 +106,8 @@ public class CssParser
 			try
 			{
 				response = CssValidator.ValidateW3C(cssCode);
-				w3cWarnings = response.warnings();
-				w3cErrors = response.errors();
+				w3cWarnings = new HashSet<>(response.warnings());
+				w3cErrors = new HashSet<>(response.errors());
 			}
 			catch (IOException e)
 			{
@@ -172,7 +172,7 @@ public class CssParser
 		{
 			queries.addAll(parent.GetMediaQueries());
 		}
-		
+
 		for(int i = 0; i < list.getLength(); i++)
 		{
 			queries.add(list.mediaQuery(i));

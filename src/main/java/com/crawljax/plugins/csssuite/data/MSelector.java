@@ -23,6 +23,7 @@ public class MSelector
 	private final List<MProperty> _properties;
 	private final List<MediaQuery> _mediaQueries;
 	private final MCssRuleBase _parent;
+	private final String _w3cError;
 
 	private String _selectorText; // possibly updatet in filtering universal selectors
 	private int _ruleNumber; // possibly updatet by MergeProperties
@@ -50,7 +51,7 @@ public class MSelector
 	 * @param properties: the properties that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
-	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries, MCssRuleBase parent)
+	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries, MCssRuleBase parent, String w3cError)
 	{
 		_selector = w3cSelector;
 		_properties = properties;
@@ -58,6 +59,7 @@ public class MSelector
 		_selectorText = w3cSelector.toString().trim();
 		_mediaQueries = queries;
 		_parent = parent;
+		_w3cError = w3cError;
 
 		Init();
 	}
@@ -70,7 +72,7 @@ public class MSelector
 	 */
 	public MSelector(Selector w3cSelector, MSelector mSel)
 	{
-		this(w3cSelector, mSel.GetProperties(), mSel.GetRuleNumber(), mSel.GetMediaQueries(), mSel.GetParent());
+		this(w3cSelector, mSel.GetProperties(), mSel.GetRuleNumber(), mSel.GetMediaQueries(), mSel.GetParent(), "");
 
 		// set additional properties, left empty by default constructor
 		_isMatched = mSel.IsMatched();
@@ -89,6 +91,7 @@ public class MSelector
 		_mediaQueries.addAll(mSel.GetMediaQueries());
 		_ruleNumber = mSel.GetRuleNumber();
 		_parent = mSel.GetParent();
+		_w3cError = mSel.GetW3cError();
 
 		//copy construct properties
 		_properties = mSel.GetProperties().stream().map(MProperty::new).collect(Collectors.toList());
@@ -106,7 +109,7 @@ public class MSelector
 	 */
 	private void Init()
 	{
-		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]");
+		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]") || !_w3cError.isEmpty();
 
 		try
 		{
@@ -301,6 +304,9 @@ public class MSelector
 
 	/** Getter */
 	public int GetRuleNumber() { return _ruleNumber; }
+
+	/** Getter */
+	public String GetW3cError() { return _w3cError; }
 
 	/** Getter */
 	public List<MediaQuery> GetMediaQueries() { return _mediaQueries; }

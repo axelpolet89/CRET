@@ -114,12 +114,12 @@ public class TestHelper
 
     public static MSelector CreateEmptySelector(String selector) throws IOException
     {
-        return new MSelector(ParseSelector(selector), new ArrayList<>(), 1, new ArrayList<>(), null);
+        return new MSelector(ParseSelector(selector), new ArrayList<>(), 1, new ArrayList<>(), null, "");
     }
 
     public static MSelector CreateEmptySelector(String selector, int ruleNumber) throws IOException
     {
-        return new MSelector(ParseSelector(selector), new ArrayList<>(), ruleNumber, new ArrayList<>(), null);
+        return new MSelector(ParseSelector(selector), new ArrayList<>(), ruleNumber, new ArrayList<>(), null, "");
     }
 
     public static Selector ParseSelector(String selector) throws IOException

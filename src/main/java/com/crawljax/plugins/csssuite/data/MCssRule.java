@@ -3,8 +3,8 @@ package com.crawljax.plugins.csssuite.data;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.jcabi.w3c.Defect;
-import com.steadystate.css.dom.AbstractCSSRuleImpl;
 import com.steadystate.css.dom.Property;
+import com.steadystate.css.parser.LocatableImpl;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.w3c.css.sac.Locator;
 
@@ -12,6 +12,7 @@ import com.steadystate.css.dom.CSSStyleRuleImpl;
 import com.steadystate.css.userdata.UserDataConstants;
 import com.steadystate.css.dom.CSSStyleDeclarationImpl;
 import com.steadystate.css.parser.SelectorListImpl;
+import org.w3c.css.sac.Selector;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,19 +50,19 @@ public class MCssRule extends MCssRuleBase
 
 
 	/**
-	 * Parse all selectors from this _rule and add them to the _selectors
+	 * Parse all selectors from this _rule and add them to the _selectors, parse properties once and try to find W3C errors for selectors in this rule
 	 */
 	private void SetSelectors(Set<Defect> w3cErrors, List<MediaQuery> mediaQueries)
 	{
 		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), mediaQueries, this))
+							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), mediaQueries, this, TryFindW3cErrorForSelector(selector, w3cErrors)))
 							.collect(Collectors.toList()));
 	}
 
 
 	/**
-	 *
+	 * Parse all properties contained in this rule once, and pass them to each selector that this rule is composed of
 	 * @param styleRule
 	 * @param w3cErrors
 	 * @return
@@ -71,7 +72,7 @@ public class MCssRule extends MCssRuleBase
 		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
 		List<Property> properties = styleDeclaration.getProperties();
 		return properties.stream()
-				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cError(property, w3cErrors), properties.indexOf(property) + 1))
+				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cErrorForProperty(property, w3cErrors), properties.indexOf(property) + 1))
 				.collect(Collectors.toList());
 	}
 
@@ -83,15 +84,44 @@ public class MCssRule extends MCssRuleBase
 	 * @param w3cErrors
 	 * @return W3C error, if present for given property
 	 */
-	private static String TryFindW3cError(Property property, Set<Defect> w3cErrors)
+	private static String TryFindW3cErrorForProperty(Property property, Set<Defect> w3cErrors)
 	{
-		Locator loc = (Locator)property.getUserData(UserDataConstants.KEY_LOCATOR);
-		Optional<Defect> match = w3cErrors.stream().filter(error -> error.line() == loc.getLineNumber()
-																&& (error.message().contains(property.getName())
-																|| error.message().contains(property.getValue().getCssText())))
-				                                   .findFirst();
+		int lineNumber = ((Locator)property.getUserData(UserDataConstants.KEY_LOCATOR)).getLineNumber();
+		return TryFindW3cError(lineNumber, w3cErrors);
+	}
+
+
+	/**
+	 * Find out if the given selector is related to a W3C validation error
+	 * @param selector
+	 * @param w3cErrors
+	 * @return W3C error, if present for given selector
+	 */
+	private static String TryFindW3cErrorForSelector(Selector selector, Set<Defect> w3cErrors)
+	{
+		int lineNumber = ((LocatableImpl)selector).getLocator().getLineNumber();
+		return TryFindW3cError(lineNumber, w3cErrors);
+	}
+
+	/**
+	 * Find out if the a W3C validation error has occurred on a given line
+	 * @param lineNumber
+	 * @param w3cErrors
+	 * @return W3C error, if present for given line
+	 */
+	private static String TryFindW3cError(int lineNumber, Set<Defect> w3cErrors)
+	{
+		if(w3cErrors.isEmpty())
+		{
+			return "";
+		}
+
+		Optional<Defect> match = w3cErrors.stream().filter(error -> error.line() == lineNumber
+				&& !error.message().contains("Parse Error"))
+				.findFirst();
 		if(match.isPresent())
 		{
+			w3cErrors.remove(match);
 			return match.get().message();
 		}
 

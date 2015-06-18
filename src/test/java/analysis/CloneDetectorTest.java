@@ -28,13 +28,13 @@ public class CloneDetectorTest
     @Test
     public void TestCloneDetector()
     {
-        MCssFile externalFile1 = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_2_test.css");
+        MCssFile externalFile1 = TestHelper.GetCssFileFromFile("./src/test/resources/clonedetector_2_test.css");
         Assert.assertNotNull(externalFile1);
 
-        MCssFile externalFile2 = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_test.css");
+        MCssFile externalFile2 = TestHelper.GetCssFileFromFile("./src/test/resources/clonedetector_test.css");
         Assert.assertNotNull(externalFile2);
 
-        MCssFile externalFile3 = TestHelper.GetCssFileFromFile("./src/test/test_files/clonedetector_3_test.css");
+        MCssFile externalFile3 = TestHelper.GetCssFileFromFile("./src/test/resources/clonedetector_3_test.css");
         Assert.assertNotNull(externalFile3);
 
         Map<String, MCssFile> files = new HashMap();

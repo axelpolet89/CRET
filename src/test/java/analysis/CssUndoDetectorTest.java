@@ -35,10 +35,10 @@ public class CssUndoDetectorTest
     @Test
     public void TestDetectUndoStyles()
     {
-        Document dom = TestHelper.GetDocumentFromFile("./src/test/test_files/cssanalyzer_test_index.html");
+        Document dom = TestHelper.GetDocumentFromFile("./src/test/resources/cssanalyzer_test_index.html");
         Assert.assertNotNull(dom);
 
-        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/cssundodetector_test.css");
+        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/cssundodetector_test.css");
         Assert.assertNotNull(externalFile);
 
         HashMap files = new HashMap();

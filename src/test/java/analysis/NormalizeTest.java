@@ -31,7 +31,7 @@ public class NormalizeTest
     @Test
     public void TestNormalization()
     {
-        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/cssnormalizer_test_styles.css");
+        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/cssnormalizer_test_styles.css");
         Assert.assertNotNull(externalFile);
 
         Map<String, MCssFile> files = new HashMap();
@@ -363,7 +363,7 @@ public class NormalizeTest
     @Test
     public void TestPropertyOrder()
     {
-        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/normalize_property_order_test.css");
+        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/normalize_property_order_test.css");
         Assert.assertNotNull(externalFile);
 
         Map<String, MCssFile> files = new HashMap();

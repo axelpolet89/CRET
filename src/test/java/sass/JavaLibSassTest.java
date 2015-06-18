@@ -41,7 +41,7 @@ public class JavaLibSassTest
     {
         try
         {
-            String scssSource = "./src/test/test_files/becker-style.scss";
+            String scssSource = "./src/test/resources/becker-style.scss";
             String cssTarget = "./src/test/test_output/becker-style.css";
 
             SassContext ctx = SassFileContext.create(new File(scssSource).toPath());
@@ -58,7 +58,7 @@ public class JavaLibSassTest
             LogHandler.error(e);
         }
 
-        MCssFile refFile = TestHelper.GetCssFileFromFile("./src/test/test_files/becker-style-ruby-sass-ref.css");
+        MCssFile refFile = TestHelper.GetCssFileFromFile("./src/test/resources/becker-style-ruby-sass-ref.css");
         MCssFile libSassFile = TestHelper.GetCssFileFromFile("./src/test/test_output/becker-style.css");
 
         List<MCssRule> refRules = refFile.GetRules();

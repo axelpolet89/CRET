@@ -30,10 +30,11 @@ public class CssValidatorTest
         builder.appendLine("div {\n color black;}"); // no colon --> parse error
         builder.appendLine("div {\n hyphenate: none;}"); // no such property --> error
         builder.appendLine("div {\n-moz-box-shadow:10px 5px 5px black;}"); //unknown vendor specification --> warning
+        builder.appendLine("span:invalid, div, a:valid { color: black; }"); //first and third selector are errors, because invalid pseudo-classes
 
         ValidationResponse response = CssValidator.ValidateW3C(builder.toString());
 
-        Assert.assertEquals(5, response.errors().size());
+        Assert.assertEquals(7, response.errors().size());
         Assert.assertEquals(1, response.warnings().size());
     }
 }

@@ -31,10 +31,10 @@ public class CssAnalyzerTest
 	@Test
 	public void TestCssAnalyzer()
 	{
-		Document dom = TestHelper.GetDocumentFromFile("./src/test/test_files/cssanalyzer_test_index.html");
+		Document dom = TestHelper.GetDocumentFromFile("./src/test/resources/cssanalyzer_test_index.html");
 		Assert.assertNotNull(dom);
 
-		MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/cssanalyzer_test_styles.css");
+		MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/cssanalyzer_test_styles.css");
 		Assert.assertNotNull(externalFile);
 
 		MCssFile internalFile = TestHelper.GetCssFromString("internal", CSSDOMHelper.ParseEmbeddedStyles(dom));
@@ -170,10 +170,10 @@ public class CssAnalyzerTest
 	@Test
 	public void TestMediaQueries()
 	{
-		Document dom = TestHelper.GetDocumentFromFile("./src/test/test_files/cssanalyzer_test_index.html");
+		Document dom = TestHelper.GetDocumentFromFile("./src/test/resources/cssanalyzer_test_index.html");
 		Assert.assertNotNull(dom);
 
-		MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/test_files/cssanalyzer_test_media.css");
+		MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/cssanalyzer_test_media.css");
 		Assert.assertNotNull(externalFile);
 
 		HashMap files = new HashMap();

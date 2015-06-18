@@ -334,4 +334,22 @@ public class CssParserTest
 		Assert.assertEquals("hyphenate", mProperties.get(1).GetName());
 		Assert.assertTrue(mProperties.get(1).IsIgnored());
 	}
+
+	@Test
+	public void TestParseIncorrectSelectors()
+	{
+		CssParser parser = new CssParser(true);
+		MCssFile mCssFile = parser.ParseCssIntoMCssRules("test", "span:invalid, div, a:valid { color: black; }");
+
+		List<MCssRule> mRules = mCssFile.GetRules();
+
+		//make sure no parse errors occurred
+		Assert.assertEquals(0, parser.GetParseErrors().size());
+
+		//verify that the correct selectors have w3c error messages
+		MCssRule mRule = mRules.get(0);
+		Assert.assertFalse(mRule.GetSelectors().get(0).GetW3cError().isEmpty());
+		Assert.assertTrue(mRule.GetSelectors().get(1).GetW3cError().isEmpty());
+		Assert.assertFalse(mRule.GetSelectors().get(2).GetW3cError().isEmpty());
+	}
 }

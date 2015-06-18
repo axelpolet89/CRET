@@ -56,7 +56,8 @@ public class MCssRule extends MCssRuleBase
 	{
 		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), mediaQueries, this, TryFindW3cErrorForSelector(selector, w3cErrors)))
+							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(),
+																mediaQueries, this, TryFindW3cErrorForSelector(selector, w3cErrors)))
 							.collect(Collectors.toList()));
 	}
 
@@ -72,7 +73,8 @@ public class MCssRule extends MCssRuleBase
 		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
 		List<Property> properties = styleDeclaration.getProperties();
 		return properties.stream()
-				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(), TryFindW3cErrorForProperty(property, w3cErrors), properties.indexOf(property) + 1))
+				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(),
+												TryFindW3cErrorForProperty(property, w3cErrors), properties.indexOf(property) + 1))
 				.collect(Collectors.toList());
 	}
 
@@ -87,7 +89,20 @@ public class MCssRule extends MCssRuleBase
 	private static String TryFindW3cErrorForProperty(Property property, Set<Defect> w3cErrors)
 	{
 		int lineNumber = ((Locator)property.getUserData(UserDataConstants.KEY_LOCATOR)).getLineNumber();
-		return TryFindW3cError(lineNumber, w3cErrors);
+
+		Optional<Defect> match = w3cErrors.stream().filter(error -> error.line() == lineNumber
+															&& !error.message().contains("Parse Error")
+															&& (error.message().contains(property.getName())
+															|| error.message().contains(property.getValue().getCssText())))
+													.findFirst();
+
+		if(match.isPresent())
+		{
+			w3cErrors.remove(match.get());
+			return match.get().message();
+		}
+
+		return "";
 	}
 
 
@@ -100,29 +115,51 @@ public class MCssRule extends MCssRuleBase
 	private static String TryFindW3cErrorForSelector(Selector selector, Set<Defect> w3cErrors)
 	{
 		int lineNumber = ((LocatableImpl)selector).getLocator().getLineNumber();
-		return TryFindW3cError(lineNumber, w3cErrors);
-	}
-
-	/**
-	 * Find out if the a W3C validation error has occurred on a given line
-	 * @param lineNumber
-	 * @param w3cErrors
-	 * @return W3C error, if present for given line
-	 */
-	private static String TryFindW3cError(int lineNumber, Set<Defect> w3cErrors)
-	{
-		if(w3cErrors.isEmpty())
-		{
-			return "";
-		}
 
 		Optional<Defect> match = w3cErrors.stream().filter(error -> error.line() == lineNumber
-				&& !error.message().contains("Parse Error"))
-				.findFirst();
+															&& !error.message().contains("Parse Error")
+															&& !error.message().contains("Value Error")
+															&& !error.message().contains("Property"))
+													.findFirst();
+
 		if(match.isPresent())
 		{
-			w3cErrors.remove(match);
-			return match.get().message();
+			Defect d = match.get();
+
+			List<String> parts = new ArrayList<>();
+			for(String part : selector.toString().split(" "))
+			{
+				String[] pseudos = part.trim().split(":");
+				if(pseudos.length > 1)
+				{
+					for(int i = 0; i < pseudos.length; i++)
+					{
+						if(i == 0)
+						{
+							parts.add(pseudos[0]);
+						}
+						else
+						{
+							parts.add(":" + pseudos[i]);
+						}
+					}
+				}
+				else
+				{
+					parts.add(pseudos[0]);
+				}
+			}
+
+			// workaround for fact that columnnumber is missin from Defect instances created by the jcabi w3c service
+			// if two selectors on same line, find selector that contains simple selectors that are contained in defect's message
+			for(String part : parts)
+			{
+				if(d.message().contains(part))
+				{
+					w3cErrors.remove(d);
+					return d.message();
+				}
+			}
 		}
 
 		return "";

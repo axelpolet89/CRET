@@ -1,4 +1,4 @@
-package convert;
+package cssparser;
 
 import static org.junit.Assert.fail;
 

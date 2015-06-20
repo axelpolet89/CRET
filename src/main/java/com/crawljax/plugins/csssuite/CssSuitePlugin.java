@@ -48,7 +48,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private final List<String> _processedCssFiles;
 	private int _originalCssLOC;
 
+	private Map<String, MCssFile> _origMcssFiles;
 	private Map<String, MCssFile> _mcssFiles;
+	private Map<Document, List<String>> _domCssFileNameMap;
 
 	private final List<ICssCrawlPlugin> _plugins;
 	private final List<ICssPostCrawlPlugin> _postPlugins;
@@ -68,7 +70,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_originalCssLOC = 0;
 
+		_origMcssFiles = new HashMap<>();
 		_mcssFiles = new HashMap<>();
+		_domCssFileNameMap = new HashMap<>();
+
 		_processedCssFiles = new ArrayList<>();
 
 		_plugins = new ArrayList<>();
@@ -115,9 +120,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		final String url = context.getBrowser().getCurrentUrl();
 		final LinkedHashMap<String, Integer> stateFileOrder = new LinkedHashMap<>();
 
+
 		try
 		{
 			final Document dom = state.getDocument();
+
+			_domCssFileNameMap.put(dom, new ArrayList<>());
 
 			int order = 0;
 			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
@@ -129,9 +137,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					LogHandler.info("[FOUND NEW CSS FILE] " + cssUrl);
 
 					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
+
 					_originalCssLOC += CountLOC(cssCode);
 
-					ParseCssRules(cssUrl, cssCode);
+					_origMcssFiles.put(cssUrl,  ParseCssRules(cssUrl, cssCode));
+					_mcssFiles.put(cssUrl,  ParseCssRules(cssUrl, cssCode));
+					_domCssFileNameMap.get(dom).add(cssUrl);
 				}
 
 				//retain order of css files referenced in DOM
@@ -142,14 +153,16 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			// get all the embedded <STYLE> rules, save per HTML page
 			if (!_mcssFiles.containsKey(url))
 			{
-				String embeddedRules = CSSDOMHelper.ParseEmbeddedStyles(dom);
+				String embeddedCode = CSSDOMHelper.ParseEmbeddedStyles(dom);
 
-				if(!embeddedRules.isEmpty())
+				if(!embeddedCode.isEmpty())
 					LogHandler.info("[FOUND NEW EMBEDDED RULES] " + url);
 
-				_originalCssLOC += CountLOC(embeddedRules);
+				_originalCssLOC += CountLOC(embeddedCode);
 
-				ParseCssRules(url, embeddedRules);
+				_origMcssFiles.put(url, ParseCssRules(url, embeddedCode));
+				_mcssFiles.put(url, ParseCssRules(url, embeddedCode));
+				_domCssFileNameMap.get(dom).add(url);
 			}
 
 			// embedded style sheet has higher order
@@ -170,12 +183,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 * @param url
 	 * @param code
 	 */
-	private void ParseCssRules(String url, String code)
+	private MCssFile ParseCssRules(String url, String code)
 	{
 		CssParser parser = new CssParser();
 
 		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
-		_mcssFiles.put(url, file);
 
 		List<String> parseErrors = parser.GetParseErrors();
 		for(String parseError : parseErrors)
@@ -184,6 +196,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		}
 
 		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size());
+
+		return file;
 	}
 
 
@@ -279,6 +293,22 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		Map<String, MCssFile> rules = ExecutePostTransformations();
 		_mcssFiles = rules;
+
+		final int[] countOrig = {0};
+		final int[] countNew = {0};
+
+		final int[] countOrigProps = {0};
+		final int[] countNewProps = {0};
+
+		for(String fileName : _origMcssFiles.keySet())
+		{
+			_origMcssFiles.get(fileName).GetRules().stream().forEach(r -> countOrig[0] += r.GetSelectors().size());
+			_mcssFiles.get(fileName).GetRules().stream().forEach(r -> countNew[0] += r.GetSelectors().size());
+
+			_origMcssFiles.get(fileName).GetRules().stream().forEach(r -> r.GetSelectors().forEach(s -> countOrigProps[0] += s.GetProperties().size()));
+			_mcssFiles.get(fileName).GetRules().stream().forEach(r -> r.GetSelectors().forEach(s -> countNewProps[0] += s.GetProperties().size()));
+		}
+
 
 		int effectiveInt = PrintEffectiveSelectors(effective);
 		int ineffectiveInt = PrintIneffectiveSelectors(ineffectiveBuffer);

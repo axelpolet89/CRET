@@ -4,11 +4,11 @@ import com.crawljax.plugins.csssuite.data.MCssRuleBase;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.steadystate.css.parser.media.MediaQuery;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +46,48 @@ public class SassSelector
 
     public void PrintContents(SuiteStringBuilder builder, String prefix)
     {
+        _properties.sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+
+        //Map<MProperty, Integer> _props = new HashMap<>();
+//        Map<SassCloneMixin, Integer> _mixins = new HashMap<>();
+//        Set<SassCloneMixin> _processedMixins = new HashSet<>();
+//
+//        int idx = 0;
+//        for(SassCloneMixin cloneMixin : _includes)
+//        {
+//            _mixins.put(cloneMixin, idx);
+//            idx++;
+//        }
+//
+//
+//        for(MProperty mProperty : _properties)
+//        {
+//            _props.put(mProperty, idx);
+//            idx++;
+//        }
+//
+//        for(MProperty mProp : _props.keySet())
+//        {
+//            String[] mPropName = mProp.GetName().split("-");
+//
+//            for(SassCloneMixin mixin : _mixins.keySet())
+//            {
+//                for(MProperty mixinProp : mixin.GetProperties())
+//                {
+//                    String[] mixinPropName = mixinProp.GetName().split("-");
+//
+//                    if(mPropName[0].contains(mixinPropName[0]) || mixinPropName[0].contains(mPropName[0]))
+//                    {
+//                        if(mProp.GetOrder() < mixinProp.GetOrder())
+//                        {
+//                            _props.put(mProp, )
+//
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
         for(SassCloneMixin cloneMixin : _includes)
         {
             builder.appendLine("%s\t@include %s;", prefix, cloneMixin);

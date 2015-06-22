@@ -13,12 +13,10 @@ import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
-import javax.print.attribute.standard.Media;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -51,7 +49,7 @@ public class SassBuilder
             List<SassVariable> sassVariables = GenerateVariables(allSelectors);
 
             LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
-            List<SassCloneMixin> validMixins = FilterValidCloneMixins(cd.GenerateMixins(allSelectors));
+            List<SassCloneMixin> validMixins = ProcessAndFilterClones(cd.GenerateMixins(allSelectors));
             LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), minPropCount, fileName);
 
             LogHandler.debug("[SassGenerator] Generate SASS selectors...");
@@ -70,12 +68,14 @@ public class SassBuilder
     }
 
 
-    private List<SassCloneMixin> FilterValidCloneMixins(List<SassCloneMixin> mixins)
+    private List<SassCloneMixin> ProcessAndFilterClones(List<SassCloneMixin> mixins)
     {
         List<SassCloneMixin> validMixins = new ArrayList<>();
 
         for (SassCloneMixin mixin : mixins)
         {
+            SortMixinValues(mixin);
+
             List<MProperty> templateProps = mixin.GetProperties();
             int numberOfProps = templateProps.size();
 
@@ -87,9 +87,7 @@ public class SassBuilder
 
                 int count = 0;
                 int lineNumber = 0;
-                for(MSelector mSelector : mixin.GetRelatedSelectors().stream()
-                        .sorted((ms1, ms2) -> Integer.compare(ms1.GetRuleNumber(), ms2.GetRuleNumber()))
-                        .collect(Collectors.toList()))
+                for(MSelector mSelector : mixin.GetRelatedSelectors())
                 {
                     if(mSelector.GetRuleNumber() != lineNumber)
                     {
@@ -120,6 +118,13 @@ public class SassBuilder
         }
 
         return validMixins;
+    }
+
+
+    private void SortMixinValues(SassCloneMixin mixin)
+    {
+        mixin.GetRelatedSelectors().sort((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber()));
+        mixin.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
     }
 
 
@@ -188,8 +193,6 @@ public class SassBuilder
 
         for(MSelector mSelector : selectors)
         {
-            mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
-
             SassSelector ss = new SassSelector(mSelector);
 
             for(SassCloneMixin st : extensions)

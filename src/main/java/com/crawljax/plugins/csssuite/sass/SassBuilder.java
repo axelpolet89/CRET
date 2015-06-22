@@ -129,7 +129,9 @@ public class SassBuilder
 
         for (MSelector mSelector : mixin.GetRelatedSelectors())
         {
-            mixinProps.forEach(mSelector::AddProperty);
+            mixinProps.forEach(mixinProp -> mSelector.AddProperty(new MProperty(mixinProp.GetName(), mixinProp.GetValue(),
+                                                                    mixinProp.IsImportant(), mixinProp.IsEffective(),
+                                                                    mixin.getPropertyOrderForSelector(mSelector, mixinProp))));
         }
     }
 

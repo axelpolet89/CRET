@@ -24,8 +24,6 @@ public class MatchedElementsTest
 	public MatchedElementsTest()
 	{
 		DOMConfigurator.configure("log4j.xml");
-		MatchedElements.Clear();
-
 	}
 
 	@Test

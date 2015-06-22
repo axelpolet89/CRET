@@ -6,6 +6,7 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import com.steadystate.css.parser.selectors.*;
@@ -36,7 +37,7 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
     }
 
     @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
+    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         for(String fileName : cssRules.keySet())
         {
@@ -56,10 +57,10 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
 
                     LogHandler.debug("[DescToChild] [%s] Selector sequence may transformed using a child-combinator instead of a descendant-combinator", mSelector);
 
-                    List<ElementWrapper> matchedElements = mSelector.GetMatchedElements();
+                    List<ElementWrapper> selectorElements = mSelector.GetMatchedElements();
 
                     // verify whether matched elements allow for child-combinators instead of descendant-combinators
-                    for (ElementWrapper ew : matchedElements)
+                    for (ElementWrapper ew : selectorElements)
                     {
                         RecursiveFindDescendants(TryFilterPseudoElement(w3cSelector), ew.GetElement(), mSelector);
                     }

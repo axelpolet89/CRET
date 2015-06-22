@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class DetectUndoingPlugin implements ICssPostCrawlPlugin
 {
     @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
+    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         LogHandler.info("[CssAnalyzer] Performing analysis of invalid undo styles on matched CSS selectors...");
 
@@ -31,9 +31,9 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
         // performance
         Set<Set<MSelector>> processedSets = new HashSet<>();
 
-        for (String keyElement : MatchedElements.GetMatchedElements())
+        for (String keyElement : matchedElements.GetMatchedElements())
         {
-            List<MSelector> matchedSelectors = MatchedElements.SortSelectorsForMatchedElem(keyElement);
+            List<MSelector> matchedSelectors = matchedElements.SortSelectorsForMatchedElem(keyElement);
             List<MSelector> effectiveSelectors = matchedSelectors.stream().filter(s -> s.HasEffectiveProperties()).collect(Collectors.toList());
 
             // performance

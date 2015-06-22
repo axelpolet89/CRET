@@ -5,7 +5,8 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
+import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
 import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.DetectUndoingPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
@@ -29,7 +30,6 @@ public class CssUndoDetectorTest
     {
         DOMConfigurator.configure("log4j.xml");
         LogManager.getLogger("css.suite.logger").setLevel(Level.DEBUG);
-        MatchedElements.Clear();
     }
 
     @Test
@@ -47,16 +47,17 @@ public class CssUndoDetectorTest
         LinkedHashMap order = new LinkedHashMap();
         order.put("external", 0);
 
-        // depends on cssanalyzer...
-        MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
+
         NormalizeAndSplitPlugin normalizer = new NormalizeAndSplitPlugin();
+        EffectivenessPlugin effectivenessPlugin = new EffectivenessPlugin();
         DetectUndoingPlugin undoDetector = new DetectUndoingPlugin();
 
         // crawl dom
-        analyzer.Transform("", dom, files, order);
+        MatchedElements matchedElements = new MatchedElements();
+        MatchSelectors.MatchElementsToDocument("", dom, files, order, matchedElements);
 
         // post crawling
-        Map<String, MCssFile> postResult =  undoDetector.Transform(analyzer.Transform(normalizer.Transform(files)));
+        Map<String, MCssFile> postResult =  undoDetector.Transform(effectivenessPlugin.Transform(normalizer.Transform(files, matchedElements), matchedElements), matchedElements);
 
         List<MSelector> validSelectors = new ArrayList<>();
         for(MCssRule rule : postResult.get("external").GetRules())

@@ -52,13 +52,7 @@ public class SassBuilder
 
             LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
             List<SassCloneMixin> validMixins = FilterValidCloneMixins(cd.GenerateMixins(allSelectors));
-
             LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), minPropCount, fileName);
-
-            for (int i = 0; i < validMixins.size(); i++)
-            {
-                validMixins.get(i).SetNumber(i + 1);
-            }
 
             LogHandler.debug("[SassGenerator] Generate SASS selectors...");
             List<SassSelector> sassSelectors = GenerateSassSelectors(allSelectors, validMixins);
@@ -118,6 +112,11 @@ public class SassBuilder
             {
                 RestoreCloneMixin(mixin);
             }
+        }
+
+        for (int i = 0; i < validMixins.size(); i++)
+        {
+            validMixins.get(i).SetNumber(i + 1);
         }
 
         return validMixins;
@@ -187,6 +186,8 @@ public class SassBuilder
 
         for(MSelector mSelector : selectors)
         {
+            mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+
             SassSelector ss = new SassSelector(mSelector);
 
             for(SassCloneMixin st : extensions)

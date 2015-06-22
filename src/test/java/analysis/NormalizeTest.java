@@ -25,7 +25,6 @@ public class NormalizeTest
     public NormalizeTest()
     {
         DOMConfigurator.configure("log4j.xml");
-        MatchedElements.Clear();
     }
 
     @Test
@@ -34,11 +33,11 @@ public class NormalizeTest
         MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/cssnormalizer_test_styles.css");
         Assert.assertNotNull(externalFile);
 
-        Map<String, MCssFile> files = new HashMap();
+        Map<String, MCssFile> files = new HashMap<>();
         files.put("external", externalFile);
 
         NormalizeAndSplitPlugin cssNormalizer = new NormalizeAndSplitPlugin();
-        cssNormalizer.Transform(files);
+        cssNormalizer.Transform(files, new MatchedElements());
 
         List<MSelector> selectors = new ArrayList<>();
 
@@ -253,7 +252,7 @@ public class NormalizeTest
         Assert.assertEquals("fixed", properties.get(4).GetValue());
 
         NormalizeAndMergePlugin pmp = new NormalizeAndMergePlugin();
-        pmp.Transform(files);
+        pmp.Transform(files, new MatchedElements());
 
         properties = selectors.get(0).GetProperties();
         Assert.assertEquals(2, properties.size());
@@ -370,7 +369,7 @@ public class NormalizeTest
         files.put("external", externalFile);
 
         NormalizeAndSplitPlugin cssSplitter = new NormalizeAndSplitPlugin();
-        cssSplitter.Transform(files);
+        cssSplitter.Transform(files, new MatchedElements());
 
         List<MSelector> selectors = new ArrayList<>();
         for(MCssRule rule : files.get("external").GetRules())
@@ -385,7 +384,7 @@ public class NormalizeTest
         Assert.assertEquals("border-bottom-color", props.get(3).GetName());
 
         NormalizeAndMergePlugin cssMerger = new NormalizeAndMergePlugin();
-        cssMerger.Transform(files);
+        cssMerger.Transform(files, new MatchedElements());
 
         props = selectors.get(0).GetProperties();
         Assert.assertEquals("border-width", props.get(0).GetName());

@@ -6,6 +6,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.ColorHelper;
 
 import java.lang.reflect.Array;
@@ -23,7 +24,7 @@ import java.util.*;
 public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 {
     @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules)
+    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         for (String file : cssRules.keySet())
         {

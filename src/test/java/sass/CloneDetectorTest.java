@@ -1,6 +1,7 @@
 package sass;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 
@@ -43,7 +44,7 @@ public class CloneDetectorTest
         files.put("clonedetector_3_test.css", externalFile3);
 
         NormalizeAndMergePlugin normalizer = new NormalizeAndMergePlugin();
-        normalizer.Transform(files);
+        normalizer.Transform(files, new MatchedElements());
 
         SassBuilder gen = new SassBuilder();
         gen.CssToSass(files);

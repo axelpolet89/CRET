@@ -13,10 +13,10 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.generator.SassWriter;
-import com.crawljax.plugins.csssuite.interfaces.ICssCrawlPlugin;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.sass.SassFile;
@@ -52,7 +52,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private Map<String, MCssFile> _mcssFiles;
 	private Map<Document, List<String>> _domCssFileNameMap;
 
-	private final List<ICssCrawlPlugin> _plugins;
+	private final MatchedElements _matchedElements;
 	private final List<ICssPostCrawlPlugin> _postPlugins;
 
 	private final File _outputFile = new File("output/csssuite" + String.format("%s", new SimpleDateFormat("ddMMyy-hhmmss").format(new Date())) + ".txt");
@@ -76,15 +76,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_processedCssFiles = new ArrayList<>();
 
-		_plugins = new ArrayList<>();
 		_postPlugins = new ArrayList<>();
+		_matchedElements = new MatchedElements();
 
-		MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
-
-		_plugins.add(analyzer);
 		_postPlugins.add(new NormalizeAndSplitPlugin());
 		_postPlugins.add(new DetectClonedPropertiesPlugin());
-		_postPlugins.add(analyzer);
+		_postPlugins.add(new EffectivenessPlugin());
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorPlugin());
 		_postPlugins.add(new NormalizeAndMergePlugin());
@@ -103,9 +100,14 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		LogHandler.info("Parse CSS rules...");
 		LinkedHashMap<String, Integer> stateFileOrder = ParseCssRulesForState(context, newState);
 
-		// now we have all the CSS rules neatly parsed in "rules"
-		//checkCssOnDom(newState);
-		ExecuteCrawlTransformations(newState, stateFileOrder);
+		try
+		{
+			MatchSelectors.MatchElementsToDocument(newState.getName(), newState.getDocument(), _mcssFiles, stateFileOrder, _matchedElements);
+		}
+		catch (Exception ex)
+		{
+			LogHandler.error(ex, "[MATCH SELECTORS] Error occurred while matching selectors for state %s", newState.getName());
+		}
 	}
 
 
@@ -119,7 +121,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	{
 		final String url = context.getBrowser().getCurrentUrl();
 		final LinkedHashMap<String, Integer> stateFileOrder = new LinkedHashMap<>();
-
 
 		try
 		{
@@ -201,38 +202,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	}
 
 
-	/**
-	 *
-	 * @param state
-	 */
-	private void ExecuteCrawlTransformations(StateVertex state, LinkedHashMap<String, Integer> stateFileOrder)
-	{
-		LogHandler.info("[CSS SUITE PLUGIN] Execute crawl-time transformations...");
-
-		Document dom;
-		try
-		{
-			dom = state.getDocument();
-		}
-		catch (Exception ex)
-		{
-			LogHandler.error(ex);
-			return;
-		}
-
-		for(ICssCrawlPlugin plugin : _plugins)
-		{
-			try
-			{
-				plugin.Transform(state.getName(), dom, _mcssFiles, stateFileOrder);
-			}
-			catch (Exception ex)
-			{
-				LogHandler.error(ex, "[CRAWL PLUG-IN] Error occurred in plugin %s", plugin);
-			}
-		}
-	}
-
 	private Map<String, MCssFile> ExecutePostTransformations()
 	{
 		LogHandler.info("[CSS SUITE PLUGIN] Execute POST crawl-time transformations...");
@@ -240,7 +209,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		Map<String, MCssFile> rules = _mcssFiles;
 		for(ICssPostCrawlPlugin plugin : _postPlugins)
 		{
-			rules = plugin.Transform(_mcssFiles);
+			rules = plugin.Transform(_mcssFiles, _matchedElements);
 		}
 		return rules;
 	}

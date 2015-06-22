@@ -4,7 +4,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.plugins.*;
 
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchAndAnalyzePlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import helpers.TestHelper;
 import org.apache.log4j.Level;
@@ -27,7 +27,6 @@ public class DescendantToChildTest
     {
         DOMConfigurator.configure("log4j.xml");
         LogManager.getLogger("css.suite.logger").setLevel(Level.DEBUG);
-        MatchedElements.Clear();
     }
 
     @Test
@@ -39,33 +38,33 @@ public class DescendantToChildTest
         MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/css-descendant-to-child_test.css");
         Assert.assertNotNull(externalFile);
 
-        HashMap files = new HashMap();
+        HashMap files = new HashMap<>();
         files.put("external", externalFile);
 
-        LinkedHashMap order = new LinkedHashMap();
+        LinkedHashMap order = new LinkedHashMap<>();
         order.put("external", 0);
 
-        // depends on cssanalyzer...
-        MatchAndAnalyzePlugin analyzer = new MatchAndAnalyzePlugin();
+        EffectivenessPlugin eff = new EffectivenessPlugin();
         ChildCombinatorPlugin dtoc = new ChildCombinatorPlugin();
 
         // crawl dom
-        analyzer.Transform("", dom, files, order);
+        MatchedElements matchedElements = new MatchedElements();
+        MatchSelectors.MatchElementsToDocument("", dom, files, order, matchedElements);
 
         // for later verification
         Set<String> matches = new HashSet<>();
-        for(String s : MatchedElements.GetMatchedElements())
+        for(String s : matchedElements.GetMatchedElements())
                 matches.add(s);
 
         List<MProperty> matchedProperties = new ArrayList<>();
         for(String s : matches)
         {
-            for(MSelector m : MatchedElements.SortSelectorsForMatchedElem(s))
+            for(MSelector m : matchedElements.SortSelectorsForMatchedElem(s))
                 matchedProperties.addAll(m.GetProperties());
         }
 
         // post crawling
-        Map<String, MCssFile> postResult =  dtoc.Transform(analyzer.Transform(files));
+        Map<String, MCssFile> postResult =  dtoc.Transform(eff.Transform(files, matchedElements), matchedElements);
 
         List<MSelector> validSelectors = new ArrayList<>();
         for(MCssRule rule : postResult.get("external").GetRules())
@@ -81,16 +80,16 @@ public class DescendantToChildTest
                 validSelectors.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
 
         // verify re-match of selectors by performing run-time analysis again
-        MatchedElements.Clear();
-        analyzer.Transform("", dom, postResult, order);
+        MatchedElements matchedElements2 = new MatchedElements();
+        MatchSelectors.MatchElementsToDocument("", dom, postResult, order, matchedElements2);
 
-        Set<String> matches2 = MatchedElements.GetMatchedElements();
+        Set<String> matches2 = matchedElements2.GetMatchedElements();
         Assert.assertArrayEquals(matches.toArray(), matches2.toArray());
 
         List<MProperty> matchedProperties2 = new ArrayList<>();
         for(String s : matches2)
         {
-            for(MSelector m : MatchedElements.SortSelectorsForMatchedElem(s))
+            for(MSelector m : matchedElements2.SortSelectorsForMatchedElem(s))
                 matchedProperties2.addAll(m.GetProperties());
         }
         Assert.assertArrayEquals(matchedProperties.toArray(), matchedProperties2.toArray());

@@ -7,6 +7,7 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.csssuite.util.DefaultStylesHelper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,7 +27,7 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
     {
         LogHandler.info("[CssAnalyzer] Performing analysis of invalid undo styles on matched CSS selectors...");
 
-        Map<String, String> defaultStyles = CreateDefaultStyles();
+        Map<String, String> defaultStyles = DefaultStylesHelper.CreateDefaultStyles();
 
         // performance
         Set<Set<MSelector>> processedSets = new HashSet<>();
@@ -197,61 +198,5 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
         }
 
         return file;
-    }
-
-
-    /**
-     *
-     * @return
-     */
-    private static Map<String, String> CreateDefaultStyles()
-    {
-        Map<String, String> defaultStyles = new HashMap<>();
-
-        defaultStyles.put("width", "0");
-        defaultStyles.put("min-width", "0");
-        defaultStyles.put("max-width", "none");
-        defaultStyles.put("height", "0");
-        defaultStyles.put("min-height", "0");
-        defaultStyles.put("max-height", "none");
-
-        SetSeparateStyles("padding-%s", "0", defaultStyles);
-        SetSeparateStyles("margin-%s", "0", defaultStyles);
-
-        SetSeparateStyles("border-%s-width", "0", defaultStyles);
-        SetSeparateStyles("border-%s-style", "none", defaultStyles);
-        defaultStyles.put("border-top-left-radius", "0");
-        defaultStyles.put("border-top-right-radius", "0");
-        defaultStyles.put("border-bottom-right-radius", "0");
-        defaultStyles.put("border-bottom-left-radius", "0");
-
-        defaultStyles.put("outline-width", "0");
-        defaultStyles.put("outline-style", "none");
-
-        defaultStyles.put("background-image", "none");
-        defaultStyles.put("background-color", "transparent");
-        defaultStyles.put("background-repeat", "repeat");
-        defaultStyles.put("background-position", "0% 0%");
-        defaultStyles.put("background-attachment", "scroll");
-        defaultStyles.put("background-size", "auto");
-        defaultStyles.put("background-clip", "border-box");
-        defaultStyles.put("background-origin", "padding-box");
-
-        return defaultStyles;
-    }
-
-
-    /**
-     *
-     * @param formatter
-     * @param value
-     * @param styles
-     */
-    private static void SetSeparateStyles(String formatter, String value, Map<String, String> styles)
-    {
-        styles.put(String.format(formatter, "top"), value);
-        styles.put(String.format(formatter, "right"), value);
-        styles.put(String.format(formatter, "bottom"), value);
-        styles.put(String.format(formatter, "left"), value);
     }
 }

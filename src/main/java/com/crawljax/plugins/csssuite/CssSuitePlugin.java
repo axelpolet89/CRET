@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -21,6 +22,7 @@ import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.sass.SassFile;
 import com.crawljax.plugins.csssuite.util.FileHelper;
+import com.crawljax.plugins.csssuite.verification.CssOnDomVerifier;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
@@ -50,10 +52,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private Map<String, MCssFile> _origMcssFiles;
 	private Map<String, MCssFile> _mcssFiles;
-	private Map<Document, List<String>> _domCssFileNameMap;
+	private Map<StateVertex, LinkedHashMap<String, Integer>> _stateCssFileMap;
 
 	private final MatchedElements _matchedElements;
 	private final List<ICssPostCrawlPlugin> _postPlugins;
+
+	private final Map<String, File> _newCssFiles;
 
 	private final File _outputFile = new File("output/csssuite" + String.format("%s", new SimpleDateFormat("ddMMyy-hhmmss").format(new Date())) + ".txt");
 
@@ -72,12 +76,14 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_origMcssFiles = new HashMap<>();
 		_mcssFiles = new HashMap<>();
-		_domCssFileNameMap = new HashMap<>();
+		_stateCssFileMap = new HashMap<>();
 
 		_processedCssFiles = new ArrayList<>();
 
 		_postPlugins = new ArrayList<>();
 		_matchedElements = new MatchedElements();
+
+		_newCssFiles = new HashMap<>();
 
 		_postPlugins.add(new NormalizeAndSplitPlugin());
 		_postPlugins.add(new DetectClonedPropertiesPlugin());
@@ -103,6 +109,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		try
 		{
 			MatchSelectors.MatchElementsToDocument(newState.getName(), newState.getDocument(), _mcssFiles, stateFileOrder, _matchedElements);
+			_stateCssFileMap.put(newState, stateFileOrder);
 		}
 		catch (Exception ex)
 		{
@@ -126,7 +133,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			final Document dom = state.getDocument();
 
-			_domCssFileNameMap.put(dom, new ArrayList<>());
+			//_domCssFileNameMap.put(dom, new ArrayList<>());
 
 			int order = 0;
 			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
@@ -143,7 +150,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 					_origMcssFiles.put(cssUrl,  ParseCssRules(cssUrl, cssCode));
 					_mcssFiles.put(cssUrl,  ParseCssRules(cssUrl, cssCode));
-					_domCssFileNameMap.get(dom).add(cssUrl);
+					//_domCssFileNameMap.get(dom).add(cssUrl);
 				}
 
 				//retain order of css files referenced in DOM
@@ -163,7 +170,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 				_origMcssFiles.put(url, ParseCssRules(url, embeddedCode));
 				_mcssFiles.put(url, ParseCssRules(url, embeddedCode));
-				_domCssFileNameMap.get(dom).add(url);
+				//_domCssFileNameMap.get(dom).add(url);
 			}
 
 			// embedded style sheet has higher order
@@ -344,6 +351,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 
 		GenerateCssAndSass(rules);
+		VerifyGeneratedCss();
 	}
 
 
@@ -356,7 +364,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		Map<String, File> cssFiles = new HashMap<>();
 		Map<String, File> sassFiles = new HashMap<>();
-		Map<String, File> genCssFiles = new HashMap<>();
 
 		URI indexUri = null;
 		try
@@ -427,7 +434,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			try
 			{
-				genCssFiles.put(fileName, FileHelper.CreateFileAndDirs(genCssFile));
+				_newCssFiles.put(fileName, FileHelper.CreateFileAndDirs(genCssFile));
 			}
 			catch (Exception e)
 			{
@@ -479,7 +486,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
 				ctx.getOptions().setOutputStyle(SassOutputStyle.NESTED);
 
-				FileOutputStream outputStream = new FileOutputStream(genCssFiles.get(fileName));
+				FileOutputStream outputStream = new FileOutputStream(_newCssFiles.get(fileName));
 				ctx.compile(outputStream);
 
 				outputStream.flush();
@@ -487,8 +494,44 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (Exception e)
 			{
-				LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), genCssFiles.get(fileName));
+				LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _newCssFiles.get(fileName));
 			}
+		}
+	}
+
+
+
+	private void VerifyGeneratedCss()
+	{
+		LogHandler.info("[VERIFICATION] Parse the new generated CSS files...");
+
+		CssParser parser = new CssParser();
+		Map<String, MCssFile> generatedCssFiles = new HashMap<>();
+
+		for(String fileName : _newCssFiles.keySet())
+		{
+			try
+			{
+				String cssCode = new String(Files.readAllBytes(_newCssFiles.get(fileName).toPath()), "UTF-8");
+				generatedCssFiles.put(fileName, parser.ParseCssIntoMCssRules(fileName, cssCode));
+			}
+			catch (Exception ex)
+			{
+				LogHandler.error(ex, "[VERIFICATION] Cannot read lines or parse css code from new file %s", _newCssFiles.get(fileName).toPath());
+			}
+		}
+
+		LogHandler.info("[VERIFICATION] Start verification for all found DOM states with original and new CSS files");
+		CssOnDomVerifier verifier = new CssOnDomVerifier();
+
+
+		try
+		{
+			verifier.Verify(_stateCssFileMap, _origMcssFiles, generatedCssFiles);
+		}
+		catch (Exception ex)
+		{
+			LogHandler.error(ex, "[VERIFICATION] Error occurred in verification process");
 		}
 	}
 

@@ -21,8 +21,6 @@ public class MatchedElements
 		_elementSelectors = new HashMap<>();
 	}
 
-	private static final Map<String, ListMultimap<Integer, MSelector>> elementSelectors = new HashMap<>();
-
 	public void SetMatchedElement(ElementWrapper element, MSelector selector, int order)
 	{
 		String key = element.GetKey();
@@ -51,28 +49,19 @@ public class MatchedElements
 	}
 
 	/**
-	 * USE ONLY IN TESTS!
-	 */
-	public void Clear(){_elementSelectors.clear();}
-
-	/**
 	 * Transform all selectors that match a given element into a list of SpecificitySelector instances
 	 * Use that list to sort the selectors in place, and then return the MSelectors contained by the SpecificitySelectors instances in the sorted list
-	 * @param element
+	 * @param cssFilesOrder we need a list of selectors first by their 'file' order and then by their specificity
+	 * @param orderSelectorMap
 	 * @return
 	 */
-	public List<MSelector> SortSelectorsForMatchedElem(String element)
+	public List<MSelector> SortSelectorsForMatchedElem(List<Integer> cssFilesOrder, ListMultimap orderSelectorMap)
 	{
-		// we need a list of selectors first by their 'file' order and then by their specificity
-		List<Integer> cssFilesOrder = GetCssFileOrder(element);
-
 		// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations),
-		// just need to reverse it (so we get highest order first), potential sort performance improvement
+		// just need to reverse it (so we get highest order first)
 		Collections.reverse(cssFilesOrder);
 
 		List<SpecificitySelector> selectorsToSort = new ArrayList<>();
-
-		ListMultimap orderSelectorMap = GetSelectors(element);
 		for(int order : cssFilesOrder)
 		{
 			List<MSelector> selectorsForFile = orderSelectorMap.get(order);
@@ -85,6 +74,18 @@ public class MatchedElements
 
 		// extract the MSelectors from the list of sorted SpecificitySelectors and return
 		return selectorsToSort.stream().map((ss) -> ss.GetSelector()).collect(Collectors.toList());
+	}
+
+
+	/**
+	 * Transform all selectors that match a given element into a list of SpecificitySelector instances
+	 * Use that list to sort the selectors in place, and then return the MSelectors contained by the SpecificitySelectors instances in the sorted list
+	 * @param element
+	 * @return
+	 */
+	public List<MSelector> SortSelectorsForMatchedElem(String element)
+	{
+		return SortSelectorsForMatchedElem(GetCssFileOrder(element), GetSelectors(element));
 	}
 }
 

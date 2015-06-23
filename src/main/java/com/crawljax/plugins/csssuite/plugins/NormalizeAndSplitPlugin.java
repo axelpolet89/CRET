@@ -404,7 +404,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                 props.add(new MProperty("background-image", part, isImportant, order));
             }
             else if (part.equals("left") || part.equals("right") || part.equals("center") || part.equals("bottom") || part.equals("top") ||
-                        ContainsUnitLength(part) || part.contains("%") || part.equals("0") || (!part.contains("url") && part.contains("/")))
+                        ContainsUnitLength(part) || part.contains("%") || part.equals("0") || part.equals("auto") || !part.contains("url") && part.contains("/"))
             {
                 String position = "";
                 String size = "";
@@ -427,7 +427,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                     }
                     else if(sizeProp)
                     {
-                        if(ContainsUnitLength(part2) || part2.contains("%") || part2.equals("0"))
+                        if(ContainsUnitLength(part2) || part2.contains("%") || part2.equals("0") || part2.equals("auto"))
                         {
                             size += " " + part2;
                         }

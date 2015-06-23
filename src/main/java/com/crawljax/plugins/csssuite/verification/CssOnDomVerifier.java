@@ -2,6 +2,7 @@ package com.crawljax.plugins.csssuite.verification;
 
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
@@ -78,6 +79,8 @@ public class CssOnDomVerifier
 
         Set<String> equallyMatchedElems = Sets.difference(new HashSet<>(matchesGenerated.GetMatchedElements()), diff);
 
+        BrowserColorParser bcp = new BrowserColorParser();
+
         for(String matchedElement : equallyMatchedElems)
         {
             List<MSelector> origSelectors = matchesOrigs.SortSelectorsForMatchedElem(matchedElement);
@@ -108,7 +111,7 @@ public class CssOnDomVerifier
             for(MProperty origProperty : origProps)
             {
                 final String name = origProperty.GetName();
-                final String value = origProperty.GetValue();
+                final String value = bcp.TryParseToRgb(origProperty.GetValue());
 
                 for(MProperty gnrProperty : gnrProps)
                 {
@@ -119,7 +122,7 @@ public class CssOnDomVerifier
 
                     if(gnrProperty.GetName().equals(name))
                     {
-                        String gnrValue = gnrProperty.GetValue();
+                        String gnrValue = bcp.TryParseToRgb(gnrProperty.GetValue());
 
                         if(gnrValue.equals("transparent"))
                         {

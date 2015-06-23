@@ -282,7 +282,8 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                 {
                     ClassConditionImpl classCondition = (ClassConditionImpl) innerCondition;
                     String attr = GetAttributeValue(node.getAttributes(), "class");
-                    if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && attr.contains(classCondition.getValue()))
+                    if (MatchNodeWithElementSelector(node, innerSelector) && attr != null &&
+                            (attr.equals(classCondition.getValue()) || attr.contains(classCondition.getValue() + " ")))
                     {
                         return true;
                     }

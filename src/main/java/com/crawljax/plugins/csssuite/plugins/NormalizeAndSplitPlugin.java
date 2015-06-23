@@ -7,9 +7,8 @@ import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
-import com.crawljax.plugins.csssuite.util.ColorHelper;
+import com.crawljax.plugins.csssuite.util.ValueFinderHelper;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -237,7 +236,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
         String base = name.split("-")[0];
 
         // first filter rgb from value, since it contains whitespace
-        String rgbColor = ColorHelper.TryParseRgb(value);
+        String rgbColor = ValueFinderHelper.TryFindRgb(value);
         if(!rgbColor.isEmpty())
         {
             String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
@@ -359,7 +358,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
         List<MProperty> props = new ArrayList<>();
 
         // first filter rgb from value, since it contains whitespace
-        String rgbColor = ColorHelper.TryParseRgb(value);
+        String rgbColor = ValueFinderHelper.TryFindRgb(value);
         if(!rgbColor.isEmpty())
         {
             String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");

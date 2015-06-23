@@ -12,8 +12,6 @@ import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.DefaultStylesHelper;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang3.tuple.Pair;
-import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.util.*;
@@ -44,7 +42,7 @@ public class CssOnDomVerifier
 
         for(StateVertex state : states.keySet())
         {
-            LogHandler.info("[VERIFICATION] Performing verification for state %s...", state.getUrl());
+            LogHandler.info("[VERIFICATION] Match selectors from original and generated styles to DOM for state %s...", state.getUrl());
             LinkedHashMap<String, Integer> stateFileOrder = states.get(state);
 
             Map<String, MCssFile> stateFilesOrig = new HashMap<>();
@@ -55,95 +53,108 @@ public class CssOnDomVerifier
 
             MatchSelectors.MatchElementsToDocument(state.getName(), state.getDocument(), stateFilesOrig, states.get(state), matchesOrigs);
             MatchSelectors.MatchElementsToDocument(state.getName(), state.getDocument(), stateFilesGnr, states.get(state), matchesGenerated);
+        }
 
-            EffectivenessPlugin effectiveness = new EffectivenessPlugin();
-            Map<String, MCssFile> effectiveOrig = effectiveness.Transform(stateFilesOrig, matchesOrigs);
-            Map<String, MCssFile> effectiveGnr = effectiveness.Transform(stateFilesGnr, matchesGenerated);
+        LogHandler.info("[VERIFICATION] Start effectiveness analysis for matched elements of original and generated styles...");
 
-            Set<String> origs = new HashSet<>(matchesOrigs.GetMatchedElements());
-            Set<String> diff = new HashSet<>();
+        EffectivenessPlugin effectiveness = new EffectivenessPlugin();
+        effectiveness.Transform(originalStyles, matchesOrigs);
+        effectiveness.Transform(generatedStyles, matchesGenerated);
 
-            for(String element : matchesGenerated.GetMatchedElements())
+        Set<String> origs = new HashSet<>(matchesOrigs.GetMatchedElements());
+        Set<String> diff = new HashSet<>();
+
+        for(String element : matchesGenerated.GetMatchedElements())
+        {
+            if(!origs.contains(element))
             {
-                if(!origs.contains(element))
+                diff.add(element);
+            }
+            else
+            {
+                origs.remove(element);
+            }
+        }
+
+        Set<String> equallyMatchedElems = Sets.difference(new HashSet<>(matchesGenerated.GetMatchedElements()), diff);
+
+        for(String matchedElement : equallyMatchedElems)
+        {
+            List<MSelector> origSelectors = matchesOrigs.SortSelectorsForMatchedElem(matchedElement);
+            List<MSelector> genSelectors = matchesGenerated.SortSelectorsForMatchedElem(matchedElement);
+
+            List<MProperty> origProps = new ArrayList<>();
+            Map<MProperty, MSelector> origParents = new HashMap<>();
+            origSelectors.forEach((s) -> {
+                List<MProperty> mProperties = s.GetProperties().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList());
+                origProps.addAll(mProperties);
+                mProperties.forEach(p -> origParents.put(p, s));
+            });
+
+            List<MProperty> gnrProps = new ArrayList<>();
+            Map<MProperty, MSelector> gnrParents = new HashMap<>();
+            genSelectors.forEach((s) -> {
+                List<MProperty> mProperties = s.GetProperties().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList());
+                gnrProps.addAll(mProperties);
+                mProperties.forEach(p -> gnrParents.put(p, s));
+            });
+
+            origProps.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
+            gnrProps.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
+
+            Set<MProperty> processedOrig = new HashSet<>();
+            Set<MProperty> processedGnr = new HashSet<>();
+
+            for(MProperty origProperty : origProps)
+            {
+                final String name = origProperty.GetName();
+                final String value = origProperty.GetValue();
+
+                for(MProperty gnrProperty : gnrProps)
                 {
-                    diff.add(element);
-                }
-                else
-                {
-                    origs.remove(element);
+                    if(processedGnr.contains(gnrProperty))
+                    {
+                        continue;
+                    }
+
+                    if(gnrProperty.GetName().equals(name))
+                    {
+                        String gnrValue = gnrProperty.GetValue();
+
+                        if(gnrValue.equals("transparent"))
+                        {
+                            gnrValue = "rgba(0, 0, 0, 0)";
+                        }
+                        else if (gnrValue.contains("transparent"))
+                        {
+                            gnrValue = gnrValue.replace("transparent", "rgba(0, 0, 0, 0)");
+                        }
+
+                        if(gnrValue.equals(value) && gnrProperty.IsImportant() == origProperty.IsImportant())
+                        {
+                            processedOrig.add(origProperty);
+                            processedGnr.add(gnrProperty);
+                            break;
+                        }
+                    }
                 }
             }
 
-            Set<String> equallyMatchedElems = Sets.difference(new HashSet<>(matchesGenerated.GetMatchedElements()), diff);
+            List<MProperty> remainderOrig = origProps.stream().filter((p) -> !processedOrig.contains(p)).collect(Collectors.toList());
+            List<MProperty> remainderGnr = gnrProps.stream().filter((p) -> !processedGnr.contains(p)).collect(Collectors.toList());
 
-            for(String matchedElement : equallyMatchedElems)
+            for(MProperty remainingProperty : remainderOrig)
             {
-                List<MSelector> origSelectors = matchesOrigs.SortSelectorsForMatchedElem(matchedElement);
-                List<MSelector> genSelectors = matchesGenerated.SortSelectorsForMatchedElem(matchedElement);
-
-                List<MProperty> origProps = new ArrayList<>();
-                origSelectors.forEach(s -> origProps.addAll(s.GetProperties().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList())));
-
-                List<MProperty> gnrProps = new ArrayList<>();
-                genSelectors.forEach(s -> gnrProps.addAll(s.GetProperties().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList())));
-
-                origProps.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
-                gnrProps.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
-
-                Set<MProperty> processedOrig = new HashSet<>();
-                Set<MProperty> processedGnr = new HashSet<>();
-
-                for(MProperty origProperty : origProps)
+                if(defaultStyles.containsKey(remainingProperty.GetName()))
                 {
-                    final String name = origProperty.GetName();
-                    final String value = origProperty.GetValue();
-
-                    for(MProperty gnrProperty : gnrProps)
+                    if(remainingProperty.GetValue().equals(defaultStyles.get(remainingProperty.GetName())))
                     {
-                        if(processedGnr.contains(gnrProperty))
-                        {
-                            continue;
-                        }
-
-                        if(gnrProperty.GetName().equals(name))
-                        {
-                            String gnrValue = gnrProperty.GetValue();
-
-                            if(gnrValue.equals("transparent"))
-                            {
-                                gnrValue = "rgba(0, 0, 0, 0)";
-                            }
-                            else if (gnrValue.contains("transparent"))
-                            {
-                                gnrValue = gnrValue.replace("transparent", "rgba(0, 0, 0, 0)");
-                            }
-
-                            if(gnrValue.equals(value) && gnrProperty.IsImportant() == origProperty.IsImportant())
-                            {
-                                processedOrig.add(origProperty);
-                                processedGnr.add(gnrProperty);
-                                break;
-                            }
-                        }
+                        continue;
                     }
                 }
 
-                List<MProperty> remainderOrig = origProps.stream().filter((p) -> !processedOrig.contains(p)).collect(Collectors.toList());
-                List<MProperty> remainderGnr = gnrProps.stream().filter((p) -> !processedGnr.contains(p)).collect(Collectors.toList());
-
-                for(MProperty remainder : remainderOrig)
-                {
-                    if(defaultStyles.containsKey(remainder.GetName()))
-                    {
-                        if(remainder.GetValue().equals(defaultStyles.get(remainder.GetName())))
-                        {
-                            continue;
-                        }
-                    }
-
-                    LogHandler.debug("[VERIFICATION] Found property %s in selector '....' from the original stylesheet that is not available from the generated stylesheet for state %s", remainder, state.getUrl());
-                }
+                LogHandler.debug("[VERIFICATION] Found property '%s  in selector '%s' from the original stylesheet that is not available from the generated stylesheet",
+                        remainingProperty, origParents.get(remainingProperty));
             }
         }
     }

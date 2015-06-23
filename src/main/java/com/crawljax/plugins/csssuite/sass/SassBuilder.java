@@ -1,21 +1,19 @@
 package com.crawljax.plugins.csssuite.sass;
 
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
-import com.crawljax.plugins.csssuite.sass.colors.ColorNameFinder;
+import com.crawljax.plugins.csssuite.colors.ColorNameFinder;
 import com.crawljax.plugins.csssuite.sass.mixins.SassBoxMixin;
 import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.sass.variables.SassVarType;
 import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
-import com.crawljax.plugins.csssuite.util.ColorHelper;
+import com.crawljax.plugins.csssuite.util.ValueFinderHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -360,14 +358,13 @@ public class SassBuilder
     private List<SassVariable> GenerateVariables(List<MSelector> sassSelectors)
     {
         List<SassVariable> variables = new ArrayList<>();
+        Map<String, String> alreadyDefinedVars = new HashMap<>();
 
         ColorNameFinder ctn = new ColorNameFinder();
-        if(!ctn.IsInitialized())
-            return variables;
+        BrowserColorParser bcp = new BrowserColorParser();
 
-        List<String> browserColors = ParseBrowserColors();
-
-        Map<String, String> definedVars = new HashMap<>();
+        // for identification of browser colors in shorthand properties
+        Set browserColors = bcp.GetBrowserColors();
 
         for(MSelector sassSelector : sassSelectors)
         {
@@ -392,43 +389,50 @@ public class SassBuilder
                     {
                         varType = SassVarType.URL;
                         varName = "url";
-                        varValue = ColorHelper.TryParseUrl(origValue);
+                        varValue = ValueFinderHelper.TryFindUrl(origValue);
                     }
                     else if (origValue.contains("rgba"))
                     {
-                        String value = ColorHelper.TryParseRgb(origValue);
-                        String[] parts = value.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
+                        String value = ValueFinderHelper.TryFindRgb(origValue);
+                        String[] rgbParts = value.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
 
                         varType = SassVarType.ALPHA_COLOR;
-                        varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()), Integer.parseInt(parts[2].trim())));
+                        varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbParts[0].trim()), Integer.parseInt(rgbParts[1].trim()), Integer.parseInt(rgbParts[2].trim())));
                         varValue = value;
                     }
                     else if (origValue.contains("rgb"))
                     {
-                        String value = ColorHelper.TryParseRgb(origValue);
-                        String[] parts = value.replaceFirst("rgb\\(", "").replaceFirst("\\)", "").split(",");
+                        String value = ValueFinderHelper.TryFindRgb(origValue);
+                        String[] rgbParts = value.replaceFirst("rgb\\(", "").replaceFirst("\\)", "").split(",");
 
                         varType = SassVarType.COLOR;
-                        varName = String.format("%s_%s", "color", ctn.TryGetNameForRgb(Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim()), Integer.parseInt(parts[2].trim())));
+                        varName = String.format("%s_%s", "color", ctn.TryGetNameForRgb(Integer.parseInt(rgbParts[0].trim()), Integer.parseInt(rgbParts[1].trim()), Integer.parseInt(rgbParts[2].trim())));
                         varValue = value;
                     }
                     else if (origName.contains("color"))
                     {
                         varType = SassVarType.COLOR;
                         varName = String.format("%s_%s", "color", origValue);
-                        varValue = origValue;
+                        varValue = bcp.TryParseToRgb(origValue);
+
+                        // update original value with it's rgb representation, so that final replace (with variable reference) will work
+                        origValue = varValue;
                     }
-                    else if (origName.equals("border") || origName.equals("background") || origName.equals("outline") || origName.equals("box-shadow"))
+                    else if (origName.equals("border") || origName.equals("background") || origName.equals("outline") || origName.equals("box-shadow") || origName.equals("text-shadow"))
                     {
                         String[] parts = origValue.split(" ");
 
                         for (String part : parts)
                         {
-                            if (browserColors.contains(part.trim()))
+                            part = part.trim();
+                            if (browserColors.contains(part))
                             {
                                 varType = SassVarType.COLOR;
                                 varName = String.format("%s_%s", "color", part);
-                                varValue = part;
+                                varValue = bcp.TryParseToRgb(part);
+
+                                // update original value with it's rgb representation, so that final replace (with variable reference) will work
+                                origValue = origValue.replace(part, varValue);
                                 break;
                             }
                         }
@@ -437,13 +441,13 @@ public class SassBuilder
                     if (!varName.isEmpty() && !varValue.isEmpty())
                     {
                         // if varName already used, extend varName with an id
-                        if (definedVars.containsKey(varName) && !definedVars.get(varName).equals(varValue))
+                        if (alreadyDefinedVars.containsKey(varName) && !alreadyDefinedVars.get(varName).equals(varValue))
                         {
                             int id = 1;
                             while (true)
                             {
                                 String replace = String.format("%s_%d", varName, id);
-                                if (!definedVars.containsKey(replace) || (definedVars.containsKey(replace) && definedVars.get(replace).equals(varValue)))
+                                if (!alreadyDefinedVars.containsKey(replace) || (alreadyDefinedVars.containsKey(replace) && alreadyDefinedVars.get(replace).equals(varValue)))
                                 {
                                     varName = replace;
                                     break;
@@ -452,11 +456,11 @@ public class SassBuilder
                             }
                         }
 
-                        if(!definedVars.containsKey(varName))
+                        if(!alreadyDefinedVars.containsKey(varName))
                         {
                             SassVariable sv = new SassVariable(varType, varName, varValue, mProperty);
                             variables.add(sv);
-                            definedVars.put(varName, varValue);
+                            alreadyDefinedVars.put(varName, varValue);
                         }
 
                         String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
@@ -473,20 +477,5 @@ public class SassBuilder
         }
 
         return variables;
-    }
-
-
-    private List<String> ParseBrowserColors()
-    {
-        try
-        {
-            return Files.readAllLines(new File("./src/main/java/com/crawljax/plugins/csssuite/sass/colors/color_names_browser.txt").toPath());
-        }
-        catch (IOException e)
-        {
-            LogHandler.error(e, "[SassGenerator] Cannot load color_names_browser.txt!");
-        }
-
-        return new ArrayList<>();
     }
 }

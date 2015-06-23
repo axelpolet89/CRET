@@ -333,7 +333,7 @@ public class NormalizeTest
 
         properties = selectors.get(15).GetProperties();
         Assert.assertEquals(2, properties.size());
-        Assert.assertEquals("border-width", properties.get(0).GetName());
+        Assert.assertEquals("border", properties.get(0).GetName());
         Assert.assertEquals("0", properties.get(0).GetValue());
         Assert.assertEquals("border-radius", properties.get(1).GetName());
         Assert.assertEquals("0", properties.get(1).GetValue());
@@ -387,7 +387,7 @@ public class NormalizeTest
         cssMerger.Transform(files, new MatchedElements());
 
         props = selectors.get(0).GetProperties();
-        Assert.assertEquals("border-width", props.get(0).GetName());
+        Assert.assertEquals("border", props.get(0).GetName());
         Assert.assertEquals("border-bottom", props.get(1).GetName());
     }
 }

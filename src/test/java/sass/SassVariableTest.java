@@ -1,7 +1,7 @@
 package sass;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
-import com.crawljax.plugins.csssuite.sass.colors.ColorNameFinder;
+import com.crawljax.plugins.csssuite.colors.ColorNameFinder;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;

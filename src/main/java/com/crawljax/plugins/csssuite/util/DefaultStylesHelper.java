@@ -26,6 +26,8 @@ public class DefaultStylesHelper
         SetSeparateStyles("padding-%s", "0", defaultStyles);
         SetSeparateStyles("margin-%s", "0", defaultStyles);
 
+        defaultStyles.put("border-width", "0");
+        defaultStyles.put("border-style", "none");
         SetSeparateStyles("border-%s-width", "0", defaultStyles);
         SetSeparateStyles("border-%s-style", "none", defaultStyles);
         defaultStyles.put("border-top-left-radius", "0");

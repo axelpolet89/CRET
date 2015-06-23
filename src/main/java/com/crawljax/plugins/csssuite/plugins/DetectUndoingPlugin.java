@@ -86,7 +86,7 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
 
                         if(validUndo)
                         {
-                            break;
+                            continue;
                         }
 
                         for (int j = i + 1; j < effectiveSelectors.size(); j++)

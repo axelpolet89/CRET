@@ -54,22 +54,38 @@ public class BorderMerger extends MergerBase
         if(_style.isEmpty())
         {
             if(!_width.isEmpty())
-                result.add(new MProperty(String.format("%s-width", _name), _width, _isImportant, true, _order));
+            {
+                //exception by convention, on border-width: 0, we can just say border: 0
+                if(_width.equals("0"))
+                {
+                    result.add(new MProperty(String.format("%s", _name), _width, _isImportant, true, _order));
+                }
+                else
+                {
+                    result.add(new MProperty(String.format("%s-width", _name), _width, _isImportant, true, _order));
+                }
+            }
 
             if(!_color.isEmpty())
+            {
                 result.add(new MProperty(String.format("%s-color", _name), _color, _isImportant, true, _order));
+            }
         }
         else
         {
             String value = "";
 
             if(!_width.isEmpty())
+            {
                 value += _width;
+            }
 
             value += " " + _style;
 
             if(!_color.isEmpty())
+            {
                 value += " " + _color;
+            }
 
             result.add(new MProperty(_name, value, _isImportant, true, _order));
         }

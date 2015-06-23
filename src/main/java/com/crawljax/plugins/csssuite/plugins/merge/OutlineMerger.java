@@ -44,7 +44,9 @@ public class OutlineMerger extends BorderMerger
         List<MProperty> result = super.BuildMProperties();
 
         if(!_offset.isEmpty())
+        {
             result.add(new MProperty("outline-offset", _offset, _isImportant, true, _order));
+        }
 
         return result;
     }

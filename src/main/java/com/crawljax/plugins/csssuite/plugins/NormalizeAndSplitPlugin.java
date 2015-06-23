@@ -254,17 +254,14 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
             if(part.equals("none") || part.equals("solid") || part.equals("dotted")  || part.equals("dashed") ||  part.equals("double")
                     || part.equals("groove") || part.equals("ridge") || part.equals("inset") || part.equals("outset"))
             {
-                //props.add(new MProperty(String.format("%s-style", name), part, isImportant, new HashSet<>(Arrays.asList(String.format("%s-style", base)))));
                 props.add(new MBorderProperty(String.format("%s-style", name), part, isImportant, order, String.format("%s-style", base)));
             }
             else if (ContainsUnitLength(part) || part.equals("0"))
             {
-               // props.add(new MProperty(String.format("%s-width", name), part, isImportant, new HashSet<>(Arrays.asList(String.format("%s-width", base)))));
                 props.add(new MBorderProperty(String.format("%s-width", name), part, isImportant, order, String.format("%s-width", base)));
             }
             else
             {
-             //   props.add(new MProperty(String.format("%s-color", name), part, isImportant, new HashSet<>(Arrays.asList(String.format("%s-color", base)))));
                 props.add(new MBorderProperty(String.format("%s-color", name), part, isImportant, order, String.format("%s-color", base)));
             }
         }

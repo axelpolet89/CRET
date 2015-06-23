@@ -237,11 +237,6 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
             return new ArrayList<>();
         }
 
-        if (properties.size() == 1)
-        {
-            return properties;
-        }
-
         List<MProperty> result = new ArrayList<>();
 
         for (MProperty mProperty : properties)

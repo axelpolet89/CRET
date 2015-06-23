@@ -98,6 +98,11 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
                                 continue;
                             }
 
+                            if (selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
+                            {
+                                continue;
+                            }
+
                             if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() > 0
                                     && !selector.HasEqualMediaQueries(nextSelector))
                             {

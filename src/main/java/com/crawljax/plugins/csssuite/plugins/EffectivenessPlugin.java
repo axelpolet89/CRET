@@ -49,21 +49,23 @@ public class EffectivenessPlugin implements ICssPostCrawlPlugin
 
 						for (int j = i + 1; j < matchedSelectors.size(); j++)
 						{
-							boolean compareOnValuesToo = false;
+							boolean compareOnValueAndImportant = false;
+							boolean compareOnImportant = false;
 
 							MSelector nextSelector = matchedSelectors.get(j);
 
-							// media-query selector is more specific, but regular also applies
+							// a regular selector is less-specific, but will still apply
 							if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() == 0)
 							{
 								continue;
 							}
 
-//							// media-query selector is less specific, but it could trigger other properties, just do a property compare
-//							if (selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
-//							{
-//								compareOnValuesToo = true;
-//							}
+							// a regular selector is more specific, but the media-query selector may contain !important statements,
+							// however, regular will also apply
+							if (selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
+							{
+								compareOnImportant = true;
+							}
 
 							// both selectors have different media-queries
 							if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() > 0
@@ -86,13 +88,17 @@ public class EffectivenessPlugin implements ICssPostCrawlPlugin
 							{
 								if (!selector.HasEqualPseudoClass(nextSelector))
 								{
-									compareOnValuesToo = true;
+									compareOnValueAndImportant = true;
 								}
 							}
 
-							if (compareOnValuesToo)
+							if (compareOnValueAndImportant)
 							{
-								ComparePropertiesWithValue(property, nextSelector, overridden, alreadyEffective);
+								ComparePropertiesOnValueAndImportant(property, nextSelector, overridden, alreadyEffective);
+							}
+							else if (compareOnImportant)
+							{
+								ComparePropertiesOnImportant(property, nextSelector, overridden);
 							}
 							else
 							{
@@ -159,7 +165,7 @@ public class EffectivenessPlugin implements ICssPostCrawlPlugin
 	 * @param otherSelector
 	 * @param overridden
 	 */
-	private static void ComparePropertiesWithValue(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+	private static void ComparePropertiesOnValueAndImportant(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
 	{
 		for (MProperty nextProperty : otherSelector.GetProperties())
 		{
@@ -175,6 +181,28 @@ public class EffectivenessPlugin implements ICssPostCrawlPlugin
 					property.SetEffective(false);
 				}
 				else
+				{
+					nextProperty.SetStatus(overridden);
+				}
+			}
+		}
+	}
+
+
+	/**
+	 * Compare properties of a (less specific) selector with a given property on their name
+	 * and the absence of the !important statement in the less-specific property OR presence in the more-specific property
+	 * @param property
+	 * @param otherSelector
+	 * @param overridden
+	 */
+	private static void ComparePropertiesOnImportant(MProperty property, MSelector otherSelector, String overridden)
+	{
+		for (MProperty nextProperty : otherSelector.GetProperties())
+		{
+			if (property.GetName().equalsIgnoreCase(nextProperty.GetName()))
+			{
+				if(!nextProperty.IsImportant() || property.IsImportant())
 				{
 					nextProperty.SetStatus(overridden);
 				}

@@ -5,7 +5,7 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
 import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.DetectUndoingPlugin;

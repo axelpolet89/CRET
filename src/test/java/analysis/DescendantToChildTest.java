@@ -4,6 +4,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.plugins.*;
 
+import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import helpers.TestHelper;

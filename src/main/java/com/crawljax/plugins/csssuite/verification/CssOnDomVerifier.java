@@ -13,6 +13,7 @@ import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.DefaultStylesHelper;
+import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.google.common.collect.Sets;
 
 import java.io.IOException;
@@ -24,6 +25,85 @@ import java.util.stream.Collectors;
  */
 public class CssOnDomVerifier
 {
+    private Map<MSelector, String> selFileMapOrig = new HashMap<>();
+    private Map<MSelector, String> selFileMapGnr = new HashMap<>();
+
+    private Set<String> _matchedElementsOrig = new HashSet<>();
+    private Set<String> _matchedElementsGnr = new HashSet<>();
+    private Set<String> _equallyMatchedElems = new HashSet<>();
+    private Set<String> _additionalMatchedElems = new HashSet<>();
+    private Set<String> _missedMatchedElements = new HashSet<>();
+
+    private Set<MProperty> _totalEffectivePropsOrig = new HashSet<>();
+    private Set<MProperty> _totalEquallyEffectiveProps = new HashSet<>();
+    private Map<MProperty, MProperty> _totalEffectiveByName = new HashMap<>();
+    private Set<MProperty> _totalDefaultPropsOrig = new HashSet<>();
+    private Set<MProperty> _totalMissingProps = new HashSet<>();
+    private Set<MProperty> _totalAdditionalProps = new HashSet<>();
+
+    private Map<MSelector, String> GenerateSelectorFileMap(Map<String, MCssFile> mcssFiles)
+    {
+        Map<MSelector, String> result = new HashMap<>();
+
+        for(String fileName : mcssFiles.keySet())
+        {
+            for(MCssRule mCssRule : mcssFiles.get(fileName).GetRules())
+            {
+                for(MSelector mSelector : mCssRule.GetSelectors())
+                {
+                    result.put(mSelector, fileName);
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+    private Map<MProperty, MSelector> GeneratePropertySelectorMap(List<MSelector> selectors)
+    {
+        Map<MProperty, MSelector> result = new HashMap<>();
+
+        selectors.forEach((s) -> {
+            List<MProperty> mProperties = s.GetProperties().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList());
+            mProperties.forEach(p -> result.put(p, s));
+        });
+
+        return result;
+    }
+
+
+    private List<MProperty> FindEffectivePropertiesForElement(List<MSelector> selectors)
+    {
+        // first reset all previously deemed effective properties to non-effective
+        selectors.forEach(s -> s.GetProperties().forEach(p -> p.SetEffective(false)));
+
+        String overridden = "overridden-" + new Random().nextInt();
+
+        EffectivenessAnalysis.ComputeEffectiveness(selectors, overridden);
+
+        List<MProperty> effectiveProps = new ArrayList<>();
+        selectors.forEach(s -> effectiveProps.addAll(s.GetProperties().stream().filter(p -> p.IsEffective() || p.IsIgnored()).collect(Collectors.toList())));
+        return effectiveProps;
+    }
+
+    private Set<MProperty> FindUniqueProperties(Set<String> elements, MatchedElements matchedElements)
+    {
+        Set<MProperty> result = new HashSet<>();
+
+        for(String element : elements)
+        {
+            List<MSelector> selectors = matchedElements.SortSelectorsForMatchedElem(element);
+
+            for(MSelector mSelector : selectors)
+            {
+                result.addAll(mSelector.GetProperties());
+            }
+        }
+
+        return result;
+    }
+
     public void Verify(Map<StateVertex, LinkedHashMap<String, Integer>> states, Map<String, MCssFile> originalStyles, Map<String, MCssFile> generatedStyles) throws IOException
     {
         Map<MSelector, String> selFileMapOrig = GenerateSelectorFileMap(originalStyles);
@@ -41,6 +121,7 @@ public class CssOnDomVerifier
         originalStyles = clonedProps.Transform(originalStyles, matchedElementsOrig);
         generatedStyles = clonedProps.Transform(generatedStyles, matchedElementsGnr);
 
+        // perform matched element analysis
         for(StateVertex state : states.keySet())
         {
             LogHandler.info("[VERIFICATION] Match selectors from original and generated styles to DOM for state %s...", state.getUrl());
@@ -50,15 +131,14 @@ public class CssOnDomVerifier
             ElementSelectorMatcher.MatchElementsToDocument(state.getName(), state.getDocument(), generatedStyles, stateFileOrder, matchedElementsGnr);
         }
 
-        Set<String> matchesOrig = matchedElementsOrig.GetMatchedElements();
-        Set<String> matchesGnr = matchedElementsGnr.GetMatchedElements();
-        Set<String> additionalMatchedElems = Sets.difference(matchesGnr, matchesOrig);
-        Set<String> unmatchedElems = Sets.difference(matchesOrig, matchesGnr);
-        Set<String> equallyMatchedElems = Sets.difference(matchesOrig, unmatchedElems);
-
+        _matchedElementsOrig = matchedElementsOrig.GetMatchedElements();
+        _matchedElementsGnr = matchedElementsGnr.GetMatchedElements();
+        _additionalMatchedElems = Sets.difference(_matchedElementsGnr, _matchedElementsOrig);
+        _missedMatchedElements = Sets.difference(_matchedElementsOrig, _matchedElementsGnr);
+        _equallyMatchedElems = Sets.difference(_matchedElementsOrig, _missedMatchedElements);
 
         // all unmatched elements
-        for(String unmatchedElement : unmatchedElems)
+        for(String unmatchedElement : _missedMatchedElements)
         {
             List<MSelector> selectors = matchedElementsOrig.SortSelectorsForMatchedElem(unmatchedElement);
 
@@ -73,7 +153,7 @@ public class CssOnDomVerifier
 
 
         // all additionally matched elements
-        for(String extraElement : additionalMatchedElems)
+        for(String extraElement : _additionalMatchedElems)
         {
             List<MSelector> selectors = matchedElementsGnr.SortSelectorsForMatchedElem(extraElement);
 
@@ -90,29 +170,21 @@ public class CssOnDomVerifier
         // effectiveness analysis
         LogHandler.info("[VERIFICATION] Start effectiveness analysis for matched elements of original and generated styles...");
 
-        Set<MProperty> totalEffectivePropsOrig = new HashSet<>();
-        Set<MProperty> totalEffectivePropsCompare = new HashSet<>();
-        Map<MProperty, MProperty> totalMatchedByName = new HashMap<>();
-        Set<MProperty> totalDefaultPropsOrig = new HashSet<>();
-        Set<MProperty> totalMissingProps = new HashSet<>();
-        Set<MProperty> totalAdditionalProps = new HashSet<>();
-
+        int count = 0;
+        int total = _matchedElementsOrig.size();
         BrowserColorParser bcp = new BrowserColorParser();
 
-        int count = 0;
-        int total = equallyMatchedElems.size();
-
-        for(String matchedElement : matchesOrig)
+        for(String matchedElement : _matchedElementsOrig)
         {
             count++;
             LogHandler.debug("[VERIFICATION] Start effectiveness analysis for element %d of %d...", count, total);
 
             List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
             List<MProperty> effectivePropsOrig = FindEffectivePropertiesForElement(selectorsOrig);
-            totalEffectivePropsOrig.addAll(effectivePropsOrig);
+            _totalEffectivePropsOrig.addAll(effectivePropsOrig);
 
             // only continue when both styles matched the same element
-            if(!equallyMatchedElems.contains(matchedElement))
+            if(!_equallyMatchedElems.contains(matchedElement))
             {
                 continue;
             }
@@ -216,25 +288,25 @@ public class CssOnDomVerifier
                 {
                     if(remainingProperty.GetValue().equals(defaultStyles.get(remainingProperty.GetName())))
                     {
-                        totalDefaultPropsOrig.add(remainingProperty);
+                        _totalDefaultPropsOrig.add(remainingProperty);
                         continue;
                     }
                 }
 
-                totalMissingProps.add(remainingProperty);
+                _totalMissingProps.add(remainingProperty);
                 LogHandler.debug("[VERIFICATION] Missing property '%s' in selector '%s' in file '%s'",
                         remainingProperty, propSelMapOrig.get(remainingProperty), selFileMapOrig.get(propSelMapOrig.get(remainingProperty)));
             }
 
             for(MProperty remainingProperty : remainderGnr)
             {
-                totalAdditionalProps.add(remainingProperty);
+                _totalAdditionalProps.add(remainingProperty);
                 LogHandler.debug("[VERIFICATION] Additional property '%s' in selector '%s' in file '%s'",
                         remainingProperty, propSelMapGnr.get(remainingProperty), selFileMapGnr.get(propSelMapGnr.get(remainingProperty)));
             }
 
-            totalEffectivePropsCompare.addAll(matchedPropsOnValueGnr);
-            totalMatchedByName.putAll(matchedOnName);
+            _totalEquallyEffectiveProps.addAll(matchedPropsOnValueGnr);
+            _totalEffectiveByName.putAll(matchedOnName);
         }
 
 
@@ -242,85 +314,43 @@ public class CssOnDomVerifier
 
         // filter effective props by name with missing props
         // missing props have higher precedence than effective by name
-        for(MProperty mProperty : totalMissingProps)
+        for(MProperty mProperty : _totalMissingProps)
         {
-            if(totalMatchedByName.containsKey(mProperty))
+            if(_totalEffectiveByName.containsKey(mProperty))
             {
-                totalMatchedByName.remove(mProperty);
+                _totalEffectiveByName.remove(mProperty);
             }
         }
 
         // filter missing props and effective by name props from effective by value props
         // they have higher precedence
-        totalEffectivePropsCompare = Sets.difference(totalEffectivePropsCompare, totalMatchedByName.keySet());
-        totalEffectivePropsCompare = Sets.difference(totalEffectivePropsCompare, totalMissingProps);
+        _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalEffectiveByName.keySet());
+        _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalMissingProps);
 
-        LogHandler.debug("[VERIFICATION] %d elements matched, %d elements unmatched, %d additional elements matched", equallyMatchedElems.size(), unmatchedElems.size(), additionalMatchedElems.size());
+        LogHandler.debug("[VERIFICATION] %d elements matched, %d elements unmatched, %d additional elements matched", _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
         LogHandler.debug("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
-                totalEffectivePropsOrig.size(), totalEffectivePropsCompare.size(), totalMatchedByName.size(), totalDefaultPropsOrig.size(), totalMissingProps.size(), totalAdditionalProps.size());
+                _totalEffectivePropsOrig.size(), _totalEquallyEffectiveProps.size(), _totalEffectiveByName.size(), _totalDefaultPropsOrig.size(), _totalMissingProps.size(), _totalAdditionalProps.size());
     }
 
-
-    private Map<MSelector, String> GenerateSelectorFileMap(Map<String, MCssFile> mcssFiles)
+    public void GenerateXml(SuiteStringBuilder builder, String prefix)
     {
-        Map<MSelector, String> result = new HashMap<>();
+        builder.append("%s<matched_elements_orig>%d</matched_elements_orig>", prefix, _matchedElementsOrig.size());
+        builder.appendLine("%s<equally_matched_elements>%d</equally_matched_elements>", prefix, _equallyMatchedElems.size());
+        builder.appendLine("%s<missed_matched_elements>%d</missed_matched_elements>", prefix, _missedMatchedElements.size());
+        builder.appendLine("%s<additional_matched_elements>%d</additional_matched_elements>", prefix, _additionalMatchedElems.size());
 
-        for(String fileName : mcssFiles.keySet())
-        {
-            for(MCssRule mCssRule : mcssFiles.get(fileName).GetRules())
-            {
-                for(MSelector mSelector : mCssRule.GetSelectors())
-                {
-                    result.put(mSelector, fileName);
-                }
-            }
-        }
-
-        return result;
+        builder.appendLine("%s<effective_props_orig>%d</effective_props_orig>", prefix, _totalDefaultPropsOrig.size());
+        builder.appendLine("%s<equally_effective_props>%d</equally_effective_props>", prefix, _totalEquallyEffectiveProps.size());
+        builder.appendLine("%s<effective_by_name_props>%d</effective_by_name_props>", prefix, _totalEffectiveByName.size());
+        builder.appendLine("%s<missing_but_default_props>%d</missing_but_default_props>", prefix, _totalDefaultPropsOrig.size());
+        builder.appendLine("%s<missing_props>%d</missing_props>", prefix, _totalMissingProps.size());
+        builder.appendLine("%s<additional_props>%d</additional_props>", prefix,_totalAdditionalProps.size());
     }
 
-
-    private Map<MProperty, MSelector> GeneratePropertySelectorMap(List<MSelector> selectors)
+    public String GenerateXml()
     {
-        Map<MProperty, MSelector> result = new HashMap<>();
-
-        selectors.forEach((s) -> {
-            List<MProperty> mProperties = s.GetProperties().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList());
-            mProperties.forEach(p -> result.put(p, s));
-        });
-
-        return result;
-    }
-
-
-    private List<MProperty> FindEffectivePropertiesForElement(List<MSelector> selectors)
-    {
-        // first reset all previously deemed effective properties to non-effective
-        selectors.forEach(s -> s.GetProperties().forEach(p -> p.SetEffective(false)));
-
-        String overridden = "overridden-" + new Random().nextInt();
-
-        EffectivenessAnalysis.ComputeEffectiveness(selectors, overridden);
-
-        List<MProperty> effectiveProps = new ArrayList<>();
-        selectors.forEach(s -> effectiveProps.addAll(s.GetProperties().stream().filter(p -> p.IsEffective() || p.IsIgnored()).collect(Collectors.toList())));
-        return effectiveProps;
-    }
-
-    private Set<MProperty> FindUniqueProperties(Set<String> elements, MatchedElements matchedElements)
-    {
-        Set<MProperty> result = new HashSet<>();
-
-        for(String element : elements)
-        {
-            List<MSelector> selectors = matchedElements.SortSelectorsForMatchedElem(element);
-
-            for(MSelector mSelector : selectors)
-            {
-                result.addAll(mSelector.GetProperties());
-            }
-        }
-
-        return result;
+        SuiteStringBuilder builder = new SuiteStringBuilder();
+        GenerateXml(builder, "");
+        return builder.toString();
     }
 }

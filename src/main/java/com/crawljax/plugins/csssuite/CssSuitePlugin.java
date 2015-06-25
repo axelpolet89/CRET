@@ -23,6 +23,7 @@ import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.sass.SassFile;
 import com.crawljax.plugins.csssuite.util.FileHelper;
+import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.crawljax.plugins.csssuite.verification.CssOnDomVerifier;
 import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
@@ -43,7 +44,8 @@ import com.crawljax.plugins.csssuite.parser.CssParser;
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
 	/* Configuration properties */
-	public boolean _enableW3cValidation = true;
+	public boolean _enableW3cValidation = false;
+	public boolean _enableVerification = false;
 
 	private final String _siteName;
 	private final String _siteIndex;
@@ -352,7 +354,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 
 		GenerateCssAndSass(rules);
-		VerifyGeneratedCss();
+
+		if(_enableVerification)
+		{
+			VerifyGeneratedCss();
+		}
 	}
 
 
@@ -529,6 +535,18 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		try
 		{
 			verifier.Verify(_stateCssFileMap, _origMcssFiles, generatedCssFiles);
+
+			SuiteStringBuilder builder = new SuiteStringBuilder();
+			builder.append("<site>");
+			builder.appendLine("\t<site_name>%s</site_name>\n", _siteName);
+			verifier.GenerateXml(builder, "\t");
+			builder.appendLine("</site>");
+
+			File verificationOutput = FileHelper.CreateFileAndDirs("./output/verification/verification_summary.xml");
+			FileWriter writer = new FileWriter(verificationOutput);
+			writer.append(builder.toString());
+			writer.flush();
+			writer.close();
 		}
 		catch (Exception ex)
 		{

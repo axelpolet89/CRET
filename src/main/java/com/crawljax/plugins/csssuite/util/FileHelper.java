@@ -25,7 +25,9 @@ public class FileHelper
         try
         {
             if (!file.exists())
+            {
                 file.createNewFile();
+            }
         }
         catch(IOException ex)
         {

@@ -205,7 +205,7 @@ public class CssOnDomVerifier
             for(MProperty origProperty : effectivePropsOrig)
             {
                 final String name = origProperty.GetName();
-                final String value = bcp.TryParseToRgb(origProperty.GetValue());
+                final String value = bcp.TryParseColorToHex(origProperty.GetValue());
 
                 for(MProperty gnrProperty : effectivePropsGnr)
                 {
@@ -216,7 +216,7 @@ public class CssOnDomVerifier
 
                     if(gnrProperty.GetName().equals(name))
                     {
-                        String gnrValue = bcp.TryParseToRgb(gnrProperty.GetValue());
+                        String gnrValue = bcp.TryParseColorToHex(gnrProperty.GetValue());
 
                         if(gnrValue.equals("transparent"))
                         {
@@ -327,8 +327,8 @@ public class CssOnDomVerifier
         _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalEffectiveByName.keySet());
         _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalMissingProps);
 
-        LogHandler.debug("[VERIFICATION] %d elements matched, %d elements unmatched, %d additional elements matched", _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
-        LogHandler.debug("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
+        LogHandler.info("[VERIFICATION] %d elements matched, %d elements unmatched, %d additional elements matched", _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
+        LogHandler.info("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
                 _totalEffectivePropsOrig.size(), _totalEquallyEffectiveProps.size(), _totalEffectiveByName.size(), _totalDefaultPropsOrig.size(), _totalMissingProps.size(), _totalAdditionalProps.size());
     }
 
@@ -339,7 +339,7 @@ public class CssOnDomVerifier
         builder.appendLine("%s<missed_matched_elements>%d</missed_matched_elements>", prefix, _missedMatchedElements.size());
         builder.appendLine("%s<additional_matched_elements>%d</additional_matched_elements>", prefix, _additionalMatchedElems.size());
 
-        builder.appendLine("%s<effective_props_orig>%d</effective_props_orig>", prefix, _totalDefaultPropsOrig.size());
+        builder.appendLine("%s<effective_props_orig>%d</effective_props_orig>", prefix, _totalEffectivePropsOrig.size());
         builder.appendLine("%s<equally_effective_props>%d</equally_effective_props>", prefix, _totalEquallyEffectiveProps.size());
         builder.appendLine("%s<effective_by_name_props>%d</effective_by_name_props>", prefix, _totalEffectiveByName.size());
         builder.appendLine("%s<missing_but_default_props>%d</missing_but_default_props>", prefix, _totalDefaultPropsOrig.size());

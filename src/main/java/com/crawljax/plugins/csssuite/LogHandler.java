@@ -41,6 +41,19 @@ public class LogHandler
         LOGGER.warn(String.format(text, VarArgsToArray(arguments)));
     }
 
+    public static void warn(Exception ex, String text, Object... arguments)
+    {
+        String stackTrace = "";
+        for(StackTraceElement traceElement : ex.getStackTrace())
+        {
+            stackTrace += String.format("%s\n", traceElement);
+        }
+
+        String message = String.format(text, VarArgsToArray(arguments));
+        message += String.format("\n[Exception] %s\n[StackTrace] %s", ex, stackTrace);
+        LOGGER.warn(message);
+    }
+
     public static void error(String text, Object... arguments)
     {
         LOGGER.error(String.format(text, VarArgsToArray(arguments)));

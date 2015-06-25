@@ -191,6 +191,13 @@ public class ColorNameFinder
     }
 
 
+    public String TryGetNameForHex(String hex) throws CssSuiteException
+    {
+        Rgb rgb = HexToRgb(hex);
+        return TryGetNameForRgb(rgb.r, rgb.g, rgb.b);
+    }
+
+
     /**
      *
      * @param r

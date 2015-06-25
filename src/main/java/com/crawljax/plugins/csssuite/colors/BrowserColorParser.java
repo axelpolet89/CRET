@@ -44,11 +44,11 @@ public class BrowserColorParser
      * @param browserColor the browser color (text)
      * @return an rgb representation for the given browserColor, if it is a valid X11 browser color
      */
-    public String TryParseToRgb(String browserColor)
+    public String TryParseColorToHex(String browserColor)
     {
         if(_colorHexMap.containsKey(browserColor))
         {
-            return HexToRgb(_colorHexMap.get(browserColor));
+            return _colorHexMap.get(browserColor);
         }
 
         return browserColor;
@@ -58,21 +58,6 @@ public class BrowserColorParser
     public Set GetBrowserColors()
     {
         return _colorHexMap.keySet();
-    }
-
-    /**
-     * Return a RGB string representation for the given hexadecimal string value
-     * @param hex
-     * @return
-     */
-    private String HexToRgb(String hex)
-    {
-        if(hex.length() == 6)
-        {
-            hex = "#" + hex;
-        }
-
-        return String.format("rgb(%d, %d, %d)", Integer.valueOf(hex.substring(1, 3), 16), Integer.valueOf(hex.substring(3, 5), 16), Integer.valueOf(hex.substring(5, 7), 16));
     }
 }
 

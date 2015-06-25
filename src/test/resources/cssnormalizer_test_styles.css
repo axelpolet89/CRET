@@ -21,7 +21,7 @@
 
 #background1
 {
-	background: rgb(100, 100, 100) 100px 100px fixed none repeat;
+	background: #ececec 100px 100px fixed none repeat;
 }
 
 #background2
@@ -71,7 +71,7 @@
 
 #border6
 {
-	border-color: black;
+	border-color: black rgba(136, 136, 136, 0.7) rgb(255, 255, 255) #ececec;
 }
 
 #zeroes2

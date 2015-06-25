@@ -1,6 +1,7 @@
 black:#000000
 silver:#c0c0c0
 gray:#808080
+grey:#808080
 white:#ffffff
 maroon:#800000
 red:#ff0000

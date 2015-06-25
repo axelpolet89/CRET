@@ -45,6 +45,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
 	/* Configuration properties */
 	public boolean _enableW3cValidation = false;
+	public boolean _enableSassGeneration = false;
 	public boolean _enableVerification = false;
 
 	private final String _siteName;
@@ -352,8 +353,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			LogHandler.error(e.getMessage(), e);
 		}
 
-
-		GenerateCssAndSass(rules);
+		GenerateCssAndSass(rules, _enableSassGeneration);
 
 		if(_enableVerification)
 		{
@@ -363,7 +363,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 
 
-	private void GenerateCssAndSass(Map<String, MCssFile> source)
+	private void GenerateCssAndSass(Map<String, MCssFile> source, boolean generateSass)
 	{
 		String root = String.format("output\\%s\\", _siteName);
 		String cssOutputRoot = String.format("%s\\CSS(def)\\", root);
@@ -407,16 +407,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				LogHandler.info("[CssWriter] Styles not contained in external CSS file, write as embedded styles");
 			}
 
-			String sassFile = cssFile.replace(".css", ".scss");
-
 			//replace querystring token, not valid as file name
 			if(cssFile.contains("?"))
 			{
 				int idx = cssFile.indexOf("?");
 				cssFile = cssFile.replace(cssFile.substring(idx, cssFile.length()), "");
-
-				idx = sassFile.indexOf("?");
-				sassFile = sassFile.replace(sassFile.substring(idx, sassFile.length()), "");
 			}
 
 			try
@@ -427,6 +422,13 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for CSS file '%s' at root '%s'", cssFile, cssRootDir);
 			}
+
+			if(!generateSass)
+			{
+				continue;
+			}
+
+			String sassFile = cssFile.replace(".css", ".scss");
 
 			try
 			{
@@ -463,45 +465,48 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 		}
 
-		// create SCSS objects from CSS files, including clone detection and other SCSS-specific transformations
-		SassBuilder sassBuilder =  new SassBuilder();
-		Map<String, SassFile> sassFileObjects = sassBuilder.CssToSass(source);
-
-		// store generated SCSS files
-		Map<String, File> scssFiles = new HashMap<>();
-
-		// generate SCSS code from SCSS objects
-		SassWriter sassWriter = new SassWriter();
-		for(String fileName : sassFileObjects.keySet())
+		if(generateSass)
 		{
-			try
+			// create SCSS objects from CSS files, including clone detection and other SCSS-specific transformations
+			SassBuilder sassBuilder = new SassBuilder();
+			Map<String, SassFile> sassFileObjects = sassBuilder.CssToSass(source);
+
+			// store generated SCSS files
+			Map<String, File> scssFiles = new HashMap<>();
+
+			// generate SCSS code from SCSS objects
+			SassWriter sassWriter = new SassWriter();
+			for (String fileName : sassFileObjects.keySet())
 			{
-				scssFiles.put(fileName, sassWriter.GenerateSassCode(sassFiles.get(fileName), sassFileObjects.get(fileName)));
+				try
+				{
+					scssFiles.put(fileName, sassWriter.GenerateSassCode(sassFiles.get(fileName), sassFileObjects.get(fileName)));
+				}
+				catch (Exception e)
+				{
+					LogHandler.error(e, "[Generate SCSS] Error while generating SCSS code for file %s", fileName);
+				}
 			}
-			catch (Exception e)
+
+
+			// generate CSS from SCSS files
+			for (String fileName : scssFiles.keySet())
 			{
-				LogHandler.error(e, "[Generate SCSS] Error while generating SCSS code for file %s", fileName);
-			}
-		}
+				try
+				{
+					SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
+					ctx.getOptions().setOutputStyle(SassOutputStyle.NESTED);
 
+					FileOutputStream outputStream = new FileOutputStream(_newCssFiles.get(fileName));
+					ctx.compile(outputStream);
 
-		// generate CSS from SCSS files
-		for(String fileName : scssFiles.keySet())
-		{
-			try
-			{
-				SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
-				ctx.getOptions().setOutputStyle(SassOutputStyle.NESTED);
-
-				FileOutputStream outputStream = new FileOutputStream(_newCssFiles.get(fileName));
-				ctx.compile(outputStream);
-
-				outputStream.flush();
-				outputStream.close();
-			}
-			catch (Exception e)
-			{
-				LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _newCssFiles.get(fileName));
+					outputStream.flush();
+					outputStream.close();
+				}
+				catch (Exception e)
+				{
+					LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _newCssFiles.get(fileName));
+				}
 			}
 		}
 	}

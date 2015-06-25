@@ -37,7 +37,6 @@ public class MProperty
 		_status = "notset";
 		_isImportant = isImportant;
 		_w3cError = w3cError;
-		_isIgnored = !w3cError.isEmpty();
 		_isInvalidUndo = false;
 		_order = order;
 
@@ -74,12 +73,14 @@ public class MProperty
 		{
 			_valueVendorPrefix = "";
 		}
+
+		_isIgnored = !w3cError.isEmpty() || !_valueVendorPrefix.isEmpty() || value.contains("-gradient") || value.contains("progid:");
 	}
 
 
 	/**
 	 * Constructor for property without error (used in normalizer plug-in and tests)
-	 * @param name
+	 * @param name\
 	 * @param value
 	 * @param isImportant
 	 */

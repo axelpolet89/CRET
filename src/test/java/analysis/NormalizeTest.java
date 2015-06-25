@@ -55,12 +55,12 @@ public class NormalizeTest
 
         properties = selectors.get(1).GetProperties();
         Assert.assertEquals(3, properties.size());
-        Assert.assertEquals("border-width", properties.get(1).GetName());
-        Assert.assertEquals("1px", properties.get(1).GetValue());
-        Assert.assertEquals("border-style", properties.get(2).GetName());
-        Assert.assertEquals("solid", properties.get(2).GetValue());
-        Assert.assertEquals("border-color", properties.get(0).GetName());
-        Assert.assertEquals("rgb(236, 236, 236)", properties.get(0).GetValue());
+        Assert.assertEquals("border-width", properties.get(0).GetName());
+        Assert.assertEquals("1px", properties.get(0).GetValue());
+        Assert.assertEquals("border-style", properties.get(1).GetName());
+        Assert.assertEquals("solid", properties.get(1).GetValue());
+        Assert.assertEquals("border-color", properties.get(2).GetName());
+        Assert.assertEquals("#ececec", properties.get(2).GetValue());
 
         properties = selectors.get(2).GetProperties();
         Assert.assertEquals(2, properties.size());
@@ -69,13 +69,13 @@ public class NormalizeTest
 
         properties = selectors.get(3).GetProperties();
         Assert.assertEquals(3, properties.size());
-        Assert.assertEquals("border-color", properties.get(0).GetName());
-        Assert.assertEquals("rgba(255, 255, 255, .7)", properties.get(0).GetValue());
+        Assert.assertEquals("border-color", properties.get(2).GetName());
+        Assert.assertEquals("rgba(255,255,255,.7)", properties.get(2).GetValue());
 
         properties = selectors.get(4).GetProperties();
         Assert.assertEquals(5, properties.size());
         Assert.assertEquals("background-color", properties.get(0).GetName());
-        Assert.assertEquals("rgb(100, 100, 100)", properties.get(0).GetValue());
+        Assert.assertEquals("#ececec", properties.get(0).GetValue());
         Assert.assertEquals("background-position", properties.get(1).GetName());
         Assert.assertEquals("100px 100px", properties.get(1).GetValue());
         Assert.assertEquals("background-attachment", properties.get(2).GetName());
@@ -87,10 +87,10 @@ public class NormalizeTest
 
         properties = selectors.get(5).GetProperties();
         Assert.assertEquals(4, properties.size());
-        Assert.assertEquals("background-image", properties.get(1).GetName());
-        Assert.assertEquals("url(www.google.nl)", properties.get(1).GetValue());
-        Assert.assertEquals("background-color", properties.get(0).GetName());
-        Assert.assertEquals("rgb(236, 236, 236)", properties.get(0).GetValue());
+        Assert.assertEquals("background-image", properties.get(0).GetName());
+        Assert.assertEquals("url(www.google.nl)", properties.get(0).GetValue());
+        Assert.assertEquals("background-color", properties.get(1).GetName());
+        Assert.assertEquals("#ececec", properties.get(1).GetValue());
         Assert.assertEquals("background-repeat", properties.get(2).GetName());
         Assert.assertEquals("no-repeat", properties.get(2).GetValue());
         Assert.assertEquals("background-position", properties.get(3).GetName());
@@ -98,10 +98,10 @@ public class NormalizeTest
 
         properties = selectors.get(6).GetProperties();
         Assert.assertEquals(4, properties.size());
-        Assert.assertEquals("background-image", properties.get(1).GetName());
-        Assert.assertEquals("url(www.google.nl)", properties.get(1).GetValue());
-        Assert.assertEquals("background-color", properties.get(0).GetName());
-        Assert.assertEquals("rgb(236, 236, 236)", properties.get(0).GetValue());
+        Assert.assertEquals("background-image", properties.get(0).GetName());
+        Assert.assertEquals("url(www.google.nl)", properties.get(0).GetValue());
+        Assert.assertEquals("background-color", properties.get(1).GetName());
+        Assert.assertEquals("#ececec", properties.get(1).GetValue());
         Assert.assertEquals("background-repeat", properties.get(2).GetName());
         Assert.assertEquals("no-repeat", properties.get(2).GetValue());
         Assert.assertEquals("background-position", properties.get(3).GetName());
@@ -187,11 +187,11 @@ public class NormalizeTest
         Assert.assertEquals("border-top-color", properties.get(0).GetName());
         Assert.assertEquals("black", properties.get(0).GetValue());
         Assert.assertEquals("border-right-color", properties.get(1).GetName());
-        Assert.assertEquals("black", properties.get(1).GetValue());
+        Assert.assertEquals("rgba(136,136,136,.7)", properties.get(1).GetValue());
         Assert.assertEquals("border-bottom-color", properties.get(2).GetName());
-        Assert.assertEquals("black", properties.get(2).GetValue());
+        Assert.assertEquals("#ffffff", properties.get(2).GetValue());
         Assert.assertEquals("border-left-color", properties.get(3).GetName());
-        Assert.assertEquals("black", properties.get(3).GetValue());
+        Assert.assertEquals("#ececec", properties.get(3).GetValue());
 
 
         properties = selectors.get(15).GetProperties();
@@ -264,7 +264,7 @@ public class NormalizeTest
         properties = selectors.get(1).GetProperties();
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("border", properties.get(0).GetName());
-        Assert.assertEquals("1px solid rgb(236, 236, 236)", properties.get(0).GetValue());
+        Assert.assertEquals("1px solid #ececec", properties.get(0).GetValue());
 
         properties = selectors.get(2).GetProperties();
         Assert.assertEquals(1, properties.size());
@@ -274,22 +274,22 @@ public class NormalizeTest
         properties = selectors.get(3).GetProperties();
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("border", properties.get(0).GetName());
-        Assert.assertEquals("2px solid rgba(255, 255, 255, .7)", properties.get(0).GetValue());
+        Assert.assertEquals("2px solid rgba(255,255,255,.7)", properties.get(0).GetValue());
 
         properties = selectors.get(4).GetProperties();
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("background", properties.get(0).GetName());
-        Assert.assertEquals("rgb(100, 100, 100) none 100px 100px repeat fixed", properties.get(0).GetValue());
+        Assert.assertEquals("#ececec none 100px 100px repeat fixed", properties.get(0).GetValue());
 
         properties = selectors.get(5).GetProperties();
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("background", properties.get(0).GetName());
-        Assert.assertEquals("rgb(236, 236, 236) url(www.google.nl) left top no-repeat", properties.get(0).GetValue());
+        Assert.assertEquals("#ececec url(www.google.nl) left top no-repeat", properties.get(0).GetValue());
 
         properties = selectors.get(6).GetProperties();
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("background", properties.get(0).GetName());
-        Assert.assertEquals("rgb(236, 236, 236) url(www.google.nl) left no-repeat", properties.get(0).GetValue());
+        Assert.assertEquals("#ececec url(www.google.nl) left no-repeat", properties.get(0).GetValue());
 
         properties = selectors.get(7).GetProperties();
         Assert.assertEquals(1, properties.size());
@@ -329,7 +329,7 @@ public class NormalizeTest
         properties = selectors.get(14).GetProperties();
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("border-color", properties.get(0).GetName());
-        Assert.assertEquals("black", properties.get(0).GetValue());
+        Assert.assertEquals("black rgba(136,136,136,.7) #ffffff #ececec", properties.get(0).GetValue());
 
         properties = selectors.get(15).GetProperties();
         Assert.assertEquals(2, properties.size());

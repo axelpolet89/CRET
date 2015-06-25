@@ -2,12 +2,12 @@ package com.crawljax.plugins.csssuite.plugins;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
+import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
-import com.crawljax.plugins.csssuite.util.ValueFinderHelper;
 
 import java.util.*;
 
@@ -22,6 +22,12 @@ import java.util.*;
  */
 public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 {
+    private BrowserColorParser _bcp;
+    public NormalizeAndSplitPlugin()
+    {
+        _bcp = new BrowserColorParser();
+    }
+
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
@@ -33,8 +39,10 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
             {
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
+                    NormalizeColors(mSelector);
                     SplitShortHandDeclarations(mSelector);
-                    Normalize(mSelector);
+                    NormalizeZeroes(mSelector);
+                    NormalizeUrls(mSelector);
 
                     //sort properties again
                     mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
@@ -47,18 +55,183 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
 
     /**
+     * Normalize any rgb color to it's hexadecimal representation
+     * Normalize any rbga color by filtering whitespace between it's color parts
+     * @param mSelector
+     */
+    private void NormalizeColors(MSelector mSelector)
+    {
+        for(MProperty mProperty : mSelector.GetProperties())
+        {
+            if(mProperty.IsIgnored())
+            {
+                continue;
+            }
+
+            final String origValue = mProperty.GetValue();
+            String newValue = origValue;
+
+            if(origValue.contains("rgb"))
+            {
+                // transform any rgb(...) value into it's hexadecimal representation
+                while (newValue.contains("rgb("))
+                {
+                    String rgbValue = TryFindRgb(newValue);
+                    String rgbReplace = rgbValue.replace("(", "\\(").replace(")", "\\)");
+
+                    String[] rgbParts = rgbValue.replaceFirst("rgb\\(", "").replaceFirst("\\)", "").split(",");
+                    String hexValue = RgbToHex(Integer.parseInt(rgbParts[0].trim()), Integer.parseInt(rgbParts[1].trim()), Integer.parseInt(rgbParts[2].trim()));
+                    newValue = newValue.replaceFirst(rgbReplace, hexValue);
+                }
+
+                // filter any whitespace in a rbga(...) value
+                if(newValue.contains("rgba("))
+                {
+                    String text = newValue;
+
+                    while (text.contains("rgba("))
+                    {
+                        String rgbaOrig = TryFindRgba(text);
+                        String rgbaReplace = rgbaOrig.replace("(", "\\(").replace(")", "\\)");
+                        text = text.replaceFirst(rgbaReplace, "");
+
+                        String rgbaNew = rgbaOrig.replaceAll("\\s", "");
+                        newValue = newValue.replaceFirst(rgbaReplace, rgbaNew);
+                    }
+                }
+            }
+
+            String[] parts = newValue.split("\\s");
+
+            for(String part : parts)
+            {
+                String newPart = _bcp.TryParseColorToHex(part);
+                if(!part.equals(newPart))
+                {
+                    newValue = newValue.replace(part, newPart);
+                }
+            }
+
+            mProperty.SetNormalizedValue(newValue);
+        }
+    }
+
+
+    /**
+     * Normalize zero values and url values
+     * @param mSelector
+     */
+    private static void NormalizeZeroes(MSelector mSelector)
+    {
+        for(MProperty mProperty : mSelector.GetProperties())
+        {
+            if(mProperty.IsIgnored())
+                continue;
+
+            final String origValue = mProperty.GetValue();
+            final String value = mProperty.GetValue().replaceAll("\\s", "");
+
+            if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
+                    value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
+            {
+                mProperty.SetNormalizedValue("0");
+                LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
+            }
+            else if (mProperty.GetOriginalValue().contains("0."))
+            {
+                mProperty.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
+            }
+        }
+    }
+
+
+    /**
+     * Normalize zero values and url values
+     * @param mSelector
+     */
+    private static void NormalizeUrls(MSelector mSelector)
+    {
+        for(MProperty mProperty : mSelector.GetProperties())
+        {
+            if(mProperty.IsIgnored())
+                continue;
+
+            final String origValue = mProperty.GetValue();
+
+            if(origValue.contains("http://"))
+            {
+                mProperty.SetNormalizedValue(origValue.replaceAll("http://", ""));
+            }
+            else if(origValue.contains("https://"))
+            {
+                mProperty.SetNormalizedValue(origValue.replaceAll("https://", ""));
+            }
+        }
+    }
+
+
+    /**
+     *
+     * @param r
+     * @param g
+     * @param b
+     * @return
+     */
+    private static String RgbToHex(int r, int g, int b)
+    {
+        return String.format("#%02x%02x%02x", r, g, b);
+    }
+
+
+    /**
+     *
+     * @param value
+     * @return
+     */
+    private static String TryFindRgb(String value)
+    {
+        if (value.contains("rgb("))
+        {
+            int s =  value.indexOf("rgb(");
+            int e = value.indexOf(")", s);
+            return value.substring(s, e+1);
+        }
+
+        return "";
+    }
+
+
+    /**
+     *
+     * @param value
+     * @return
+     */
+    private static String TryFindRgba(String value)
+    {
+        if(value.contains("rgba("))
+        {
+            int s =  value.indexOf("rgba(");
+            int e = value.indexOf(")", s);
+            return value.substring(s, e+1);
+        }
+
+        return "";
+    }
+
+
+    /**
      * Split any shorthand margin, padding, border, border-radius, outline and background property into parts
      * @param mSelector
      */
     private static void SplitShortHandDeclarations(MSelector mSelector)
     {
-        List<MProperty> newProps = new ArrayList<>();
+        List<MProperty> newProperties = new ArrayList<>();
 
         for(MProperty mProperty : mSelector.GetProperties())
         {
-            if(mProperty.IsIgnored() || !mProperty.GetValueVendor().isEmpty())
+            if(mProperty.IsIgnored())
             {
-                newProps.add(mProperty);
+                newProperties.add(mProperty);
                 continue;
             }
 
@@ -67,106 +240,67 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
             final boolean isImportant = mProperty.IsImportant();
             final int order = mProperty.GetOrder();
 
-            if(value.contains("-gradient") || value.contains("progid:"))
-            {
-                newProps.add(mProperty);
-                continue;
-            }
 
             try
             {
                 if (name.equals("margin") || name.equals("padding"))
                 {
-                    newProps.addAll(BoxToProps(value, isImportant, order, name + "-%s"));
+                    newProperties.addAll(BoxToProps(value, isImportant, order, name + "-%s"));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
                     String spec = name.replace("border-","");
-                    newProps.addAll(BoxToProps(value, isImportant, order, "border-%s-" + spec ));
+                    newProperties.addAll(BoxToProps(value, isImportant, order, "border-%s-" + spec));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
                     if(name.equals("border-radius"))
                     {
-                        newProps.addAll(BorderRadiusToProps(value, mProperty.GetNameVendor(), isImportant, order));
+                        newProperties.addAll(BorderRadiusToProps(value, mProperty.GetNameVendor(), isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else if(name.equals("border") || name.equals("border-top") || name.equals("border-right") || name.equals("border-bottom") || name.equals("border-left"))
                     {
-                        newProps.addAll(BorderToProps(name, value, isImportant, order));
+                        newProperties.addAll(BorderToProps(name, value, isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else
                     {
-                        newProps.add(mProperty);
+                        newProperties.add(mProperty);
                     }
                 }
                 else if(name.equals("outline"))
                 {
-                    newProps.addAll(BorderToProps(name, value, isImportant, order));
+                    newProperties.addAll(BorderToProps(name, value, isImportant, order));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.equals("background"))
                 {
-                    newProps.addAll(BackgroundToProps(value, isImportant, order));
+                    newProperties.addAll(BackgroundToProps(value, isImportant, order));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand background property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else
                 {
-                    newProps.add(mProperty);
+                    newProperties.add(mProperty);
                 }
+            }
+            catch (CssSuiteException e)
+            {
+                LogHandler.warn(e, "[CssNormalizer] CssSuiteException on selector '%s', in property '%s'", mSelector, mProperty);
+                newProperties.add(mProperty);
             }
             catch (Exception e)
             {
-                LogHandler.error(e, "[CssNormalizer] NormalizeException on selector '%s', in property '%s'", mSelector, mProperty);
-                newProps.add(mProperty);
+                LogHandler.error("[CssNormalizer] Exception on selector '%s', in property '%s'", mSelector, mProperty);
+                newProperties.add(mProperty);
             }
         }
 
-        mSelector.SetNewProperties(newProps);
+        mSelector.SetNewProperties(newProperties);
     }
 
-
-    /**
-     * Normalize zero values and url values
-     * @param mSelector
-     */
-    private static void Normalize(MSelector mSelector)
-    {
-        for(MProperty mProperty : mSelector.GetProperties())
-        {
-            if(mProperty.IsIgnored())
-                continue;
-
-            final String origValue = mProperty.GetOriginalValue();
-            final String value = mProperty.GetOriginalValue().replaceAll("\\s", "");
-
-            if (value.contains("0"))
-            {
-                if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
-                        value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
-                {
-                    mProperty.SetNormalizedValue("0");
-                    LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
-                }
-                else if (mProperty.GetOriginalValue().contains("0."))
-                {
-                    mProperty.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
-                }
-            }
-
-            if(value.contains("http://"))
-            {
-                mProperty.SetNormalizedValue(origValue.replaceAll("http://", ""));
-            }
-            else if(value.contains("https://"))
-            {
-                mProperty.SetNormalizedValue(origValue.replaceAll("https://", ""));
-            }
-        }
-    }
 
 
     /**
@@ -234,15 +368,6 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
         // either 'outline' or 'border'
         String base = name.split("-")[0];
-
-        // first filter rgb from value, since it contains whitespace
-        String rgbColor = ValueFinderHelper.TryFindRgb(value);
-        if(!rgbColor.isEmpty())
-        {
-            String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
-            value = value.replaceFirst(replace, "");
-            props.add(new MBorderProperty(String.format("%s-color", name), rgbColor, isImportant, order, String.format("%s-color", base)));
-        }
 
         String[] parts = value.split("\\s");
 
@@ -356,15 +481,6 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
     private static List<MProperty> BackgroundToProps(String value, boolean isImportant, int order) throws CssSuiteException
     {
         List<MProperty> props = new ArrayList<>();
-
-        // first filter rgb from value, since it contains whitespace
-        String rgbColor = ValueFinderHelper.TryFindRgb(value);
-        if(!rgbColor.isEmpty())
-        {
-            String replace = rgbColor.replaceFirst("\\(","\\\\(").replaceFirst("\\)", "\\\\)");
-            value = value.replaceFirst(replace, "");
-            props.add(new MProperty("background-color", rgbColor, isImportant, order));
-        }
 
         String[] parts = value.split("\\s");
 

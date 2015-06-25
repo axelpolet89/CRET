@@ -11,7 +11,6 @@ import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.sass.variables.SassVarType;
 import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
-import com.crawljax.plugins.csssuite.util.ValueFinderHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
 import java.util.*;
@@ -23,6 +22,9 @@ import java.util.stream.Collectors;
 public class SassBuilder
 {
     private final int minPropCount = 2;
+
+    private final List<SassVariable> _sassVariables = new ArrayList<>();
+    private final Map<String, String> _alreadyDefinedVars = new HashMap<>();
 
     public Map<String, SassFile> CssToSass(Map<String, MCssFile> cssFiles)
     {
@@ -44,7 +46,7 @@ public class SassBuilder
 
 
             LogHandler.debug("[SassGenerator] Generate SASS variables...");
-            List<SassVariable> sassVariables = GenerateVariables(allSelectors);
+            GenerateVariables(allSelectors);
 
             LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
             List<SassCloneMixin> validMixins = ProcessAndFilterClones(cd.GenerateMixins(allSelectors));
@@ -59,7 +61,7 @@ public class SassBuilder
             LogHandler.debug("[SassGenerator] Generate SASS rules...");
             List<SassRuleBase> sassRules = GenerateSassRules(sassSelectors, cssFiles.get(fileName).GetMediaRules(), cssFiles.get(fileName).GetIgnoredRules());
 
-            sassFiles.put(fileName, new SassFile(sassVariables, validMixins, sassMixins, sassRules));
+            sassFiles.put(fileName, new SassFile(_sassVariables, validMixins, sassMixins, sassRules));
         }
 
         return sassFiles;
@@ -355,11 +357,8 @@ public class SassBuilder
         return mediaRules;
     }
 
-    private List<SassVariable> GenerateVariables(List<MSelector> sassSelectors)
+    private void GenerateVariables(List<MSelector> sassSelectors)
     {
-        List<SassVariable> variables = new ArrayList<>();
-        Map<String, String> alreadyDefinedVars = new HashMap<>();
-
         ColorNameFinder ctn = new ColorNameFinder();
         BrowserColorParser bcp = new BrowserColorParser();
 
@@ -370,6 +369,11 @@ public class SassBuilder
         {
             for(MProperty mProperty : sassSelector.GetProperties())
             {
+                if (mProperty.IsIgnored())
+                {
+                    continue;
+                }
+
                 SassVarType varType = null;
                 String varName = "";
                 String varValue = "";
@@ -384,98 +388,127 @@ public class SassBuilder
                         varType = SassVarType.FONT;
                         varName = "font-stack";
                         varValue = origValue;
-                    }
-                    else if (origValue.contains("url"))
-                    {
-                        varType = SassVarType.URL;
-                        varName = "url";
-                        varValue = ValueFinderHelper.TryFindUrl(origValue);
-                    }
-                    else if (origValue.contains("rgba"))
-                    {
-                        String value = ValueFinderHelper.TryFindRgb(origValue);
-                        String[] rgbParts = value.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
 
-                        varType = SassVarType.ALPHA_COLOR;
-                        varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbParts[0].trim()), Integer.parseInt(rgbParts[1].trim()), Integer.parseInt(rgbParts[2].trim())));
-                        varValue = value;
-                    }
-                    else if (origValue.contains("rgb"))
-                    {
-                        String value = ValueFinderHelper.TryFindRgb(origValue);
-                        String[] rgbParts = value.replaceFirst("rgb\\(", "").replaceFirst("\\)", "").split(",");
-
-                        varType = SassVarType.COLOR;
-                        varName = String.format("%s_%s", "color", ctn.TryGetNameForRgb(Integer.parseInt(rgbParts[0].trim()), Integer.parseInt(rgbParts[1].trim()), Integer.parseInt(rgbParts[2].trim())));
-                        varValue = value;
-                    }
-                    else if (origName.contains("color"))
-                    {
-                        varType = SassVarType.COLOR;
-                        varName = String.format("%s_%s", "color", origValue);
-                        varValue = bcp.TryParseToRgb(origValue);
-
-                        // update original value with it's rgb representation, so that final replace (with variable reference) will work
-                        origValue = varValue;
-                    }
-                    else if (origName.equals("border") || origName.equals("background") || origName.equals("outline") || origName.equals("box-shadow") || origName.equals("text-shadow"))
-                    {
-                        String[] parts = origValue.split(" ");
-
-                        for (String part : parts)
-                        {
-                            part = part.trim();
-                            if (browserColors.contains(part))
-                            {
-                                varType = SassVarType.COLOR;
-                                varName = String.format("%s_%s", "color", part);
-                                varValue = bcp.TryParseToRgb(part);
-
-                                // update original value with it's rgb representation, so that final replace (with variable reference) will work
-                                origValue = origValue.replace(part, varValue);
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!varName.isEmpty() && !varValue.isEmpty())
-                    {
-                        // if varName already used, extend varName with an id
-                        if (alreadyDefinedVars.containsKey(varName) && !alreadyDefinedVars.get(varName).equals(varValue))
-                        {
-                            int id = 1;
-                            while (true)
-                            {
-                                String replace = String.format("%s_%d", varName, id);
-                                if (!alreadyDefinedVars.containsKey(replace) || (alreadyDefinedVars.containsKey(replace) && alreadyDefinedVars.get(replace).equals(varValue)))
-                                {
-                                    varName = replace;
-                                    break;
-                                }
-                                id++;
-                            }
-                        }
-
-                        if(!alreadyDefinedVars.containsKey(varName))
-                        {
-                            SassVariable sv = new SassVariable(varType, varName, varValue, mProperty);
-                            variables.add(sv);
-                            alreadyDefinedVars.put(varName, varValue);
-                        }
-
+                        varName = GenerateVariable(varName, varValue, varType, mProperty);
                         String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
                         String escapedName = String.format("\\$%s", varName);
-                        mProperty.SetNormalizedValue(origValue.replaceFirst(escapedValue, escapedName));
+                        origValue = origValue.replaceFirst(escapedValue, escapedName);
                     }
+                    else
+                    {
+                        String[] parts = origValue.split("\\s");
+                        for (String part : parts)
+                        {
+                            if (part.contains("url"))
+                            {
+                                varType = SassVarType.URL;
+                                varName = "url";
+                                varValue = TryFindUrl(part);
+                            }
+                            else if (part.contains("rgba"))
+                            {
+                                String rgbaValue = TryFindRgba(part);
+                                String[] rgbaParts = rgbaValue.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
+
+                                varType = SassVarType.ALPHA_COLOR;
+                                varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim())));
+                                varValue = rgbaValue;
+                            }
+                            else if (part.contains("#"))
+                            {
+                                String hexValue = TryFindHex(part);
+
+                                varType = SassVarType.COLOR;
+                                varName = String.format("%s_%s", "color", ctn.TryGetNameForHex(hexValue));
+                                varValue = hexValue;
+                            }
+
+                            if (!varName.isEmpty() && !varValue.isEmpty())
+                            {
+                                varName = GenerateVariable(varName, varValue, varType, mProperty);
+
+                                String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
+                                String escapedName = String.format("\\$%s", varName);
+                                origValue = origValue.replaceFirst(escapedValue, escapedName);
+                            }
+                        }
+                    }
+
+                    mProperty.SetNormalizedValue(origValue);
                 }
                 catch (Exception e)
                 {
                     LogHandler.error(e, "[SassGenerator] Error occurred while creating SassVariable for property '%s' with value '%s' for selector '%s'",
-                                        origName, origValue, sassSelector.GetSelectorText());
+                            origName, origValue, sassSelector.GetSelectorText());
                 }
             }
         }
+    }
 
-        return variables;
+
+    private String GenerateVariable(String varName, String varValue, SassVarType varType, MProperty originalProperty)
+    {
+        // if varName already used, extend varName with an id
+        if (_alreadyDefinedVars.containsKey(varName) && !_alreadyDefinedVars.get(varName).equals(varValue))
+        {
+            int id = 1;
+            while (true)
+            {
+                String replace = String.format("%s_%d", varName, id);
+                if (!_alreadyDefinedVars.containsKey(replace) || (_alreadyDefinedVars.containsKey(replace) && _alreadyDefinedVars.get(replace).equals(varValue)))
+                {
+                    varName = replace;
+                    break;
+                }
+                id++;
+            }
+        }
+
+        if (!_alreadyDefinedVars.containsKey(varName))
+        {
+            SassVariable sv = new SassVariable(varType, varName, varValue, originalProperty);
+            _sassVariables.add(sv);
+            _alreadyDefinedVars.put(varName, varValue);
+        }
+
+        return varName;
+    }
+
+
+    private String TryFindUrl(String value)
+    {
+        int s =  value.indexOf("url(");
+        int e = value.indexOf(")", s);
+        return value.substring(s, e+1);
+    }
+
+
+    private String TryFindHex(String value)
+    {
+        if(value.contains("#"))
+        {
+            int s =  value.indexOf("#");
+            int e = value.indexOf(" ", s);
+            if(e == -1)
+            {
+                e = value.length();
+            }
+            return value.substring(s, e);
+        }
+
+        return "";
+    }
+
+
+    private String TryFindRgba(String value)
+    {
+        if(value.contains("rgba("))
+        {
+            int s =  value.indexOf("rgba(");
+            int e = value.indexOf(")", s);
+            return value.substring(s, e+1);
+        }
+
+        return "";
     }
 }

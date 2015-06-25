@@ -6,7 +6,7 @@ import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
+import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.DetectUndoingPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
@@ -54,7 +54,7 @@ public class CssUndoDetectorTest
 
         // crawl dom
         MatchedElements matchedElements = new MatchedElements();
-        MatchSelectors.MatchElementsToDocument("", dom, files, order, matchedElements);
+        ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
 
         // post crawling
         Map<String, MCssFile> postResult =  undoDetector.Transform(effectivenessPlugin.Transform(normalizer.Transform(files, matchedElements), matchedElements), matchedElements);

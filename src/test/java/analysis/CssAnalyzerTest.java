@@ -1,7 +1,7 @@
 package analysis;
 
 import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
+import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
@@ -49,7 +49,7 @@ public class CssAnalyzerTest
 		order.put("internal", 1);
 
 		MatchedElements matchedElements = new MatchedElements();
-		MatchSelectors.MatchElementsToDocument("", dom, files, order, matchedElements);
+		ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
 
 		List<MSelector> matchedExternal = new ArrayList<>();
 		List<MSelector> matchedInternal = new ArrayList<>();
@@ -183,7 +183,7 @@ public class CssAnalyzerTest
 		order.put("external", 0);
 
 		MatchedElements matchedElements = new MatchedElements();
-		MatchSelectors.MatchElementsToDocument("", dom, files, order, matchedElements);
+		ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
 
 		List<MSelector> matchedExternal = new ArrayList<>();
 

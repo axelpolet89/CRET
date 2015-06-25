@@ -13,18 +13,18 @@ import se.fishtank.css.selectors.Selectors;
 import se.fishtank.css.selectors.dom.W3CNode;
 import se.fishtank.css.selectors.parser.ParserException;
 
-public class MatchSelectors
+public class ElementSelectorMatcher
 {
 	public static void MatchElementsToDocument(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder, MatchedElements matchedElements)
 	{
-		for(String file : stateFileOrder.keySet())
+		for(String fileName : stateFileOrder.keySet())
 		{
-			LogHandler.info("[CssAnalyzer] Matching DOM elements for css file '%s'...", file);
+			LogHandler.info("[CssAnalyzer] Matching DOM elements for css file '%s'...", fileName);
 			int matchCount = 0;
 
-			int order = stateFileOrder.get(file);
+			int order = stateFileOrder.get(fileName);
 
-			for (MCssRule mRule : cssRules.get(file).GetRules())
+			for (MCssRule mRule : cssRules.get(fileName).GetRules())
 			{
 				List<MSelector> mSelectors = mRule.GetSelectors();
 				for (MSelector mSelector : mSelectors)
@@ -45,12 +45,12 @@ public class MatchSelectors
 					}
 					catch (ParserException ex)
 					{
-						LogHandler.warn("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'", cssSelector, mRule, file);
+						LogHandler.warn("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'", cssSelector, mRule, fileName);
 						continue;
 					}
 					catch (Exception ex)
 					{
-						LogHandler.error("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'" + cssSelector, mRule, file);
+						LogHandler.error("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'" + cssSelector, mRule, fileName);
 						continue;
 					}
 

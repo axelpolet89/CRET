@@ -5,7 +5,7 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.plugins.*;
 
 import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
+import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import helpers.TestHelper;
 import org.apache.log4j.Level;
@@ -50,7 +50,7 @@ public class DescendantToChildTest
 
         // crawl dom
         MatchedElements matchedElements = new MatchedElements();
-        MatchSelectors.MatchElementsToDocument("", dom, files, order, matchedElements);
+        ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
 
         // for later verification
         Set<String> matches = new HashSet<>();
@@ -82,7 +82,7 @@ public class DescendantToChildTest
 
         // verify re-match of selectors by performing run-time analysis again
         MatchedElements matchedElements2 = new MatchedElements();
-        MatchSelectors.MatchElementsToDocument("", dom, postResult, order, matchedElements2);
+        ElementSelectorMatcher.MatchElementsToDocument("", dom, postResult, order, matchedElements2);
 
         Set<String> matches2 = matchedElements2.GetMatchedElements();
         Assert.assertArrayEquals(matches.toArray(), matches2.toArray());

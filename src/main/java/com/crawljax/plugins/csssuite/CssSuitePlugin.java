@@ -17,7 +17,7 @@ import com.crawljax.plugins.csssuite.generator.SassWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
 import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
+import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
@@ -109,7 +109,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		try
 		{
-			MatchSelectors.MatchElementsToDocument(newState.getName(), newState.getDocument(), _mcssFiles, stateFileOrder, _matchedElements);
+			ElementSelectorMatcher.MatchElementsToDocument(newState.getName(), newState.getDocument(), _mcssFiles, stateFileOrder, _matchedElements);
 			_stateCssFileMap.put(newState, stateFileOrder);
 		}
 		catch (Exception ex)

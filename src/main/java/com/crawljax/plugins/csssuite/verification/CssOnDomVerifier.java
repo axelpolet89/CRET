@@ -14,6 +14,7 @@ import com.crawljax.plugins.csssuite.plugins.analysis.MatchSelectors;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.DefaultStylesHelper;
 import com.google.common.collect.Sets;
+import sun.rmi.runtime.Log;
 
 import java.io.IOException;
 import java.util.*;
@@ -26,6 +27,11 @@ public class CssOnDomVerifier
 {
     public void Verify(Map<StateVertex, LinkedHashMap<String, Integer>> states, Map<String, MCssFile> originalStyles, Map<String, MCssFile> generatedStyles) throws IOException
     {
+        Set<MProperty> matchedProperties = new HashSet<>();
+        Set<MProperty> missingProperties = new HashSet<>();
+        Set<MProperty> additionalProperties = new HashSet<>();
+        Map<MProperty, MProperty> matchedPropsByName = new HashMap<>();
+
         Map<MSelector, String> selFileMapOrig = GenerateSelectorFileMap(originalStyles);
         Map<MSelector, String> selFileMapGnr = GenerateSelectorFileMap(generatedStyles);
 
@@ -166,18 +172,26 @@ public class CssOnDomVerifier
             List<MProperty> remainderGnr = effectivePropsGnr.stream().filter((p) -> !matchedPropsOnValueGnr.contains(p)).collect(Collectors.toList());
 
             Map<MProperty, MProperty> matchedOnName = new HashMap<>();
+            Set<MProperty> alreadyNameMatchedGnr = new HashSet<>();
+
             for(MProperty origProperty : remainderOrig)
             {
+                if(matchedOnName.containsKey(origProperty))
+                {
+                    continue;
+                }
+
                 for(MProperty gnrProperty : remainderGnr)
                 {
-                    if(matchedOnName.containsKey(gnrProperty))
+                    if(alreadyNameMatchedGnr.contains(gnrProperty))
                     {
                         continue;
                     }
 
                     if(gnrProperty.GetName().equals(origProperty.GetName()))
                     {
-                        matchedOnName.put(gnrProperty, origProperty);
+                        matchedOnName.put(origProperty, gnrProperty);
+                        alreadyNameMatchedGnr.add(gnrProperty);
                         break;
                     }
                 }
@@ -185,12 +199,12 @@ public class CssOnDomVerifier
 
 
             //get remainders
-            remainderOrig =  remainderOrig.stream().filter((p) -> !matchedOnName.values().contains(p)).collect(Collectors.toList());
-            remainderGnr =  remainderGnr.stream().filter((p) -> !matchedOnName.containsKey(p)).collect(Collectors.toList());
+            remainderOrig =  remainderOrig.stream().filter((p) -> !matchedOnName.containsKey(p)).collect(Collectors.toList());
+            remainderGnr =  remainderGnr.stream().filter((p) -> !alreadyNameMatchedGnr.contains(p)).collect(Collectors.toList());
 
-            for(MProperty gnrProperty : matchedOnName.keySet())
+            for(MProperty origProperty : matchedOnName.keySet())
             {
-                MProperty origProperty = matchedOnName.get(gnrProperty);
+                MProperty gnrProperty = matchedOnName.get(origProperty);
                 LogHandler.debug("[VERIFICATION] Match by name only: new:'%s', old:'%s'\nnew:'%s', old:'%s'\nnew:'%s', old:'%s'",
                                     gnrProperty, origProperty, propSelMapGnr.get(gnrProperty), propSelMapOrig.get(origProperty),
                                     selFileMapGnr.get(propSelMapGnr.get(gnrProperty)), selFileMapOrig.get(propSelMapOrig.get(origProperty)));
@@ -206,6 +220,7 @@ public class CssOnDomVerifier
                     }
                 }
 
+                missingProperties.add(remainingProperty);
                 LogHandler.debug("[VERIFICATION] Missing property '%s' in selector '%s' in file '%s'",
                         remainingProperty, propSelMapOrig.get(remainingProperty), selFileMapOrig.get(propSelMapOrig.get(remainingProperty)));
             }
@@ -220,10 +235,30 @@ public class CssOnDomVerifier
                     }
                 }
 
+                additionalProperties.add(remainingProperty);
                 LogHandler.debug("[VERIFICATION] Additional property '%s' in selector '%s' in file '%s'",
                         remainingProperty, propSelMapGnr.get(remainingProperty), selFileMapGnr.get(propSelMapGnr.get(remainingProperty)));
             }
+
+            matchedProperties.addAll(matchedPropsOnValueGnr);
+            matchedPropsByName.putAll(matchedOnName);
         }
+
+        // filter missing props from matched by value
+        for(MProperty mProperty : missingProperties)
+        {
+            if(matchedPropsByName.containsKey(mProperty))
+            {
+                matchedPropsByName.remove(mProperty);
+            }
+        }
+
+        // filter missing props and matched by value props from matched props
+        matchedProperties = Sets.difference(matchedProperties, matchedPropsByName.keySet());
+        matchedProperties = Sets.difference(matchedProperties, missingProperties);
+
+        LogHandler.debug("[VERIFICATION] %d elements matched, %d elements unmatched, %d additional elements matched", equallyMatchedElems.size(), unmatchedElems.size(), additionalMatchedElems.size());
+        LogHandler.debug("[VERIFICATION] %d matched props, %d matchedByName, %d missing props, %d additional props", matchedProperties.size(), matchedPropsByName.size(), missingProperties.size(),additionalProperties.size());
     }
 
 

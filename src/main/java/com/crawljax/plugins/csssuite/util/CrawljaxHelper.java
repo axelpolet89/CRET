@@ -11,6 +11,21 @@ import java.util.concurrent.TimeUnit;
  */
 public class CrawljaxHelper
 {
+    public static void ConfigureShort(CrawljaxConfiguration.CrawljaxConfigurationBuilder builder)
+    {
+        //set global properties, depth of crawl, max states and max crawl-time
+        builder.setMaximumDepth(3);
+        builder.setMaximumStates(2);
+        builder.setBrowserConfig(new BrowserConfiguration(EmbeddedBrowser.BrowserType.FIREFOX, 1));
+
+        //crawlrules
+        builder.crawlRules().clickDefaultElements();
+        builder.crawlRules().clickOnce(true);
+        builder.crawlRules().insertRandomDataInInputForms(false);
+        builder.crawlRules().waitAfterReloadUrl(500, TimeUnit.MILLISECONDS);
+        builder.crawlRules().waitAfterEvent(500, TimeUnit.MILLISECONDS);
+    }
+
     public static void Configure(CrawljaxConfiguration.CrawljaxConfigurationBuilder builder, int minutes)
     {
         //set global properties, depth of crawl, max states and max crawl-time
@@ -20,6 +35,7 @@ public class CrawljaxHelper
         builder.setBrowserConfig(new BrowserConfiguration(EmbeddedBrowser.BrowserType.FIREFOX, 1));
 
         //crawlrules
+        builder.crawlRules().clickDefaultElements();
         builder.crawlRules().clickOnce(true);
         builder.crawlRules().insertRandomDataInInputForms(false);
         builder.crawlRules().waitAfterReloadUrl(500, TimeUnit.MILLISECONDS);

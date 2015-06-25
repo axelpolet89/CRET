@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.xml.DOMConfigurator;
+import org.jaxen.function.StringFunction;
 import org.w3c.dom.Document;
 
 import com.crawljax.core.CrawlSession;
@@ -384,27 +385,27 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		String siteRoot = _siteIndex.replace(indexUri.getPath(), "");
 
+		Map<String, String> embeddedMapping = new HashMap<>();
+		int embeddedIdx = 1;
+
 		for(String fileName : source.keySet())
 		{
-			String cssFile = fileName.replace(siteRoot, "");
+			String cssFile = fileName.replace("https://", "http://").replace(siteRoot, "");
 
 			if(cssFile.isEmpty() || cssFile.equals("") || cssFile.equals("/"))
 				cssFile += "index/";
 
 			String cssRootDir = cssOutputRoot;
-			String sassRootDir = sassOutputRoot;
 
 			if(!cssFile.contains(".css"))
 			{
 				cssRootDir += "embedded_styles\\";
-				sassRootDir += "embedded_styles\\";
+				cssFile = String.format("embedded_%d.css", embeddedIdx);
 
-				if(cssFile.charAt(cssFile.length() - 1) == '/')
-					cssFile = cssFile.substring(0, cssFile.length() - 1).concat(".css");
-				else
-					cssFile = cssFile.concat(".css");
+				embeddedMapping.put(fileName, cssFile);
 
 				LogHandler.info("[CssWriter] Styles not contained in external CSS file, write as embedded styles");
+				embeddedIdx ++;
 			}
 
 			//replace querystring token, not valid as file name
@@ -428,6 +429,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				continue;
 			}
 
+			String sassRootDir = cssRootDir.replace(cssOutputRoot, sassOutputRoot);
 			String sassFile = cssFile.replace(".css", ".scss");
 
 			try
@@ -449,6 +451,22 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS generated CSS file at path '%s'", genCssFile);
 			}
+		}
+
+		try
+		{
+			FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("embedded_styles_mapping.txt")));
+			esWriter.write("embedded files are mapped as follow:\n");
+			for(String fileName : embeddedMapping.keySet())
+			{
+				esWriter.append(String.format("%s : %s\n", embeddedMapping.get(fileName), fileName));
+			}
+			esWriter.flush();
+			esWriter.close();
+		}
+		catch (IOException e)
+		{
+			LogHandler.error(e, "[GenerateCssAndSass] Error in generating embedded file mapping");
 		}
 
 		// CSS before SASS transformation

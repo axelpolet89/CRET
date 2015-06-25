@@ -167,6 +167,8 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
 
             LogHandler.debug("[DescToChild] [%s] Trying to match direct parent node '%s' of node '%s' with the parent selector '%s' of descendant-selector '%s'", mSelector, parent, node, ancestor, selector);
 
+            boolean atDocumentRoot = false;
+
             if (TrySelectNodeWithCss(ancestor, parent, mSelector))
             {
                 if(!_descendants.containsKey(dSel))
@@ -188,6 +190,7 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                     parent = parent.getParentNode();
                     if (parent instanceof Document)
                     {
+                        atDocumentRoot = true;
                         LogHandler.warn("[DescToChild] [%s] Found document root while trying to find parent DOM element that should be selectable by ancestor '%s' of selector '%s'", mSelector, ancestor, selector);
                         break;
                     }
@@ -198,7 +201,10 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                 }
             }
 
-            RecursiveFindDescendants(ancestor, parent, mSelector);
+            if(!atDocumentRoot)
+            {
+                RecursiveFindDescendants(ancestor, parent, mSelector);
+            }
         }
     }
 

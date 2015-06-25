@@ -219,7 +219,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 			for (MCssRule rule : rules) {
 
 				// First print out the unmatched rules
-				List<MSelector> unmatched = rule.GetUnmatchedSelectors();
+				List<MSelector> unmatched = rule.GetSelectors();
 				if (unmatched.size() > 0) {
 					unmatchedBuffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "<br>");
 					unmatchedBuffer.append("at line: " + rule.GetLocator().getLineNumber()
@@ -232,7 +232,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 				}
 
 				// Second handle the ineffective and effective rules
-				List<MSelector> matched = rule.GetMatchedSelectors();
+				List<MSelector> matched = rule.GetSelectors();
 				if (matched.size() > 0) {
 					for (MSelector sel : matched) {
 						if (!sel.HasEffectiveProperties() && !sel.IsIgnored()) {

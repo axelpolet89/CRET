@@ -110,6 +110,11 @@ public class MSelector
 	private void Init()
 	{
 		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]") || !_w3cError.isEmpty();
+		if(_isIgnored)
+		{
+			_isMatched = true;
+			_properties.forEach(p -> p.SetEffective(true));
+		}
 
 		try
 		{
@@ -534,24 +539,6 @@ public class MSelector
 	}
 
 
-	/**
-	 * Remove any property that has not been deemed effective
-	 */
-	public void RemoveIneffectiveProperties()
-	{
-		_properties.removeIf((MProperty) -> !MProperty.IsEffective());
-	}
-
-
-	/**
-	 * Remove any property that performs an invalid undo
-	 */
-	public void RemoveInvalidUndoProperties()
-	{
-		_properties.removeIf((MProperty) -> MProperty.IsInvalidUndo());
-	}
-
-
 
 	/**
 	 * @return true if any property contained in this selector is effective
@@ -566,7 +553,7 @@ public class MSelector
 	 *
 	 * @param mProperty
 	 */
-	public void AddProperty(MProperty mProperty)
+	public void RestoreProperty(MProperty mProperty)
 	{
 		_properties.add(mProperty);
 	}
@@ -580,6 +567,24 @@ public class MSelector
 	{
 		_properties.clear();
 		_properties.addAll(newProps);
+	}
+
+
+	/**
+	 * Remove any property that has not been deemed effective
+	 */
+	public void RemoveIneffectiveProperties()
+	{
+		_properties.removeIf((p) -> !p.IsIgnored() && !p.IsEffective());
+	}
+
+
+	/**
+	 * Remove any property that performs an invalid undo
+	 */
+	public void RemoveInvalidUndoProperties()
+	{
+		_properties.removeIf((p) -> !p.IsIgnored() && p.IsInvalidUndo());
 	}
 
 

@@ -159,7 +159,6 @@ public class MProperty
 	/** Getter */
 	public int GetOrder() { return _order; }
 
-
 	/** Getter */
 	public String GetValue() { return _normalizedValue;	}
 
@@ -185,18 +184,7 @@ public class MProperty
 	}
 
 	/**
-	 *
-	 * @param otherProperty
-	 * @return
-	 */
-	public boolean AllowCoexistence(MProperty otherProperty)
-	{
-		return false;
-	}
-
-	/**
-	 *
-	 * @param value
+	 * @param value a normalized value for this MProperty
 	 */
 	public void SetNormalizedValue(String value)
 	{
@@ -205,8 +193,7 @@ public class MProperty
 
 
 	/**
-	 *
-	 * @param effective
+	 * @param effective mark this MProperty as effective or ineffectiv
 	 */
 	public void SetEffective(boolean effective)
 	{
@@ -230,6 +217,16 @@ public class MProperty
 	public void SetInvalidUndo()
 	{
 		_isInvalidUndo = true;
+	}
+
+
+	/**
+	 * @param otherProperty the other property besides which this one may co-exist
+	 * @return false, this MProperty may never coexist with another MProperty in the same MSelector
+	 */
+	public boolean AllowCoexistence(MProperty otherProperty)
+	{
+		return false;
 	}
 
 

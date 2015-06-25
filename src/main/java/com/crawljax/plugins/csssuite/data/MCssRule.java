@@ -184,10 +184,6 @@ public class MCssRule extends MCssRuleBase
 		return _locator;
 	}
 
-	/** Getter */
-	@Override
-	public boolean IsEmpty() { return _selectors.size() == 0; }
-
 
 	/**
 	 * @return the _selectors that are not matched (no associated DOM elements have been detected)
@@ -223,6 +219,13 @@ public class MCssRule extends MCssRuleBase
 	{
 		_selectors.remove(oldS);
 		_selectors.add(newS);
+	}
+
+
+	@Override
+	public boolean IsEmpty()
+	{
+		return _selectors.size() == 0;
 	}
 
 

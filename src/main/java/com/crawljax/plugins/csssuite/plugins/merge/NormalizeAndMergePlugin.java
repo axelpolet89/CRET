@@ -72,7 +72,10 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
             MProperty mProperty = properties.get(i);
 
             if(mProperty.IsIgnored())
+            {
+                newProperties.add(mProperty);
                 continue;
+            }
 
             final String name = mProperty.GetName();
             final String value = mProperty.GetValue();

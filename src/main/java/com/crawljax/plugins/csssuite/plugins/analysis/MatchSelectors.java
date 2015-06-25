@@ -30,7 +30,9 @@ public class MatchSelectors
 				for (MSelector mSelector : mSelectors)
 				{
 					if (mSelector.IsIgnored())
+					{
 						continue;
+					}
 
 					String cssSelector = mSelector.GetFilteredSelectorText();
 

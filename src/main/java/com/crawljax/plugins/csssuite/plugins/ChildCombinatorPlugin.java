@@ -344,7 +344,7 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
     {
         for(String part : classAttribute.split("\\s"))
         {
-            if(part.equals("search"))
+            if(part.equals(search))
             {
                 return true;
             }

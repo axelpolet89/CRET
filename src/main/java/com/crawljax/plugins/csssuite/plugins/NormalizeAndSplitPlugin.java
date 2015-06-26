@@ -22,10 +22,10 @@ import java.util.*;
  */
 public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 {
-    private BrowserColorParser _bcp;
+    private BrowserColorParser _browserColorParser;
     public NormalizeAndSplitPlugin()
     {
-        _bcp = new BrowserColorParser();
+        _browserColorParser = new BrowserColorParser();
     }
 
     @Override
@@ -105,10 +105,14 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
             for(String part : parts)
             {
-                String newPart = _bcp.TryParseColorToHex(part);
+                String newPart = _browserColorParser.TryParseColorToHex(part);
                 if(!part.equals(newPart))
                 {
                     newValue = newValue.replace(part, newPart);
+                }
+                else if(part.equals("transparent"))
+                {
+                    newValue = newValue.replace("transparent", "rgba(0,0,0,0)");
                 }
             }
 

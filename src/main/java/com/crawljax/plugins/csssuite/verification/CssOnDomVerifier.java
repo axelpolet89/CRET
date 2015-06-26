@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite.verification;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
+import com.crawljax.plugins.csssuite.data.ElementWrapper;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
@@ -29,6 +30,8 @@ public class CssOnDomVerifier
     private Map<MSelector, String> selFileMapGnr = new HashMap<>();
 
     private Set<String> _matchedElementsOrig = new HashSet<>();
+    private Set<String> _matchedAndEffectiveOrig = new HashSet<>();
+
     private Set<String> _matchedElementsGnr = new HashSet<>();
     private Set<String> _equallyMatchedElems = new HashSet<>();
     private Set<String> _additionalMatchedElems = new HashSet<>();
@@ -40,6 +43,8 @@ public class CssOnDomVerifier
     private Set<MProperty> _totalDefaultPropsOrig = new HashSet<>();
     private Set<MProperty> _totalMissingProps = new HashSet<>();
     private Set<MProperty> _totalAdditionalProps = new HashSet<>();
+
+    private final Map<String, String> _defaultStyles = DefaultStylesHelper.CreateDefaultStyles();
 
     private Map<MSelector, String> GenerateSelectorFileMap(Map<String, MCssFile> mcssFiles)
     {
@@ -109,7 +114,7 @@ public class CssOnDomVerifier
         Map<MSelector, String> selFileMapOrig = GenerateSelectorFileMap(originalStyles);
         Map<MSelector, String> selFileMapGnr = GenerateSelectorFileMap(generatedStyles);
 
-        Map<String, String> defaultStyles = DefaultStylesHelper.CreateDefaultStyles();
+
         MatchedElements matchedElementsOrig = new MatchedElements();
         MatchedElements matchedElementsGnr = new MatchedElements();
 
@@ -133,39 +138,6 @@ public class CssOnDomVerifier
 
         _matchedElementsOrig = matchedElementsOrig.GetMatchedElements();
         _matchedElementsGnr = matchedElementsGnr.GetMatchedElements();
-        _additionalMatchedElems = Sets.difference(_matchedElementsGnr, _matchedElementsOrig);
-        _missedMatchedElements = Sets.difference(_matchedElementsOrig, _matchedElementsGnr);
-        _equallyMatchedElems = Sets.difference(_matchedElementsOrig, _missedMatchedElements);
-
-        // all unmatched elements
-        for(String unmatchedElement : _missedMatchedElements)
-        {
-            List<MSelector> selectors = matchedElementsOrig.SortSelectorsForMatchedElem(unmatchedElement);
-
-            String selectorsText = "";
-            for(MSelector mSelector : selectors)
-            {
-                selectorsText += String.format("%s in file: %s\n", mSelector, selFileMapOrig.get(mSelector));
-            }
-
-            LogHandler.info("[VERIFICATION] Unmatched element detected: '%s'\nwith selectors from original stylesheets: %s", unmatchedElement, selectorsText);
-        }
-
-
-        // all additionally matched elements
-        for(String extraElement : _additionalMatchedElems)
-        {
-            List<MSelector> selectors = matchedElementsGnr.SortSelectorsForMatchedElem(extraElement);
-
-            String selectorsText = "";
-            for(MSelector mSelector : selectors)
-            {
-                selectorsText += String.format("%s in file: %s\n", mSelector, selFileMapGnr.get(mSelector));
-            }
-
-            LogHandler.info("[VERIFICATION] Additionally matched element detected: %s\nwith selectors from generated stylesheets", selectorsText);
-        }
-
 
         // effectiveness analysis
         LogHandler.info("[VERIFICATION] Start effectiveness analysis for matched elements of original and generated styles...");
@@ -177,11 +149,35 @@ public class CssOnDomVerifier
         for(String matchedElement : _matchedElementsOrig)
         {
             count++;
-            LogHandler.debug("[VERIFICATION] Start effectiveness analysis for element %d of %d...", count, total);
+            LogHandler.debug("[VERIFICATION] Find out if original matches are effective (i.e. at least 1 effective property) for element %d of %d...", count, total);
 
             List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
             List<MProperty> effectivePropsOrig = FindEffectivePropertiesForElement(selectorsOrig);
-            _totalEffectivePropsOrig.addAll(effectivePropsOrig);
+
+            if(ContainsEffectiveProps(effectivePropsOrig))
+            {
+                _totalEffectivePropsOrig.addAll(effectivePropsOrig);
+                _matchedAndEffectiveOrig.add(matchedElement);
+            }
+        }
+
+
+        _additionalMatchedElems = Sets.difference(_matchedElementsGnr, _matchedAndEffectiveOrig);
+        _missedMatchedElements = Sets.difference(_matchedAndEffectiveOrig, _matchedElementsGnr);
+        _equallyMatchedElems = Sets.difference(_matchedAndEffectiveOrig, _missedMatchedElements);
+
+        count = 0;
+        total = _matchedAndEffectiveOrig.size();
+
+        for(String matchedElement : _matchedAndEffectiveOrig)
+        {
+            count++;
+            LogHandler.debug("[VERIFICATION] Start effectiveness analysis and comparison for element %d of %d...", count, total);
+
+            List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
+            Map<MProperty, MSelector> propSelMapOrig = GeneratePropertySelectorMap(selectorsOrig);
+
+            List<MProperty> effectivePropsOrig = FindEffectivePropertiesForElement(selectorsOrig);
 
             // only continue when both styles matched the same element
             if(!_equallyMatchedElems.contains(matchedElement))
@@ -190,10 +186,12 @@ public class CssOnDomVerifier
             }
 
             List<MSelector> selectorsGnr = matchedElementsGnr.SortSelectorsForMatchedElem(matchedElement);
+            Map<MProperty, MSelector> propSelMapGnr = GeneratePropertySelectorMap(selectorsGnr);
+
             List<MProperty> effectivePropsGnr = FindEffectivePropertiesForElement(selectorsGnr);
 
-            Map<MProperty, MSelector> propSelMapOrig = GeneratePropertySelectorMap(selectorsOrig);
-            Map<MProperty, MSelector> propSelMapGnr = GeneratePropertySelectorMap(selectorsGnr);
+
+
 
             effectivePropsOrig.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
             effectivePropsGnr.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
@@ -218,14 +216,14 @@ public class CssOnDomVerifier
                     {
                         String gnrValue = bcp.TryParseColorToHex(gnrProperty.GetValue());
 
-                        if(gnrValue.equals("transparent"))
-                        {
-                            gnrValue = "rgba(0, 0, 0, 0)";
-                        }
-                        else if (gnrValue.contains("transparent"))
-                        {
-                            gnrValue = gnrValue.replace("transparent", "rgba(0, 0, 0, 0)");
-                        }
+//                        if(gnrValue.equals("transparent"))
+//                        {
+//                            gnrValue = "rgba(0, 0, 0, 0)";
+//                        }
+//                        else if (gnrValue.contains("transparent"))
+//                        {
+//                            gnrValue = gnrValue.replace("transparent", "rgba(0, 0, 0, 0)");
+//                        }
 
                         if(gnrValue.equals(value) && gnrProperty.IsImportant() == origProperty.IsImportant())
                         {
@@ -284,9 +282,9 @@ public class CssOnDomVerifier
             for(MProperty remainingProperty : remainderOrig)
             {
                 // verify that remaing property from original styles is not a default style, then it is a valid mismatch
-                if(defaultStyles.containsKey(remainingProperty.GetName()))
+                if(_defaultStyles.containsKey(remainingProperty.GetName()))
                 {
-                    if(remainingProperty.GetValue().equals(defaultStyles.get(remainingProperty.GetName())))
+                    if(remainingProperty.GetValue().equals(_defaultStyles.get(remainingProperty.GetName())))
                     {
                         _totalDefaultPropsOrig.add(remainingProperty);
                         continue;
@@ -307,6 +305,36 @@ public class CssOnDomVerifier
 
             _totalEquallyEffectiveProps.addAll(matchedPropsOnValueGnr);
             _totalEffectiveByName.putAll(matchedOnName);
+        }
+
+
+        // all unmatched elements
+        for(String unmatchedElement : _missedMatchedElements)
+        {
+            List<MSelector> selectors = matchedElementsOrig.SortSelectorsForMatchedElem(unmatchedElement);
+
+            String selectorsText = "";
+            for(MSelector mSelector : selectors)
+            {
+                selectorsText += String.format("%s in file: %s\n", mSelector, selFileMapOrig.get(mSelector));
+            }
+
+            LogHandler.info("[VERIFICATION] Unmatched element detected: '%s'\nwith selectors from original stylesheets: %s", unmatchedElement, selectorsText);
+        }
+
+
+        // all additionally matched elements
+        for(String extraElement : _additionalMatchedElems)
+        {
+            List<MSelector> selectors = matchedElementsGnr.SortSelectorsForMatchedElem(extraElement);
+
+            String selectorsText = "";
+            for(MSelector mSelector : selectors)
+            {
+                selectorsText += String.format("%s in file: %s\n", mSelector, selFileMapGnr.get(mSelector));
+            }
+
+            LogHandler.info("[VERIFICATION] Additionally matched element detected: %s\nwith selectors from generated stylesheets", selectorsText);
         }
 
 
@@ -352,5 +380,15 @@ public class CssOnDomVerifier
         SuiteStringBuilder builder = new SuiteStringBuilder();
         GenerateXml(builder, "");
         return builder.toString();
+    }
+
+    public boolean ContainsEffectiveProps(List<MProperty> properties)
+    {
+        if(properties.isEmpty())
+        {
+            return false;
+        }
+
+        return !properties.stream().allMatch(p -> _defaultStyles.containsKey(p.GetName()) && _defaultStyles.get(p.GetName()).equals(p.GetValue()));
     }
 }

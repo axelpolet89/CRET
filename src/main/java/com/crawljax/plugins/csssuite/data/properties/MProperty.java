@@ -215,9 +215,9 @@ public class MProperty
 	/**
 	 *
 	 */
-	public void SetInvalidUndo()
+	public void SetInvalidUndo(boolean invalid)
 	{
-		_isInvalidUndo = true;
+		_isInvalidUndo = invalid;
 	}
 
 

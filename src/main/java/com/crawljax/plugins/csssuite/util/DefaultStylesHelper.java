@@ -39,7 +39,7 @@ public class DefaultStylesHelper
         defaultStyles.put("outline-style", "none");
 
         defaultStyles.put("background-image", "none");
-        defaultStyles.put("background-color", "transparent");
+        defaultStyles.put("background-color", "rgba(0,0,0,0)");
         defaultStyles.put("background-repeat", "repeat");
         defaultStyles.put("background-position", "0% 0%");
         defaultStyles.put("background-attachment", "scroll");

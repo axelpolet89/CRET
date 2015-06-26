@@ -53,8 +53,9 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
                 {
                     final String name = property.GetName();
                     final String value = property.GetValue();
+                    final boolean important = property.IsImportant();
 
-                    // skip declarations that we do not check for default values
+                    // skip declarations that we do not support yet
                     if(!defaultStyles.containsKey(name))
                     {
                         continue;
@@ -63,96 +64,95 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
                     final String defaultValue = defaultStyles.get(name);
 
                     // verify this property is effective and has a default value
-                    if (property.IsEffective() && value.equals(defaultValue))
+                    if (value.equals(defaultValue))
                     {
                         LogHandler.debug("[CssUndoDetector] Found possible undoing property: '%s' with a (default) value '%s' in selector '%s'",
                                 name, value, selector);
 
-                        boolean validUndo = false;
+                        // an important value is always a valid undo for now...
+                        boolean validUndo = important;
 
-                        // if this property is allowed to coexist besides another property in the same selector,
-                        // even with a 0 value, then it is a valid undo (f.e. border-top-width: 0; besides border-width: 4px;)
-                        for(MProperty property2 : properties)
+                        if(!validUndo)
                         {
-                            if(property != property2)
+                            // if this property is allowed to coexist besides another property in the same selector,
+                            // even with a 0 value, then it is a valid undo (f.e. border-top-width: 0; besides border-width: 4px;)
+                            for (MProperty property2 : properties)
                             {
-                                if(property.AllowCoexistence(property2))
+                                if (property != property2)
                                 {
-                                    validUndo = true;
-                                    break;
+                                    if (property.AllowCoexistence(property2))
+                                    {
+                                        validUndo = true;
+                                        break;
+                                    }
                                 }
-                            }
-                        }
-
-                        if(validUndo)
-                        {
-                            continue;
-                        }
-
-                        for (int j = i + 1; j < effectiveSelectors.size(); j++)
-                        {
-                            MSelector nextSelector = effectiveSelectors.get(j);
-
-                            if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() == 0)
-                            {
-                                continue;
-                            }
-
-                            if (selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
-                            {
-                                continue;
-                            }
-
-                            if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() > 0
-                                    && !selector.HasEqualMediaQueries(nextSelector))
-                            {
-                                continue;
-                            }
-
-                            if (selector.HasPseudoElement() || nextSelector.HasPseudoElement())
-                            {
-                                if (!selector.HasEqualPseudoElement(nextSelector))
-                                {
-                                    continue;
-                                }
-                            }
-
-                            if (selector.IsNonStructuralPseudo() || nextSelector.IsNonStructuralPseudo())
-                            {
-                                if (!selector.HasEqualPseudoClass(nextSelector))
-                                {
-                                    continue;
-                                }
-                            }
-
-                            for (MProperty otherProperty : nextSelector.GetProperties())
-                            {
-                                final String otherName = otherProperty.GetName();
-                                final String otherValue = otherProperty.GetValue();
-
-                                // verify whether this property is allowed to co-exist to another property, whatever the value
-                                // verify whether another effective property in a less-specific selector has the same name
-                                // verify that it has a different value
-                                if (property.AllowCoexistence(otherProperty) || (otherProperty.IsEffective() && otherName.equals(name) && !otherValue.equals(value)))
-                                {
-                                    validUndo = true;
-                                    LogHandler.debug("[CssUndoDetector] Found an effective property '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
-                                                    "that is (correctly) undone by effective property with value '%s' in (more-specific) selector '%s'",
-                                            otherProperty.GetName(), otherProperty.GetValue(), nextSelector, property.GetValue(), selector);
-                                    break;
-                                }
-                            }
-
-                            if(validUndo)
-                            {
-                                break;
                             }
                         }
 
                         if(!validUndo)
                         {
-                            property.SetInvalidUndo();
+                            for (int j = i + 1; j < effectiveSelectors.size(); j++)
+                            {
+                                MSelector nextSelector = effectiveSelectors.get(j);
+
+                                if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() == 0)
+                                {
+                                    continue;
+                                }
+
+                                if (selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
+                                {
+                                    continue;
+                                }
+
+                                if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() > 0
+                                        && !selector.HasEqualMediaQueries(nextSelector))
+                                {
+                                    continue;
+                                }
+
+                                if (selector.HasPseudoElement() || nextSelector.HasPseudoElement())
+                                {
+                                    if (!selector.HasEqualPseudoElement(nextSelector))
+                                    {
+                                        continue;
+                                    }
+                                }
+
+                                if (selector.IsNonStructuralPseudo() || nextSelector.IsNonStructuralPseudo())
+                                {
+                                    if (!selector.HasEqualPseudoClass(nextSelector))
+                                    {
+                                        continue;
+                                    }
+                                }
+
+                                for (MProperty otherProperty : nextSelector.GetProperties())
+                                {
+                                    final String otherName = otherProperty.GetName();
+                                    final String otherValue = otherProperty.GetValue();
+
+                                    if (property.AllowCoexistence(otherProperty) || otherName.equals(name) && !otherValue.equals(value))
+                                    {
+                                        // verify whether this property is allowed to co-exist to another property, whatever the value
+                                        // verify whether another effective property in a less-specific selector has the same name
+                                        // verify that it has a different value
+                                        validUndo = true;
+                                        LogHandler.debug("[CssUndoDetector] Found an effective property '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
+                                                        "that is (correctly) undone by effective property with value '%s' in (more-specific) selector '%s'",
+                                                otherProperty.GetName(), otherProperty.GetValue(), nextSelector, property.GetValue(), selector);
+                                        break;
+                                    }
+                                }
+
+                                if (validUndo)
+                                {
+                                    break;
+                                }
+                            }
                         }
+
+                        property.SetInvalidUndo(!validUndo);
                     }
                 }
             }

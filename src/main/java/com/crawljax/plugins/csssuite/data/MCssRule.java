@@ -29,9 +29,9 @@ public class MCssRule extends MCssRuleBase
 	 * @param w3cErrors
 	 * @param mediaQueries
 	 */
-	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, List<MediaQuery> mediaQueries, MCssRuleBase parent)
+	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, List<MediaQuery> mediaQueries, MCssRuleBase parent, int order)
 	{
-		super(rule, mediaQueries, parent);
+		super(rule, mediaQueries, parent, order);
 
 		_styleRule = rule;
 		_selectors = new ArrayList<>();
@@ -43,9 +43,9 @@ public class MCssRule extends MCssRuleBase
 	/**
 	 * Constructor for regular rules, not contained in media-queries
 	 */
-	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors)
+	public MCssRule(CSSStyleRuleImpl rule, Set<Defect> w3cErrors, int order)
 	{
-		this(rule, w3cErrors, new ArrayList<>(), null);
+		this(rule, w3cErrors, new ArrayList<>(), null, order);
 	}
 
 
@@ -56,7 +56,7 @@ public class MCssRule extends MCssRuleBase
 	{
 		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
 							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(),
+							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), _order,
 																mediaQueries, this, TryFindW3cErrorForSelector(selector, w3cErrors)))
 							.collect(Collectors.toList()));
 	}

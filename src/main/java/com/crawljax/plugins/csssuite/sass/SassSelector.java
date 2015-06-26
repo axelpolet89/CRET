@@ -4,7 +4,6 @@ import com.crawljax.plugins.csssuite.data.MCssRuleBase;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
-import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.steadystate.css.parser.media.MediaQuery;
 
@@ -111,7 +110,7 @@ public class SassSelector
 
     public int GetRuleNumber()
     {
-        return _original.GetRuleNumber();
+        return _original.GetLineNumber();
     }
 
     public List<MediaQuery> GetMediaQueries() { return _original.GetMediaQueries();}

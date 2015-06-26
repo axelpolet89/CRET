@@ -18,19 +18,21 @@ public class MCssRuleBase
     protected final Locator _locator;
 
     protected final MCssRuleBase _parent;
+    protected final int _order;
 
-    public MCssRuleBase(AbstractCSSRuleImpl rule, List<MediaQuery> mediaQueries, MCssRuleBase parent)
+    public MCssRuleBase(AbstractCSSRuleImpl rule, List<MediaQuery> mediaQueries, MCssRuleBase parent, int order)
     {
         _rule = rule;
         _mediaQueries = mediaQueries;
         _locator = (Locator)_rule.getUserData(UserDataConstants.KEY_LOCATOR);
 
         _parent = parent;
+        _order = order;
     }
 
-    public MCssRuleBase(AbstractCSSRuleImpl rule)
+    public MCssRuleBase(AbstractCSSRuleImpl rule, int order)
     {
-        this(rule, new ArrayList<>(), null);
+        this(rule, new ArrayList<>(), null, order);
     }
 
     public AbstractCSSRuleImpl GetAbstractRule() { return _rule; }

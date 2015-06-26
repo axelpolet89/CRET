@@ -32,7 +32,7 @@ public class CssParser
 {
 	private final ParserErrorHandler _errorHandler;
 	private final boolean _doW3cValidation;
-
+	private int _ruleOrder;
 
 	/**
 	 * Test constructor
@@ -50,6 +50,7 @@ public class CssParser
 	{
 		_errorHandler = new ParserErrorHandler();
 		_doW3cValidation = doW3cValidation;
+		_ruleOrder = 1;
 	}
 
 
@@ -129,7 +130,7 @@ public class CssParser
 				AbstractCSSRuleImpl rule = (AbstractCSSRuleImpl)ruleList.item(i);
 				if(rule instanceof CSSStyleRuleImpl)
 				{
-					styleAndMediaRules.add(new MCssRule((CSSStyleRuleImpl) rule, w3cErrors));
+					styleAndMediaRules.add(new MCssRule((CSSStyleRuleImpl) rule, w3cErrors, _ruleOrder));
 				}
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
@@ -138,13 +139,15 @@ public class CssParser
 				}
 				else
 				{
-					ignoredRules.add(new MCssRuleBase(rule));
+					ignoredRules.add(new MCssRuleBase(rule, _ruleOrder));
 				}
 			}
 			catch (Exception ex)
 			{
 				LogHandler.error(ex, "Error occurred while parsing CSSRules into MCssRules on rule '%s'", ruleList.item(i).getCssText());
 			}
+
+			_ruleOrder++;
 		}
 
 		return new MCssFile(url, styleAndMediaRules, mediaRules, ignoredRules);
@@ -159,7 +162,7 @@ public class CssParser
 	 *                        that is not regular style or another media, should be ignored
 	 * @return List of parsed media rules
 	 */
-	private static MCssMediaRule RecursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssMediaRule parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)
+	private MCssMediaRule RecursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssMediaRule parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)
 	{
 
 		CSSMediaRuleImpl mediaRule = (CSSMediaRuleImpl) rule;
@@ -178,7 +181,8 @@ public class CssParser
 			queries.add(list.mediaQuery(i));
 		}
 
-		MCssMediaRule result = new MCssMediaRule(mediaRule, queries, parent);
+		MCssMediaRule result = new MCssMediaRule(mediaRule, queries, parent, _ruleOrder);
+		_ruleOrder++;
 
 		List<MCssRuleBase> innerRules = new ArrayList<>();
 
@@ -190,7 +194,7 @@ public class CssParser
 				AbstractCSSRuleImpl innerRule = (AbstractCSSRuleImpl)ruleList.item(i);
 				if(innerRule instanceof CSSStyleRuleImpl)
 				{
-					MCssRule styleRule = new MCssRule((CSSStyleRuleImpl)innerRule, w3cErrors, queries, result);
+					MCssRule styleRule = new MCssRule((CSSStyleRuleImpl)innerRule, w3cErrors, queries, result, _ruleOrder);
 					styleRules.add(styleRule);
 					innerRules.add(styleRule);
 				}
@@ -200,13 +204,15 @@ public class CssParser
 				}
 				else
 				{
-					ignoredRules.add(new MCssRuleBase(innerRule, queries, result));
+					ignoredRules.add(new MCssRuleBase(innerRule, queries, result, _ruleOrder));
 				}
 			}
 			catch (Exception ex)
 			{
 				LogHandler.error(ex, "Error occurred while parsing CSSRules into MCssRules on rule '%s'", ruleList.item(i).getCssText());
 			}
+
+			_ruleOrder++;
 		}
 
 		result.SetInnerRules(innerRules);

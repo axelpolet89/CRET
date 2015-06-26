@@ -90,10 +90,10 @@ public class SassBuilder
                 int lineNumber = 0;
                 for(MSelector mSelector : mixin.GetRelatedSelectors())
                 {
-                    if(mSelector.GetRuleNumber() != lineNumber)
+                    if(mSelector.GetLineNumber() != lineNumber)
                     {
                         count += numberOfProps - 1;
-                        lineNumber = mSelector.GetRuleNumber();
+                        lineNumber = mSelector.GetLineNumber();
                     }
                 }
 
@@ -124,7 +124,7 @@ public class SassBuilder
 
     private void SortMixinValues(SassCloneMixin mixin)
     {
-        mixin.GetRelatedSelectors().sort((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber()));
+        mixin.GetRelatedSelectors().sort((s1, s2) -> Integer.compare(s1.GetLineNumber(), s2.GetLineNumber()));
         mixin.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
     }
 

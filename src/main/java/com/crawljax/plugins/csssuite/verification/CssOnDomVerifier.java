@@ -92,23 +92,6 @@ public class CssOnDomVerifier
         return effectiveProps;
     }
 
-    private Set<MProperty> FindUniqueProperties(Set<String> elements, MatchedElements matchedElements)
-    {
-        Set<MProperty> result = new HashSet<>();
-
-        for(String element : elements)
-        {
-            List<MSelector> selectors = matchedElements.SortSelectorsForMatchedElem(element);
-
-            for(MSelector mSelector : selectors)
-            {
-                result.addAll(mSelector.GetProperties());
-            }
-        }
-
-        return result;
-    }
-
     public void Verify(Map<StateVertex, LinkedHashMap<String, Integer>> states, Map<String, MCssFile> originalStyles, Map<String, MCssFile> generatedStyles) throws IOException
     {
         Map<MSelector, String> selFileMapOrig = GenerateSelectorFileMap(originalStyles);
@@ -191,8 +174,6 @@ public class CssOnDomVerifier
             List<MProperty> effectivePropsGnr = FindEffectivePropertiesForElement(selectorsGnr);
 
 
-
-
             effectivePropsOrig.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
             effectivePropsGnr.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
 
@@ -215,15 +196,6 @@ public class CssOnDomVerifier
                     if(gnrProperty.GetName().equals(name))
                     {
                         String gnrValue = bcp.TryParseColorToHex(gnrProperty.GetValue());
-
-//                        if(gnrValue.equals("transparent"))
-//                        {
-//                            gnrValue = "rgba(0, 0, 0, 0)";
-//                        }
-//                        else if (gnrValue.contains("transparent"))
-//                        {
-//                            gnrValue = gnrValue.replace("transparent", "rgba(0, 0, 0, 0)");
-//                        }
 
                         if(gnrValue.equals(value) && gnrProperty.IsImportant() == origProperty.IsImportant())
                         {

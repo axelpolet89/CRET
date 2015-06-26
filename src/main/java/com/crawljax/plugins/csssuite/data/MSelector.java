@@ -26,7 +26,8 @@ public class MSelector
 	private final String _w3cError;
 
 	private String _selectorText; // possibly updatet in filtering universal selectors
-	private int _ruleNumber; // possibly updatet by MergeProperties
+	private final int _lineNumber;
+	private final int _order;
 
 	private boolean _isIgnored;
 	private boolean _isMatched;
@@ -51,11 +52,12 @@ public class MSelector
 	 * @param properties: the properties that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
-	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, List<MediaQuery> queries, MCssRuleBase parent, String w3cError)
+	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, int order, List<MediaQuery> queries, MCssRuleBase parent, String w3cError)
 	{
 		_selector = w3cSelector;
 		_properties = properties;
-		_ruleNumber = ruleNumber;
+		_lineNumber = ruleNumber;
+		_order = order;
 		_selectorText = w3cSelector.toString().trim();
 		_mediaQueries = queries;
 		_parent = parent;
@@ -72,7 +74,7 @@ public class MSelector
 	 */
 	public MSelector(Selector w3cSelector, MSelector mSel)
 	{
-		this(w3cSelector, mSel.GetProperties(), mSel.GetRuleNumber(), mSel.GetMediaQueries(), mSel.GetParent(), "");
+		this(w3cSelector, mSel.GetProperties(), mSel.GetLineNumber(), mSel.GetOrder(), mSel.GetMediaQueries(), mSel.GetParent(), "");
 
 		// set additional properties, left empty by default constructor
 		_isMatched = mSel.IsMatched();
@@ -89,7 +91,8 @@ public class MSelector
 		_selectorText = _selector.toString().trim();
 		_mediaQueries = new ArrayList<>();
 		_mediaQueries.addAll(mSel.GetMediaQueries());
-		_ruleNumber = mSel.GetRuleNumber();
+		_lineNumber = mSel.GetLineNumber();
+		_order = mSel.GetOrder();
 		_parent = mSel.GetParent();
 		_w3cError = mSel.GetW3cError();
 
@@ -312,7 +315,10 @@ public class MSelector
 	public List<MProperty> GetProperties() { return _properties; }
 
 	/** Getter */
-	public int GetRuleNumber() { return _ruleNumber; }
+	public int GetLineNumber() { return _lineNumber; }
+
+	/** Getter */
+	public int GetOrder() { return _order; }
 
 	/** Getter */
 	public String GetW3cError() { return _w3cError; }
@@ -664,6 +670,6 @@ public class MSelector
 	@Override
 	public String toString()
 	{
-		return String.format("%s (line '%d')", _selectorText, _ruleNumber);
+		return String.format("%s (line '%d')", _selectorText, _lineNumber);
 	}
 }

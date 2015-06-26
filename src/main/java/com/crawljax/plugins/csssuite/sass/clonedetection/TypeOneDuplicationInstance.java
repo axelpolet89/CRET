@@ -78,8 +78,8 @@ public class TypeOneDuplicationInstance
         String s = "";
         for (MSelector selector : forSelectors) {
             s += selector;
-            if (selector.GetRuleNumber() >= 0)
-                s += String.format(" (%s)", selector.GetRuleNumber());
+            if (selector.GetLineNumber() >= 0)
+                s += String.format(" (%s)", selector.GetLineNumber());
             s += ", ";
         }
         s = s.substring(0, s.length() - 2); // Remove the last comma and space

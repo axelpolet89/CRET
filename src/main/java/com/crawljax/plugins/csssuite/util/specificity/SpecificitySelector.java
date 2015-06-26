@@ -24,7 +24,7 @@ public class SpecificitySelector
 
     public int GetRuleNumber()
     {
-        return _mSelector.GetRuleNumber();
+        return _mSelector.GetLineNumber();
     }
 
     public int GetOrder()

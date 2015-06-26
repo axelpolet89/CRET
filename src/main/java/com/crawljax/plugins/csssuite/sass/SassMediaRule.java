@@ -24,9 +24,18 @@ public class SassMediaRule extends SassRuleBase
     public void Print(SuiteStringBuilder builder, String prefix)
     {
         builder.append("@media");
+        boolean mediaSet = false;
         for(MediaQuery mq : _mediaQueries)
         {
-            builder.append(" " + mq.toString());
+            if(!mediaSet)
+            {
+                builder.append(" " + mq.toString());
+                mediaSet = true;
+            }
+            else
+            {
+                builder.append(", " + mq.toString().replace(mq.getMedia(), "").replace("and", "").trim());
+            }
         }
         builder.append("{\n\n");
 

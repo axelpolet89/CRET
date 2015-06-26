@@ -30,6 +30,10 @@ public class CssWriter
         Collections.sort(rules, new Comparator<MCssRuleBase>() {
             @Override
             public int compare(MCssRuleBase m1, MCssRuleBase m2) {
+                if(m1.GetLineNumber() == m2.GetLineNumber())
+                {
+                    return Integer.compare(m1.GetColumnNumber(), m2.GetColumnNumber());
+                }
                 return Integer.compare(m1.GetLineNumber(), m2.GetLineNumber());
             }
         });

@@ -130,7 +130,7 @@ public class CssParser
 				AbstractCSSRuleImpl rule = (AbstractCSSRuleImpl)ruleList.item(i);
 				if(rule instanceof CSSStyleRuleImpl)
 				{
-					styleAndMediaRules.add(new MCssRule((CSSStyleRuleImpl) rule, w3cErrors, _ruleOrder));
+					styleAndMediaRules.add(new MCssRule((CSSStyleRuleImpl) rule, w3cErrors));
 				}
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
@@ -139,7 +139,7 @@ public class CssParser
 				}
 				else
 				{
-					ignoredRules.add(new MCssRuleBase(rule, _ruleOrder));
+					ignoredRules.add(new MCssRuleBase(rule));
 				}
 			}
 			catch (Exception ex)
@@ -181,7 +181,7 @@ public class CssParser
 			queries.add(list.mediaQuery(i));
 		}
 
-		MCssMediaRule result = new MCssMediaRule(mediaRule, queries, parent, _ruleOrder);
+		MCssMediaRule result = new MCssMediaRule(mediaRule, queries, parent);
 		_ruleOrder++;
 
 		List<MCssRuleBase> innerRules = new ArrayList<>();
@@ -194,7 +194,7 @@ public class CssParser
 				AbstractCSSRuleImpl innerRule = (AbstractCSSRuleImpl)ruleList.item(i);
 				if(innerRule instanceof CSSStyleRuleImpl)
 				{
-					MCssRule styleRule = new MCssRule((CSSStyleRuleImpl)innerRule, w3cErrors, queries, result, _ruleOrder);
+					MCssRule styleRule = new MCssRule((CSSStyleRuleImpl)innerRule, w3cErrors, queries, result);
 					styleRules.add(styleRule);
 					innerRules.add(styleRule);
 				}
@@ -204,7 +204,7 @@ public class CssParser
 				}
 				else
 				{
-					ignoredRules.add(new MCssRuleBase(innerRule, queries, result, _ruleOrder));
+					ignoredRules.add(new MCssRuleBase(innerRule, queries, result));
 				}
 			}
 			catch (Exception ex)

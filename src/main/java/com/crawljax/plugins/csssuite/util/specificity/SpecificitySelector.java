@@ -4,17 +4,19 @@ import com.crawljax.plugins.csssuite.data.MSelector;
 
 /**
  * Wraps a MSelector and an integer, for use in SpecificityHelper only
- * This 'order' attribute is not included in the MSelector class, because it may change on a new state, while the MSelector is parsed only once
+ * This 'fileOrder' attribute is not included in the MSelector class, because it may change on a new state, while the MSelector is parsed only once
+ * Furthermore, the fileOrder attribute is required for sorting when selectors originate from different files.
+ * For instance an embedded file, will always have a higher order than a external file
  */
 public class SpecificitySelector
 {
     private final MSelector _mSelector;
-    private final int _order;
+    private final int _fileOrder;
 
     public SpecificitySelector(MSelector mSelector, int order)
     {
         _mSelector = mSelector;
-        _order = order;
+        _fileOrder = order;
     }
 
     public int GetSpecificity()
@@ -22,14 +24,16 @@ public class SpecificitySelector
         return _mSelector.GetSpecificity().GetValue();
     }
 
-    public int GetRuleNumber()
+    public int GetLineNumber()
     {
         return _mSelector.GetLineNumber();
     }
 
-    public int GetOrder()
+    public int GetOrder() { return _mSelector.GetOrder(); }
+
+    public int GetFileOrder()
     {
-        return _order;
+        return _fileOrder;
     }
 
     public MSelector GetSelector()

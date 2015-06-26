@@ -108,9 +108,14 @@ public class SassSelector
         return _selectorText;
     }
 
-    public int GetRuleNumber()
+    public int GetLineNumber()
     {
         return _original.GetLineNumber();
+    }
+
+    public int GetOrder()
+    {
+        return _original.GetOrder();
     }
 
     public List<MediaQuery> GetMediaQueries() { return _original.GetMediaQueries();}

@@ -18,21 +18,19 @@ public class MCssRuleBase
     protected final Locator _locator;
 
     protected final MCssRuleBase _parent;
-    protected final int _order;
 
-    public MCssRuleBase(AbstractCSSRuleImpl rule, List<MediaQuery> mediaQueries, MCssRuleBase parent, int order)
+    public MCssRuleBase(AbstractCSSRuleImpl rule, List<MediaQuery> mediaQueries, MCssRuleBase parent)
     {
         _rule = rule;
         _mediaQueries = mediaQueries;
         _locator = (Locator)_rule.getUserData(UserDataConstants.KEY_LOCATOR);
 
         _parent = parent;
-        _order = order;
     }
 
-    public MCssRuleBase(AbstractCSSRuleImpl rule, int order)
+    public MCssRuleBase(AbstractCSSRuleImpl rule)
     {
-        this(rule, new ArrayList<>(), null, order);
+        this(rule, new ArrayList<>(), null);
     }
 
     public AbstractCSSRuleImpl GetAbstractRule() { return _rule; }
@@ -40,6 +38,11 @@ public class MCssRuleBase
     public int GetLineNumber()
     {
         return _locator.getLineNumber();
+    }
+
+    public int GetColumnNumber()
+    {
+        return _locator.getColumnNumber();
     }
 
     public List<MediaQuery> GetMediaQueries()

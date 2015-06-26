@@ -13,9 +13,9 @@ public class MCssMediaRule extends MCssRuleBase
 {
     private List<MCssRuleBase> _innerRules;
 
-    public MCssMediaRule(CSSMediaRuleImpl rule, List<MediaQuery> queries, MCssRuleBase parent, int order)
+    public MCssMediaRule(CSSMediaRuleImpl rule, List<MediaQuery> queries, MCssRuleBase parent)
     {
-        super(rule, queries, parent, order);
+        super(rule, queries, parent);
     }
 
     public void SetInnerRules(List<MCssRuleBase> innerRules)

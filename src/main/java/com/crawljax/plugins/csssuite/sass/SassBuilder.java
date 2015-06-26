@@ -88,12 +88,14 @@ public class SassBuilder
 
                 int count = 0;
                 int lineNumber = 0;
+                int order = 0;
                 for(MSelector mSelector : mixin.GetRelatedSelectors())
                 {
-                    if(mSelector.GetLineNumber() != lineNumber)
+                    if(mSelector.GetLineNumber() != lineNumber || mSelector.GetOrder() != order)
                     {
                         count += numberOfProps - 1;
                         lineNumber = mSelector.GetLineNumber();
+                        order = mSelector.GetOrder();
                     }
                 }
 
@@ -124,7 +126,15 @@ public class SassBuilder
 
     private void SortMixinValues(SassCloneMixin mixin)
     {
-        mixin.GetRelatedSelectors().sort((s1, s2) -> Integer.compare(s1.GetLineNumber(), s2.GetLineNumber()));
+        mixin.GetRelatedSelectors().sort((s1, s2) ->
+        {
+            if(s1.GetLineNumber() == s2.GetLineNumber())
+            {
+                return Integer.compare(s1.GetOrder(), s2.GetOrder());
+            }
+
+            return Integer.compare(s1.GetLineNumber(), s2.GetLineNumber());
+        });
         mixin.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
     }
 
@@ -219,9 +229,16 @@ public class SassBuilder
         // group selectors by their line number, maintain order by using LinkedHashMap
         Map<Integer, List<SassSelector>> lineNoSelectorMap = new LinkedHashMap<>();
         sassSelectors.stream().filter(s -> s.GetMediaQueries().isEmpty())
-                .sorted((s1, s2) -> Integer.compare(s1.GetRuleNumber(), s2.GetRuleNumber()))
+                .sorted((s1, s2) -> {
+                    if(s1.GetLineNumber() == s2.GetLineNumber())
+                    {
+                        return Integer.compare(s1.GetOrder(), s2.GetOrder());
+                    }
+
+                    return Integer.compare(s1.GetLineNumber(), s2.GetLineNumber());
+                })
                 .forEach((s) -> {
-                    int lineNumber = s.GetRuleNumber();
+                    int lineNumber = s.GetLineNumber();
                     if (!lineNoSelectorMap.containsKey(lineNumber))
                     {
                         lineNoSelectorMap.put(lineNumber, new ArrayList<>());

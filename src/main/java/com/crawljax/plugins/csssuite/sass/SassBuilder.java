@@ -22,49 +22,50 @@ import java.util.stream.Collectors;
 public class SassBuilder
 {
     private final int minPropCount = 2;
+    private final MCssFile _mcssFile;
+    private final List<SassVariable> _sassVariables;
+    private final Map<String, String> _alreadyDefinedVars;
 
-    private final List<SassVariable> _sassVariables = new ArrayList<>();
-    private final Map<String, String> _alreadyDefinedVars = new HashMap<>();
+    public SassBuilder(MCssFile mCssFile)
+    {
+        _mcssFile = mCssFile;
+        _sassVariables = new ArrayList<>();
+        _alreadyDefinedVars = new HashMap<>();
+    }
 
-    public Map<String, SassFile> CssToSass(Map<String, MCssFile> cssFiles)
+    public SassFile CssToSass()
     {
         Map<String, SassFile> sassFiles = new HashMap<>();
         CloneDetector cd = new CloneDetector();
 
-        for(String fileName : cssFiles.keySet())
+        List<MCssRule> cssRules = _mcssFile.GetRules();
+
+        // copy all MSelectors, so we won't affect the original rules
+        List<MSelector> validSelectors = new ArrayList<>();
+        for(MCssRule rule : cssRules)
         {
-            List<MCssRule> cssRules = cssFiles.get(fileName).GetRules();
-
-            // copy all MSelectors, so we won't affect the original rules
-            List<MSelector> allSelectors = new ArrayList<>();
-            for(MCssRule rule : cssRules)
-            {
-                allSelectors.addAll(rule.GetSelectors().stream().map(selector -> new MSelector((selector))).collect(Collectors.toList()));
-            }
-
-            LogHandler.debug("[SassGenerator] Generate SASS for ignored CSS rules...");
-
-
-            LogHandler.debug("[SassGenerator] Generate SASS variables...");
-            GenerateVariables(allSelectors);
-
-            LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
-            List<SassCloneMixin> validMixins = ProcessAndFilterClones(cd.GenerateMixins(allSelectors));
-            LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), minPropCount, fileName);
-
-            LogHandler.debug("[SassGenerator] Generate SASS selectors...");
-            List<SassSelector> sassSelectors = GenerateSassSelectors(allSelectors, validMixins);
-
-            LogHandler.debug("[SassGenerator] Generate SASS convenience mixins...");
-            List<SassMixinBase> sassMixins = GenerateConvenienceMixins(sassSelectors);
-
-            LogHandler.debug("[SassGenerator] Generate SASS rules...");
-            List<SassRuleBase> sassRules = GenerateSassRules(sassSelectors, cssFiles.get(fileName).GetMediaRules(), cssFiles.get(fileName).GetIgnoredRules());
-
-            sassFiles.put(fileName, new SassFile(_sassVariables, validMixins, sassMixins, sassRules));
+            validSelectors.addAll(rule.GetSelectors().stream().map(selector -> new MSelector((selector))).collect(Collectors.toList()));
         }
 
-        return sassFiles;
+        LogHandler.debug("[SassGenerator] Generate SASS for ignored CSS rules...");
+
+        LogHandler.debug("[SassGenerator] Generate SASS variables...");
+        GenerateVariables(validSelectors);
+
+        LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
+        List<SassCloneMixin> validMixins = ProcessAndFilterClones(cd.GenerateMixins(validSelectors));
+        LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), minPropCount, _mcssFile.GetName());
+
+        LogHandler.debug("[SassGenerator] Generate SASS selectors...");
+        List<SassSelector> sassSelectors = GenerateSassSelectors(validSelectors, validMixins);
+
+        LogHandler.debug("[SassGenerator] Generate SASS convenience mixins...");
+        List<SassMixinBase> sassMixins = GenerateConvenienceMixins(sassSelectors);
+
+        LogHandler.debug("[SassGenerator] Generate SASS rules...");
+        List<SassRuleBase> sassRules = GenerateSassRules(sassSelectors, _mcssFile.GetMediaRules(), _mcssFile.GetIgnoredRules());
+
+        return new SassFile(_sassVariables, validMixins, sassMixins, sassRules);
     }
 
 

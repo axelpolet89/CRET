@@ -109,35 +109,39 @@ public class MSelector
 	 */
 	private void Init()
 	{
-		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]") || !_w3cError.isEmpty();
-		if(_isIgnored)
-		{
-			_isMatched = true;
-			_properties.forEach(p -> p.SetEffective(true));
-		}
-
-		try
-		{
-			RecursiveFilterUniversalSelector(_selector);
-		}
-		catch (Exception ex)
-		{
-			LogHandler.error(ex, "[MSelector] Error in filtering universal selectors in selector '%s':", _selector);
-		}
-
 		_matchedElements = new ArrayList<>();
 		_nonStructuralPseudoClasses = new LinkedHashMap<>();
 		_structuralPseudoClasses = new LinkedHashMap<>();
 		_keyPseudoClass = "";
 		_keyPseudoElement = "";
 
-		try
+		_isIgnored = _selectorText.contains(":not") || _selectorText.contains("[disabled]") || !_w3cError.isEmpty();
+		if(_isIgnored)
 		{
-			DeterminePseudo();
+			_isMatched = true;
+			_properties.forEach(p -> p.SetEffective(true));
+			_selectorText = _selectorText.replace("*","");
 		}
-		catch (Exception ex)
+		else
 		{
-			LogHandler.error(ex, "[MSelector] Error in determining pseudo presence in selector '%s':", _selector);
+
+			try
+			{
+				RecursiveFilterUniversalSelector(_selector);
+			}
+			catch (Exception ex)
+			{
+				LogHandler.error(ex, "[MSelector] Error in filtering universal selectors in selector '%s':", _selector);
+			}
+
+			try
+			{
+				DeterminePseudo();
+			}
+			catch (Exception ex)
+			{
+				LogHandler.error(ex, "[MSelector] Error in determining pseudo presence in selector '%s':", _selector);
+			}
 		}
 
 		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,

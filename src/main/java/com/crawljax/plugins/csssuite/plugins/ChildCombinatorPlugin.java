@@ -51,6 +51,11 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
 
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
+                    if(mSelector.IsIgnored())
+                    {
+                        continue;
+                    }
+
                     _descendants.clear();
 
                     Selector w3cSelector = mSelector.GetW3cSelector();
@@ -84,7 +89,7 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                     }
                 }
 
-                // finally, replace any selector in this mRule
+                // finally, replace some selector in this mRule
                 for(MSelector oldSelector : newSelectors.keySet())
                 {
                     mRule.ReplaceSelector(oldSelector, newSelectors.get(oldSelector));
@@ -288,8 +293,7 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                 {
                     ClassConditionImpl classCondition = (ClassConditionImpl) innerCondition;
                     String attr = GetAttributeValue(node.getAttributes(), "class");
-                    if (MatchNodeWithElementSelector(node, innerSelector) && attr != null &&
-                            (attr.equals(classCondition.getValue()) || attr.contains(classCondition.getValue() + " ")))
+                    if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && FindMatchInClass(attr, classCondition.getValue()))
                     {
                         return true;
                     }
@@ -330,6 +334,20 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
         {
             LogHandler.error(ex, "[DescToChild] Error while matching node to selector for node '%s' and selector '%s'", PrintNode(node), selector);
             return false;
+        }
+
+        return false;
+    }
+
+
+    private static boolean FindMatchInClass(String classAttribute, String search)
+    {
+        for(String part : classAttribute.split("\\s"))
+        {
+            if(part.equals("search"))
+            {
+                return true;
+            }
         }
 
         return false;

@@ -48,7 +48,7 @@ public class CloneDetectorTest
 
         files.put("clonedetector_2_test.css", externalFile1);
 
-        SassBuilder gen = new SassBuilder();
-        gen.CssToSass(files);
+//        SassBuilder gen = new SassBuilder();
+//        gen.CssToSass(files);
     }
 }

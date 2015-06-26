@@ -261,7 +261,20 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                         newProperties.addAll(BorderRadiusToProps(value, mProperty.GetNameVendor(), isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
-                    else if(name.equals("border") || name.equals("border-top") || name.equals("border-right") || name.equals("border-bottom") || name.equals("border-left"))
+                    else if(name.equals("border"))
+                    {
+                        //todo: transform border parts into box parts, however difficult to implement significant impact in merger...
+                        //especially because of ordering...
+//                        List<MProperty> borderProps = BorderToProps(name, value, isImportant, order);
+//                        for(MProperty borderProp : borderProps)
+//                        {
+//                            newProperties.addAll(BoxToProps(borderProp.GetValue(), borderProp.IsImportant(), borderProp.GetOrder(), "border-%s-" + borderProp.GetName().split("-")[1]));
+//                        }
+
+                        newProperties.addAll(BorderToProps(name, value, isImportant, order));
+                        LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    }
+                    else if(name.equals("border-top") || name.equals("border-right") || name.equals("border-bottom") || name.equals("border-left"))
                     {
                         newProperties.addAll(BorderToProps(name, value, isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);

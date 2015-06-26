@@ -22,6 +22,7 @@ import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.sass.SassFile;
+import com.crawljax.plugins.csssuite.sass.SassRuleBase;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.crawljax.plugins.csssuite.verification.CssOnDomVerifier;
@@ -485,9 +486,13 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		if(generateSass)
 		{
+			Map<String, SassFile> sassFileObjects = new HashMap<>();
 			// create SCSS objects from CSS files, including clone detection and other SCSS-specific transformations
-			SassBuilder sassBuilder = new SassBuilder();
-			Map<String, SassFile> sassFileObjects = sassBuilder.CssToSass(source);
+			for(String fileName : source.keySet())
+			{
+				SassBuilder sassBuilder = new SassBuilder(source.get(fileName));
+				sassFileObjects.put(fileName, sassBuilder.CssToSass());
+			}
 
 			// store generated SCSS files
 			Map<String, File> scssFiles = new HashMap<>();

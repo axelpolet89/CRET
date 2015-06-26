@@ -9,7 +9,6 @@ import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -256,6 +255,7 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
         }
 
         result.addAll(merger.BuildMProperties());
+
         return result;
     }
 }

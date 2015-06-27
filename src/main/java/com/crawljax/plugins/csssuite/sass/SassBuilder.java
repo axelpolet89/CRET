@@ -229,7 +229,8 @@ public class SassBuilder
         // group selectors by their line number, maintain order by using LinkedHashMap
         Map<Integer, List<SassSelector>> lineNoSelectorMap = new LinkedHashMap<>();
         sassSelectors.stream().filter(s -> s.GetMediaQueries().isEmpty())
-                .sorted((s1, s2) -> {
+                .sorted((s1, s2) ->
+                {
                     if(s1.GetLineNumber() == s2.GetLineNumber())
                     {
                         return Integer.compare(s1.GetOrder(), s2.GetOrder());
@@ -237,7 +238,8 @@ public class SassBuilder
 
                     return Integer.compare(s1.GetLineNumber(), s2.GetLineNumber());
                 })
-                .forEach((s) -> {
+                .forEach((s) ->
+                {
                     int lineNumber = s.GetLineNumber();
                     if (!lineNoSelectorMap.containsKey(lineNumber))
                     {
@@ -259,7 +261,9 @@ public class SassBuilder
             for(int i = 0; i < innerSelectors.size(); i++)
             {
                 if(processedIdx.contains(i))
+                {
                     continue;
+                }
 
                 List<SassSelector> selectorsForRule = new ArrayList<>();
                 SassSelector current = innerSelectors.get(i);
@@ -269,7 +273,9 @@ public class SassBuilder
                 for(int j = i + 1; j < innerSelectors.size(); j++)
                 {
                     if(processedIdx.contains(j))
+                    {
                         continue;
+                    }
 
                     SassSelector other = innerSelectors.get(j);
                     if(current.HasEqualDeclarationsByText(other))

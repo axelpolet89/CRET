@@ -146,6 +146,7 @@ public class SassSelector
     public List<String> GetSortedPropertiesText()
     {
         List<String> result = _includes.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
+        result.addAll(_otherIncludes);
         result.addAll(_properties.stream().sorted((p1, p2) -> p1.toString().compareTo(p2.toString())).map(p -> p.toString()).collect(Collectors.toList()));
         return result;
     }

@@ -388,8 +388,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			return false;
 		}
 
-		String siteRoot = _siteIndex.replace(indexUri.getPath(), "");
-
 		Map<String, String> embeddedMapping = new HashMap<>();
 		int embeddedIdx = 1;
 
@@ -404,24 +402,17 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			boolean inError = false;
 
-			String cssFile = "";// fileName.replace("https://", "http://").replace(siteRoot, "");
-//			cssFile = cssFile.replace("http://", "").replace("https://", "");
-//
-//			if(cssFile.isEmpty() || cssFile.equals("") || cssFile.equals("/"))
-//			{
-//				cssFile += "index/";
-//			}
-
+			String cssFile = "";
 			String cssRootDir = cssOutputRoot;
 
 			if(cssFile.contains(".css"))
 			{
 				cssRootDir += "external_styles\\";
-				cssFile = String.format("external_%d.css", embeddedIdx);
+				cssFile = String.format("external_%d.css", externalIdx);
 
 				externalMapping.put(fileName, cssFile);
 
-				LogHandler.info("[CssWriter] Styles contained in external CSS file, write as external css file '%s'", cssFile);
+				LogHandler.info("[GenerateCssAndSass] Styles contained in external CSS file, write as external css file '%s'", cssFile);
 				externalIdx ++;
 			}
 			else
@@ -431,16 +422,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 				embeddedMapping.put(fileName, cssFile);
 
-				LogHandler.info("[CssWriter] Styles not contained in external CSS file, write to embedded style file '%s'", cssFile);
+				LogHandler.info("[GenerateCssAndSass] Styles not contained in external CSS file, write to embedded style file '%s'", cssFile);
 				embeddedIdx ++;
 			}
-
-			//replace querystring token, not valid as file name
-//			if(cssFile.contains("?"))
-//			{
-//				int idx = cssFile.indexOf("?");
-//				cssFile = cssFile.replace(cssFile.substring(idx, cssFile.length()), "");
-//			}
 
 			try
 			{
@@ -559,6 +543,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			// create SCSS objects from CSS files, including clone detection and other SCSS-specific transformations
 			for(String fileName : source.keySet())
 			{
+				LogHandler.info("[Generate SCSS Code] Start building SASS objects for file %s...", fileName);
+
 				SassBuilder sassBuilder = new SassBuilder(source.get(fileName));
 				sassFileObjects.put(fileName, sassBuilder.CssToSass());
 			}
@@ -572,6 +558,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				try
 				{
+					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", fileName);
 					scssFiles.put(fileName, sassWriter.GenerateSassCode(sassFiles.get(fileName), sassFileObjects.get(fileName)));
 				}
 				catch (Exception e)
@@ -586,7 +573,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				// generate CSS from SCSS files
 				for (String fileName : scssFiles.keySet())
 				{
-					LogHandler.info("[Compile SCSS from CSS] Start compiling SCSS code for file %s", fileName);
+					LogHandler.info("[Compile SCSS from CSS] Start compiling SCSS code for file %s...", fileName);
 					try
 					{
 						SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());

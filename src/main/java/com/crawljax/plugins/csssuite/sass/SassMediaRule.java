@@ -34,7 +34,7 @@ public class SassMediaRule extends SassRuleBase
             }
             else
             {
-                builder.append(", " + mq.toString().replace(mq.getMedia(), "").replace("and", "").trim());
+                builder.append(", " + mq.toString().trim());
             }
         }
         builder.append("{\n\n");

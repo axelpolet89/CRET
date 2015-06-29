@@ -47,8 +47,6 @@ public class SassBuilder
             validSelectors.addAll(rule.GetSelectors().stream().map(selector -> new MSelector((selector))).collect(Collectors.toList()));
         }
 
-        LogHandler.debug("[SassGenerator] Generate SASS for ignored CSS rules...");
-
         LogHandler.debug("[SassGenerator] Generate SASS variables...");
         GenerateVariables(validSelectors);
 

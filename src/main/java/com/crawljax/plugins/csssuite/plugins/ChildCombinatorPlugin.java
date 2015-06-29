@@ -16,6 +16,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+import javax.print.Doc;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -317,8 +318,14 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                 }
                 else if (innerCondition instanceof PseudoClassConditionImpl)
                 {
-                    if (MatchNodeWithElementSelector(node, innerSelector))
-                        return true;
+                    if(innerCondition.toString().equals(":root"))
+                    {
+                        return node instanceof Document;
+                    }
+                    else
+                    {
+                        return MatchNodeWithElementSelector(node, innerSelector);
+                    }
                 }
                 else
                 {

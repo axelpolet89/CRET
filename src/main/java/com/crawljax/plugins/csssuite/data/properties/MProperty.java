@@ -74,7 +74,7 @@ public class MProperty
 			_valueVendorPrefix = "";
 		}
 
-		_isIgnored = !w3cError.isEmpty() || !_valueVendorPrefix.isEmpty() || value.contains("-gradient") || value.contains("progid:");
+		_isIgnored = !w3cError.isEmpty() || !_valueVendorPrefix.isEmpty() || value.contains("-gradient") || value.contains("progid:") || name.startsWith("_");
 	}
 
 

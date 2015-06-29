@@ -164,8 +164,8 @@ public class SassBuilder
 
         for(SassSelector sassSelector : allSelectors)
         {
-            List<MProperty> paddings = sassSelector.GetProperties().stream().filter(ms -> ms.GetName().contains("padding-")).collect(Collectors.toList());
-            List<MProperty> margins = sassSelector.GetProperties().stream().filter(ms -> ms.GetName().contains("margin-")).collect(Collectors.toList());
+            List<MProperty> paddings = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("padding-")).collect(Collectors.toList());
+            List<MProperty> margins = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("margin-")).collect(Collectors.toList());
 
             if(paddings.size() > 1)
             {

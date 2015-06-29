@@ -120,7 +120,6 @@ public class MatchedElementsTest
 		nodes = (List<Node>)result;
 		Assert.assertFalse(mSelector.CheckPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will not be compatible
 
-		//todo: fix :not handling
 		try
 		{
 			result = seSelectors.querySelectorAll("div:not(#div2)");

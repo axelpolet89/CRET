@@ -344,7 +344,6 @@ public class CloneDetector
 //                for (int i = idx; i < _allClones.size(); i++)
 //                {
 //                    CloneSet otherCloneSet = _allClones.get(fileName).get(i);
-//                    //todo: still need to develop way by which some(at least 2) selectors match between clonesets
 //                    if (otherCloneSet.GetSelectors().containsAll(cloneSet.GetSelectors()))
 //                    {
 //                        props.add(otherCloneSet.GetProperty());

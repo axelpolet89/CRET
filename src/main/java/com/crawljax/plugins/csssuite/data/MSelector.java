@@ -214,10 +214,6 @@ public class MSelector
 	 */
 	private void DeterminePseudo()
 	{
-		//todo: what to do with negation pseudo?
-		if(_selectorText.contains(":not"))
-			return;
-
 		if(_selectorText.contains(":"))
 		{
 			_selectorTextWithoutPseudo = _selectorText;

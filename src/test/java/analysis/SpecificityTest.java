@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.util.specificity.Specificity;
-import com.crawljax.plugins.csssuite.util.specificity.SpecificityHelper;
 
 public class SpecificityTest
 {
@@ -97,7 +96,7 @@ public class SpecificityTest
 		list.add(TestHelper.CreateSpecificitySelector("span", 7));
 		list.add(TestHelper.CreateSpecificitySelector("A", 8));
 
-		SpecificityHelper.SortBySpecificity(list);
+		MatchedElements.SortBySpecificity(list);
 
 		Assert.assertEquals("span div#aha #cal2", list.get(0).GetSelector().GetSelectorText()); 	// defined later than #cal1
 		Assert.assertEquals("span div#aha #cal1", list.get(1).GetSelector().GetSelectorText());

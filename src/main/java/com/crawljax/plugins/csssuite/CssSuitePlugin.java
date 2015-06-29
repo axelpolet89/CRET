@@ -73,7 +73,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_siteName = siteName;
 		this._siteIndex = _siteIndex;
 
-		DOMConfigurator.configure("log4j.xml");
+		//DOMConfigurator.configure("log4j.xml");
 
 		LogHandler.info("");
 		LogHandler.info("==================================START NEW CSS-SUITE RUN=====================================");
@@ -393,6 +393,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		Map<String, String> embeddedMapping = new HashMap<>();
 		int embeddedIdx = 1;
 
+		Map<String, String> externalMapping = new HashMap<>();
+		int externalIdx = 1;
+
 		boolean filesInError = false;
 
 		for(String fileName : source.keySet())
@@ -401,17 +404,27 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			boolean inError = false;
 
-			String cssFile = fileName.replace("https://", "http://").replace(siteRoot, "");
-			cssFile = cssFile.replace("http://", "").replace("https://", "");
-
-			if(cssFile.isEmpty() || cssFile.equals("") || cssFile.equals("/"))
-			{
-				cssFile += "index/";
-			}
+			String cssFile = "";// fileName.replace("https://", "http://").replace(siteRoot, "");
+//			cssFile = cssFile.replace("http://", "").replace("https://", "");
+//
+//			if(cssFile.isEmpty() || cssFile.equals("") || cssFile.equals("/"))
+//			{
+//				cssFile += "index/";
+//			}
 
 			String cssRootDir = cssOutputRoot;
 
-			if(!cssFile.contains(".css"))
+			if(cssFile.contains(".css"))
+			{
+				cssRootDir += "external_styles\\";
+				cssFile = String.format("external_%d.css", embeddedIdx);
+
+				externalMapping.put(fileName, cssFile);
+
+				LogHandler.info("[CssWriter] Styles contained in external CSS file, write as external css file '%s'", cssFile);
+				externalIdx ++;
+			}
+			else
 			{
 				cssRootDir += "embedded_styles\\";
 				cssFile = String.format("embedded_%d.css", embeddedIdx);
@@ -423,11 +436,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 
 			//replace querystring token, not valid as file name
-			if(cssFile.contains("?"))
-			{
-				int idx = cssFile.indexOf("?");
-				cssFile = cssFile.replace(cssFile.substring(idx, cssFile.length()), "");
-			}
+//			if(cssFile.contains("?"))
+//			{
+//				int idx = cssFile.indexOf("?");
+//				cssFile = cssFile.replace(cssFile.substring(idx, cssFile.length()), "");
+//			}
 
 			try
 			{
@@ -487,20 +500,42 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		boolean sassInError = false;
 		boolean sassToCssInError = false;
 
-		try
+		if(!externalMapping.isEmpty())
 		{
-			FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("embedded_styles_mapping.txt")));
-			esWriter.write("embedded files are mapped as follow:\n");
-			for(String fileName : embeddedMapping.keySet())
+			try
 			{
-				esWriter.append(String.format("%s : %s\n", embeddedMapping.get(fileName), fileName));
+				FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("external_files_mapping.txt")));
+				esWriter.write("external files are mapped as follows:\n");
+				for (String fileName : externalMapping.keySet())
+				{
+					esWriter.append(String.format("%s : %s\n", externalMapping.get(fileName), fileName));
+				}
+				esWriter.flush();
+				esWriter.close();
 			}
-			esWriter.flush();
-			esWriter.close();
+			catch (IOException e)
+			{
+				LogHandler.error(e, "[GenerateCssAndSass] Error in generating external file mapping");
+			}
 		}
-		catch (IOException e)
+
+		if(!embeddedMapping.isEmpty())
 		{
-			LogHandler.error(e, "[GenerateCssAndSass] Error in generating embedded file mapping");
+			try
+			{
+				FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("embedded_styles_mapping.txt")));
+				esWriter.write("embedded files are mapped as follows:\n");
+				for (String fileName : embeddedMapping.keySet())
+				{
+					esWriter.append(String.format("%s : %s\n", embeddedMapping.get(fileName), fileName));
+				}
+				esWriter.flush();
+				esWriter.close();
+			}
+			catch (IOException e)
+			{
+				LogHandler.error(e, "[GenerateCssAndSass] Error in generating embedded file mapping");
+			}
 		}
 
 		// CSS before SASS transformation
@@ -551,6 +586,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				// generate CSS from SCSS files
 				for (String fileName : scssFiles.keySet())
 				{
+					LogHandler.info("[Compile SCSS from CSS] Start compiling SCSS code for file %s", fileName);
 					try
 					{
 						SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
@@ -611,7 +647,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			builder.appendLine("</site>");
 
 			File verificationOutput = FileHelper.CreateFileAndDirs("./output/verification/verification_summary.xml");
-			FileWriter writer = new FileWriter(verificationOutput);
+			FileWriter writer = new FileWriter(verificationOutput, true);
 			writer.append(builder.toString());
 			writer.flush();
 			writer.close();

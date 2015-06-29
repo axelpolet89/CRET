@@ -1,6 +1,5 @@
 package com.crawljax.plugins.csssuite.plugins.merge;
 
-import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
@@ -19,17 +18,25 @@ import java.util.*;
  */
 public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
 {
+    private Map<MProperty, MSelector> _propSelMap = new HashMap<>();
+
     @Override
     public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         for (String file : cssRules.keySet())
         {
-            LogHandler.info("[CssNormalizer] Start normalization of properties for file '%s'", file);
+            LogHandler.info("[CssMergeNormalizer] Start normalization of properties for file '%s'", file);
 
             for(MCssRule mRule : cssRules.get(file).GetRules())
             {
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
+                    _propSelMap.clear();
+                    for(MProperty mProperty : mSelector.GetProperties())
+                    {
+                        _propSelMap.put(mProperty, mSelector);
+                    }
+
                     MergePropertiesToShorthand(mSelector);
 
                     //sort properties again
@@ -46,7 +53,7 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
      * Split any shorthand margin, padding, border, border-radius, outline and background property into parts
      * @param mSelector
      */
-    private static void MergePropertiesToShorthand(MSelector mSelector)
+    private void MergePropertiesToShorthand(MSelector mSelector)
     {
         List<MProperty> newProperties = new ArrayList<>();
         List<MProperty> properties = mSelector.GetProperties();
@@ -195,7 +202,7 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
      * @param merger
      * @return
      */
-    private static List<MProperty> MergeBoxProperties(List<MProperty> properties, MergerBase merger)
+    private List<MProperty> MergeBoxProperties(List<MProperty> properties, MergerBase merger)
     {
         if(properties.size() == 0)
         {
@@ -211,10 +218,10 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
                 {
                     merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant(), mProperty.GetOrder());
                 }
-                catch (CssSuiteException e)
+                catch (Exception e)
                 {
                     result.add(mProperty);
-                    LogHandler.error(e, "Cannot parse single property %s into shorthand equivalent, just add it to result", mProperty);
+                    LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s in selector %s into shorthand equivalent, just add it to result", mProperty, _propSelMap.get(mProperty));
                 }
             }
 
@@ -232,7 +239,7 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
      * @param merger
      * @return
      */
-    private static List<MProperty> MergeBorderProperties(List<MProperty> properties, MergerBase merger)
+    private List<MProperty> MergeBorderProperties(List<MProperty> properties, MergerBase merger)
     {
         if (properties.size() == 0)
         {
@@ -247,10 +254,10 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
             {
                 merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant(), mProperty.GetOrder());
             }
-            catch (CssSuiteException e)
+            catch (Exception e)
             {
                 result.add(mProperty);
-                LogHandler.error(e, "Cannot parse single property %s into shorthand equivalent, just add it to result", mProperty);
+                LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s for selector %s into shorthand equivalent, just add it to result", mProperty, _propSelMap.get(mProperty));
             }
         }
 

@@ -26,8 +26,10 @@ import java.util.stream.Collectors;
  */
 public class CssOnDomVerifier
 {
-    private Map<MSelector, String> selFileMapOrig = new HashMap<>();
-    private Map<MSelector, String> selFileMapGnr = new HashMap<>();
+    private Map<MSelector, String> _selFileMapOrig = new HashMap<>();
+    private Map<MSelector, String> _selFileMapGnr = new HashMap<>();
+    private Map<MProperty, MSelector> _propSelMapOrig = new HashMap<>();
+    private Map<MProperty, MSelector> _propSelMapGnr = new HashMap<>();
 
     private Set<String> _matchedElementsOrig = new HashSet<>();
     private Set<String> _matchedAndEffectiveOrig = new HashSet<>();
@@ -94,9 +96,8 @@ public class CssOnDomVerifier
 
     public void Verify(Map<StateVertex, LinkedHashMap<String, Integer>> states, Map<String, MCssFile> originalStyles, Map<String, MCssFile> generatedStyles) throws IOException
     {
-        Map<MSelector, String> selFileMapOrig = GenerateSelectorFileMap(originalStyles);
-        Map<MSelector, String> selFileMapGnr = GenerateSelectorFileMap(generatedStyles);
-
+        _selFileMapOrig = GenerateSelectorFileMap(originalStyles);
+        _selFileMapGnr = GenerateSelectorFileMap(generatedStyles);
 
         MatchedElements matchedElementsOrig = new MatchedElements();
         MatchedElements matchedElementsGnr = new MatchedElements();
@@ -158,7 +159,7 @@ public class CssOnDomVerifier
             LogHandler.debug("[VERIFICATION] Start effectiveness analysis and comparison for element %d of %d...", count, total);
 
             List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
-            Map<MProperty, MSelector> propSelMapOrig = GeneratePropertySelectorMap(selectorsOrig);
+            _propSelMapOrig.putAll(GeneratePropertySelectorMap(selectorsOrig));
 
             List<MProperty> effectivePropsOrig = FindEffectivePropertiesForElement(selectorsOrig);
 
@@ -169,10 +170,9 @@ public class CssOnDomVerifier
             }
 
             List<MSelector> selectorsGnr = matchedElementsGnr.SortSelectorsForMatchedElem(matchedElement);
-            Map<MProperty, MSelector> propSelMapGnr = GeneratePropertySelectorMap(selectorsGnr);
+            _propSelMapGnr.putAll(GeneratePropertySelectorMap(selectorsGnr));
 
             List<MProperty> effectivePropsGnr = FindEffectivePropertiesForElement(selectorsGnr);
-
 
             effectivePropsOrig.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
             effectivePropsGnr.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
@@ -247,8 +247,8 @@ public class CssOnDomVerifier
             {
                 MProperty gnrProperty = matchedOnName.get(origProperty);
                 LogHandler.debug("[VERIFICATION] Match by name only: new:'%s', old:'%s'\nnew:'%s', old:'%s'\nnew:'%s', old:'%s'",
-                                    gnrProperty, origProperty, propSelMapGnr.get(gnrProperty), propSelMapOrig.get(origProperty),
-                                    selFileMapGnr.get(propSelMapGnr.get(gnrProperty)), selFileMapOrig.get(propSelMapOrig.get(origProperty)));
+                        gnrProperty, origProperty, _propSelMapGnr.get(gnrProperty), _propSelMapOrig.get(origProperty),
+                        _selFileMapGnr.get(_propSelMapGnr.get(gnrProperty)), _selFileMapOrig.get(_propSelMapOrig.get(origProperty)));
             }
 
             for(MProperty remainingProperty : remainderOrig)
@@ -265,14 +265,14 @@ public class CssOnDomVerifier
 
                 _totalMissingProps.add(remainingProperty);
                 LogHandler.debug("[VERIFICATION] Missing property '%s' in selector '%s' in file '%s'",
-                        remainingProperty, propSelMapOrig.get(remainingProperty), selFileMapOrig.get(propSelMapOrig.get(remainingProperty)));
+                        remainingProperty, _propSelMapOrig.get(remainingProperty), _selFileMapOrig.get(_propSelMapOrig.get(remainingProperty)));
             }
 
             for(MProperty remainingProperty : remainderGnr)
             {
                 _totalAdditionalProps.add(remainingProperty);
                 LogHandler.debug("[VERIFICATION] Additional property '%s' in selector '%s' in file '%s'",
-                        remainingProperty, propSelMapGnr.get(remainingProperty), selFileMapGnr.get(propSelMapGnr.get(remainingProperty)));
+                        remainingProperty, _propSelMapGnr.get(remainingProperty), _selFileMapGnr.get(_propSelMapGnr.get(remainingProperty)));
             }
 
             _totalEquallyEffectiveProps.addAll(matchedPropsOnValueGnr);
@@ -288,7 +288,7 @@ public class CssOnDomVerifier
             String selectorsText = "";
             for(MSelector mSelector : selectors)
             {
-                selectorsText += String.format("%s in file: %s\n", mSelector, selFileMapOrig.get(mSelector));
+                selectorsText += String.format("%s in file: %s\n", mSelector, _selFileMapOrig.get(mSelector));
             }
 
             LogHandler.info("[VERIFICATION] Unmatched element detected: '%s'\nwith selectors from original stylesheets: %s", unmatchedElement, selectorsText);
@@ -303,7 +303,7 @@ public class CssOnDomVerifier
             String selectorsText = "";
             for(MSelector mSelector : selectors)
             {
-                selectorsText += String.format("%s in file: %s\n", mSelector, selFileMapGnr.get(mSelector));
+                selectorsText += String.format("%s in file: %s\n", mSelector, _selFileMapGnr.get(mSelector));
             }
 
             LogHandler.info("[VERIFICATION] Additionally matched element detected: %s\nwith selectors from generated stylesheets", selectorsText);
@@ -327,10 +327,39 @@ public class CssOnDomVerifier
         _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalEffectiveByName.keySet());
         _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalMissingProps);
 
-        LogHandler.info("[VERIFICATION] %d elements matched originally, %d elements matches effective originally, %d elements unmatched, %d additional elements matched",
-                _equallyMatchedElems.size(), _matchedAndEffectiveOrig.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
+        LogResults();
+    }
+
+    private void LogResults()
+    {
+        LogHandler.info("[VERIFICATION] %d elements matched originally, %d elements matches effective originally, %d elements equally matched by new,  %d elements unmatched, %d additional elements matched",
+                _equallyMatchedElems.size(), _matchedAndEffectiveOrig.size(), _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
         LogHandler.info("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
                 _totalEffectivePropsOrig.size(), _totalEquallyEffectiveProps.size(), _totalEffectiveByName.size(), _totalDefaultPropsOrig.size(), _totalMissingProps.size(), _totalAdditionalProps.size());
+
+        for(MProperty orig : _totalEffectiveByName.keySet())
+        {
+            MProperty gnr = _totalEffectiveByName.get(orig);
+            LogHandler.info("[VERIFICATION] Matched by name: '%s'\nwith '%s'", PrintOrigProperty(orig), PrintGnrProperty(gnr));
+        }
+        for(MProperty orig : _totalMissingProps)
+        {
+            LogHandler.info("[VERIFICATION] Missing property: '%s'", PrintOrigProperty(orig));
+        }
+        for(MProperty gnr : _totalAdditionalProps)
+        {
+            LogHandler.info("[VERIFICATION] Additional property: '%s'", PrintGnrProperty(gnr));
+        }
+    }
+
+    private String PrintOrigProperty(MProperty property)
+    {
+        return String.format("%s %s %s", property, _propSelMapOrig.get(property), _selFileMapOrig.get(_propSelMapOrig.get(property)));
+    }
+
+    private String PrintGnrProperty(MProperty property)
+    {
+        return String.format("%s %s %s", property, _propSelMapGnr.get(property), _selFileMapGnr.get(_propSelMapGnr.get(property)));
     }
 
     public void GenerateXml(SuiteStringBuilder builder, String prefix)

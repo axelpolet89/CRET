@@ -3,7 +3,6 @@ package com.crawljax.plugins.csssuite.plugins.merge;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -113,7 +112,11 @@ public class BackgroundMerger extends MergerBase
         if(!_attachment.isEmpty())
             value += " " + _attachment;
 
-        result.add(new MProperty(_name, value, _isImportant, true, _order));
+        if(!value.isEmpty())
+        {
+            result.add(new MProperty(_name, value, _isImportant, true, _order));
+        }
+
         return result;
     }
 }

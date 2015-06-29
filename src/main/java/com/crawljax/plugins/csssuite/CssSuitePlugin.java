@@ -374,24 +374,13 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		String cssOutputRoot = String.format("%s\\CSS(def)\\", root);
 		String sassOutputRoot = String.format("%s\\SASS\\", root);
 
-		Map<String, File> cssFiles = new HashMap<>();
-		Map<String, File> sassFiles = new HashMap<>();
+		Map<String, File> cssFiles = new LinkedHashMap<>();
+		Map<String, File> sassFiles = new LinkedHashMap<>();
 
-		URI indexUri = null;
-		try
-		{
-			indexUri = new URI(_siteIndex);
-		}
-		catch (URISyntaxException e)
-		{
-			LogHandler.error(e, "[GenerateCssAndSass] Cannot generate URI from _siteIndex %s", _siteIndex);
-			return false;
-		}
-
-		Map<String, String> embeddedMapping = new HashMap<>();
+		Map<String, String> embeddedMapping = new LinkedHashMap<>();
 		int embeddedIdx = 1;
 
-		Map<String, String> externalMapping = new HashMap<>();
+		Map<String, String> externalMapping = new LinkedHashMap<>();
 		int externalIdx = 1;
 
 		boolean filesInError = false;
@@ -405,7 +394,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			String cssFile = "";
 			String cssRootDir = cssOutputRoot;
 
-			if(cssFile.contains(".css"))
+			if(fileName.contains(".css"))
 			{
 				cssRootDir += "external_styles\\";
 				cssFile = String.format("external_%d.css", externalIdx);

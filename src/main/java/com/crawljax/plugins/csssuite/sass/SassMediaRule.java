@@ -27,14 +27,20 @@ public class SassMediaRule extends SassRuleBase
         boolean mediaSet = false;
         for(MediaQuery mq : _mediaQueries)
         {
+            String text = mq.toString();
+            if(text.charAt(0) == (char)65533)
+            {
+                text = text.substring(1, text.length());
+            }
+
             if(!mediaSet)
             {
-                builder.append(" " + mq.toString());
+                builder.append(" " + text);
                 mediaSet = true;
             }
             else
             {
-                builder.append(", " + mq.toString().trim());
+                builder.append(", " + text);
             }
         }
         builder.append("{\n\n");

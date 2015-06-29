@@ -327,7 +327,8 @@ public class CssOnDomVerifier
         _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalEffectiveByName.keySet());
         _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalMissingProps);
 
-        LogHandler.info("[VERIFICATION] %d elements matched, %d elements unmatched, %d additional elements matched", _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
+        LogHandler.info("[VERIFICATION] %d elements matched originally, %d elements matches effective originally, %d elements unmatched, %d additional elements matched",
+                _equallyMatchedElems.size(), _matchedAndEffectiveOrig.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
         LogHandler.info("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
                 _totalEffectivePropsOrig.size(), _totalEquallyEffectiveProps.size(), _totalEffectiveByName.size(), _totalDefaultPropsOrig.size(), _totalMissingProps.size(), _totalAdditionalProps.size());
     }
@@ -335,6 +336,7 @@ public class CssOnDomVerifier
     public void GenerateXml(SuiteStringBuilder builder, String prefix)
     {
         builder.append("%s<matched_elements_orig>%d</matched_elements_orig>", prefix, _matchedElementsOrig.size());
+        builder.appendLine("%s<matched_effective_orig>%d</matched_effective_orig>", prefix, _matchedAndEffectiveOrig.size());
         builder.appendLine("%s<equally_matched_elements>%d</equally_matched_elements>", prefix, _equallyMatchedElems.size());
         builder.appendLine("%s<missed_matched_elements>%d</missed_matched_elements>", prefix, _missedMatchedElements.size());
         builder.appendLine("%s<additional_matched_elements>%d</additional_matched_elements>", prefix, _additionalMatchedElems.size());

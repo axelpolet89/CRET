@@ -42,6 +42,7 @@ import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import com.crawljax.plugins.csssuite.parser.CssParser;
+import sun.rmi.runtime.Log;
 
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
@@ -355,9 +356,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			LogHandler.error(e.getMessage(), e);
 		}
 
-		GenerateCssAndSass(rules, _enableSassGeneration);
+		boolean errors = GenerateCssAndSass(rules, _enableSassGeneration);
 
-		if(_enableVerification)
+		if(_enableVerification && !errors)
 		{
 			VerifyGeneratedCss();
 		}
@@ -365,8 +366,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 
 
-	private void GenerateCssAndSass(Map<String, MCssFile> source, boolean generateSass)
+	private boolean GenerateCssAndSass(Map<String, MCssFile> source, boolean generateSass)
 	{
+		LogHandler.info("[GenerateCssAndSass] START CODE GENERATION...");
+
 		String root = String.format("output\\%s\\", _siteName);
 		String cssOutputRoot = String.format("%s\\CSS(def)\\", root);
 		String sassOutputRoot = String.format("%s\\SASS\\", root);
@@ -381,7 +384,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		}
 		catch (URISyntaxException e)
 		{
-			return;
+			LogHandler.error(e, "[GenerateCssAndSass] Cannot generate URI from _siteIndex %s", _siteIndex);
+			return false;
 		}
 
 		String siteRoot = _siteIndex.replace(indexUri.getPath(), "");
@@ -389,12 +393,21 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		Map<String, String> embeddedMapping = new HashMap<>();
 		int embeddedIdx = 1;
 
+		boolean filesInError = false;
+
 		for(String fileName : source.keySet())
 		{
+			LogHandler.info("[GenerateCssAndSass] Generate output file objects for filename '%s'", fileName);
+
+			boolean inError = false;
+
 			String cssFile = fileName.replace("https://", "http://").replace(siteRoot, "");
+			cssFile = cssFile.replace("http://", "").replace("https://", "");
 
 			if(cssFile.isEmpty() || cssFile.equals("") || cssFile.equals("/"))
+			{
 				cssFile += "index/";
+			}
 
 			String cssRootDir = cssOutputRoot;
 
@@ -405,7 +418,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 				embeddedMapping.put(fileName, cssFile);
 
-				LogHandler.info("[CssWriter] Styles not contained in external CSS file, write as embedded styles");
+				LogHandler.info("[CssWriter] Styles not contained in external CSS file, write to embedded style file '%s'", cssFile);
 				embeddedIdx ++;
 			}
 
@@ -422,10 +435,12 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (Exception e)
 			{
+				filesInError = true;
+				inError = true;
 				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for CSS file '%s' at root '%s'", cssFile, cssRootDir);
 			}
 
-			if(!generateSass)
+			if(!generateSass || inError)
 			{
 				continue;
 			}
@@ -439,10 +454,17 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (Exception e)
 			{
+				filesInError = true;
+				inError = true;
 				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS file '%s' at root '%s'", sassFile, sassRootDir);
 			}
 
 			String genCssFile = cssRootDir.concat(cssFile).replace("CSS(def)", "CSS(sass)");
+
+			if(inError)
+			{
+				continue;
+			}
 
 			try
 			{
@@ -450,9 +472,20 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (Exception e)
 			{
-				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS generated CSS file at path '%s'", genCssFile);
+				filesInError = true;
+				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS-to-CSS file at path '%s'", genCssFile);
 			}
 		}
+
+		if(filesInError)
+		{
+			LogHandler.info("[GenerateCssAndSass] Errors occurred while building File objects, do not continue code generation");
+			return true;
+		}
+
+		boolean cssInError = false;
+		boolean sassInError = false;
+		boolean sassToCssInError = false;
 
 		try
 		{
@@ -480,7 +513,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (Exception e)
 			{
-				LogHandler.error(e, "[Generate CSS] Error while generating CSS code for file %s", fileName);
+				cssInError = true;
+				LogHandler.error(e, "[Generate CSS Code] Error while generating CSS code for file %s", fileName);
 			}
 		}
 
@@ -507,31 +541,37 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				}
 				catch (Exception e)
 				{
-					LogHandler.error(e, "[Generate SCSS] Error while generating SCSS code for file %s", fileName);
+					sassInError = true;
+					LogHandler.error(e, "[Generate SCSS Code] Error while generating SCSS code for file %s", fileName);
 				}
 			}
 
-
-			// generate CSS from SCSS files
-			for (String fileName : scssFiles.keySet())
+			if(!sassInError)
 			{
-				try
+				// generate CSS from SCSS files
+				for (String fileName : scssFiles.keySet())
 				{
-					SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
-					ctx.getOptions().setOutputStyle(SassOutputStyle.NESTED);
+					try
+					{
+						SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
+						ctx.getOptions().setOutputStyle(SassOutputStyle.NESTED);
 
-					FileOutputStream outputStream = new FileOutputStream(_newCssFiles.get(fileName));
-					ctx.compile(outputStream);
+						FileOutputStream outputStream = new FileOutputStream(_newCssFiles.get(fileName));
+						ctx.compile(outputStream);
 
-					outputStream.flush();
-					outputStream.close();
-				}
-				catch (Exception e)
-				{
-					LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _newCssFiles.get(fileName));
+						outputStream.flush();
+						outputStream.close();
+					}
+					catch (Exception e)
+					{
+						sassToCssInError = true;
+						LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _newCssFiles.get(fileName));
+					}
 				}
 			}
 		}
+
+		return cssInError || sassInError || sassToCssInError;
 	}
 
 

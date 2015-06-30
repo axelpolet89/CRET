@@ -396,10 +396,6 @@ public class SassBuilder
                     continue;
                 }
 
-                SassVarType varType = null;
-                String varName = "";
-                String varValue = "";
-
                 String origName = mProperty.GetName();
                 String origValue = mProperty.GetValue();
 
@@ -407,9 +403,9 @@ public class SassBuilder
                 {
                     if (origName.equals("font-family"))
                     {
-                        varType = SassVarType.FONT;
-                        varName = "font-stack";
-                        varValue = origValue;
+                        SassVarType varType = SassVarType.FONT;
+                        String varName = "font-stack";
+                        String varValue = origValue;
 
                         varName = GenerateVariable(varName, varValue, varType, mProperty);
                         String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
@@ -421,6 +417,10 @@ public class SassBuilder
                         String[] parts = origValue.split("\\s");
                         for (String part : parts)
                         {
+                            SassVarType varType = null;
+                            String varName = "";
+                            String varValue = "";
+
                             if (part.contains("url"))
                             {
                                 varType = SassVarType.URL;
@@ -447,11 +447,19 @@ public class SassBuilder
 
                             if (!varName.isEmpty() && !varValue.isEmpty())
                             {
-                                varName = GenerateVariable(varName, varValue, varType, mProperty);
+                                varName = String.format("$%s", GenerateVariable(varName, varValue, varType, mProperty));
 
                                 String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
-                                String escapedName = String.format("\\$%s", varName);
-                                origValue = origValue.replaceFirst(escapedValue, escapedName);
+                                String escapedName = String.format("\\%s", varName);
+
+                                if(origValue.contains(escapedValue))
+                                {
+                                    origValue = origValue.replaceFirst(escapedValue, escapedName);
+                                }
+                                else
+                                {
+                                    origValue = origValue.replace(varValue, varName);
+                                }
                             }
                         }
                     }
@@ -500,8 +508,8 @@ public class SassBuilder
     private String TryFindUrl(String value)
     {
         int s =  value.indexOf("url(");
-        int e = value.indexOf(")", s);
-        return value.substring(s, e+1);
+        //int e = value.indexOf(")", s);
+        return value.substring(s, value.length());
     }
 
 

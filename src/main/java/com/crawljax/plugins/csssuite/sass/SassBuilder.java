@@ -21,13 +21,15 @@ import java.util.stream.Collectors;
  */
 public class SassBuilder
 {
-    private final int minPropCount = 2;
+    private final int _propUpperLimit;
+    private final int _mixinMinPropCount = 2;
     private final MCssFile _mcssFile;
     private final List<SassVariable> _sassVariables;
     private final Map<String, String> _alreadyDefinedVars;
 
-    public SassBuilder(MCssFile mCssFile)
+    public SassBuilder(MCssFile mCssFile, int propUpperLimit)
     {
+        _propUpperLimit = propUpperLimit;
         _mcssFile = mCssFile;
         _sassVariables = new ArrayList<>();
         _alreadyDefinedVars = new HashMap<>();
@@ -35,27 +37,40 @@ public class SassBuilder
 
     public SassFile CssToSass()
     {
-        Map<String, SassFile> sassFiles = new HashMap<>();
         CloneDetector cd = new CloneDetector();
 
         List<MCssRule> cssRules = _mcssFile.GetRules();
 
         // copy all MSelectors, so we won't affect the original rules
         List<MSelector> validSelectors = new ArrayList<>();
+        List<MSelector> largeSelectors = new ArrayList<>();
+
         for(MCssRule rule : cssRules)
         {
-            validSelectors.addAll(rule.GetSelectors().stream().map(selector -> new MSelector((selector))).collect(Collectors.toList()));
+            for(MSelector mSelector : rule.GetSelectors())
+            {
+                if(mSelector.GetProperties().size() > _propUpperLimit)
+                {
+                    largeSelectors.add(new MSelector(mSelector));
+                }
+                else
+                {
+                    validSelectors.add(new MSelector(mSelector));
+                }
+            }
         }
 
         LogHandler.debug("[SassGenerator] Generate SASS variables...");
         GenerateVariables(validSelectors);
+        GenerateVariables(largeSelectors);
 
         LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
         List<SassCloneMixin> validMixins = ProcessAndFilterClones(cd.GenerateMixins(validSelectors));
-        LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), minPropCount, _mcssFile.GetName());
+        LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), _mixinMinPropCount, _mcssFile.GetName());
 
         LogHandler.debug("[SassGenerator] Generate SASS selectors...");
         List<SassSelector> sassSelectors = GenerateSassSelectors(validSelectors, validMixins);
+        sassSelectors.addAll(GenerateSassSelectors(largeSelectors, validMixins));
 
         LogHandler.debug("[SassGenerator] Generate SASS convenience mixins...");
         List<SassMixinBase> sassMixins = GenerateConvenienceMixins(sassSelectors);
@@ -79,7 +94,7 @@ public class SassBuilder
             int numberOfProps = templateProps.size();
 
             // if the total number of properties exceeds minimum property threshold, continue
-            if (numberOfProps >= minPropCount)
+            if (numberOfProps >= _mixinMinPropCount)
             {
                 // number of lines that mixin will add to output file
                 int mixinSize = templateProps.size();
@@ -521,7 +536,11 @@ public class SassBuilder
             int e = value.indexOf(" ", s);
             if(e == -1)
             {
-                e = value.length();
+                e = value.indexOf(")", s);
+                if(e == -1)
+                {
+                    e = value.length();
+                }
             }
             return value.substring(s, e);
         }

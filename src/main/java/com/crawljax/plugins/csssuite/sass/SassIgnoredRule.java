@@ -20,7 +20,8 @@ public class SassIgnoredRule extends SassRuleBase
     public void Print(SuiteStringBuilder builder, String prefix)
     {
         builder.append("%s%s", prefix, _rule.toString()
-                .replace(": ;",": '';").replace(":;", ": '';")                          //paypal
-                .replace("content:/", "content:url(/").replace("_V_.png","_V_.png)"));  //imdb
+                .replace(": ;",": '';").replace(":;", ": '';")                              //paypal
+                .replace("content:/", "content:url(/").replace("_V_.png","_V_.png)")        //imdb
+                .replace("background: /", "background: url(/").replace(".png", ".png)"));   //vk
     }
 }

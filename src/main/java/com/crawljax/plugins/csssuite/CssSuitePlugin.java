@@ -50,6 +50,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	public boolean _enableW3cValidation = false;
 	public boolean _enableSassGeneration = false;
 	public boolean _enableVerification = false;
+	public int _clonePropsUpperLimit = 999;
 
 	private final String _siteName;
 	private final String _siteIndex;
@@ -534,7 +535,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				LogHandler.info("[Generate SCSS Code] Start building SASS objects for file %s...", fileName);
 
-				SassBuilder sassBuilder = new SassBuilder(source.get(fileName));
+				SassBuilder sassBuilder = new SassBuilder(source.get(fileName), _clonePropsUpperLimit);
 				sassFileObjects.put(fileName, sassBuilder.CssToSass());
 			}
 

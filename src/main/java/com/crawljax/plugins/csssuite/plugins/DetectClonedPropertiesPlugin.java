@@ -37,11 +37,17 @@ public class DetectClonedPropertiesPlugin implements ICssPostCrawlPlugin
                         {
                             final MProperty other = mProperties.get(j);
 
-                            if(current.GetName().equals(other.GetName()) && (!current.IsImportant() || other.IsImportant()) && current.GetValueVendor().isEmpty())
+                            if(current.GetName().equals(other.GetName()))
                             {
-                                clonedProps.add(current);
-                                LogHandler.debug("[DetectClonedProperties] Property with '%s' in selector '%s' of file '%s' is a clone of a later declared property, and considered ineffective, will be removed", current, mSelector, fileName);
-                                break;
+                                if((!current.IsImportant() || other.IsImportant()) && current.GetValueVendor().isEmpty())
+                                {
+                                    clonedProps.add(current);
+                                    LogHandler.debug("[DetectClonedProperties] Property with '%s' in selector '%s' of file '%s' is a clone of a later declared property, and considered ineffective, will be removed", current, mSelector, fileName);
+                                }
+                                else if (current.IsImportant() && !other.IsImportant())
+                                {
+                                    clonedProps.add(other);
+                                }
                             }
                         }
                     }

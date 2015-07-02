@@ -3,7 +3,6 @@ package com.crawljax.plugins.csssuite.sass.clonedetection;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
 
 import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
@@ -147,7 +146,7 @@ public class CloneDetector
      * @param selectors
      * @return
      */
-    private static List<ItemSetList> FindDuplicationsAndFpGrowth(List<MSelector> selectors)
+    private List<ItemSetList> FindDuplicationsAndFpGrowth(List<MSelector> selectors)
     {
         Map<Declaration, Item> declarationItemMap = new HashMap<>();
 

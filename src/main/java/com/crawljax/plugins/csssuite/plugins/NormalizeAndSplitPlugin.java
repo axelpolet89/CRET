@@ -37,6 +37,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
             for(MCssRule mRule : cssRules.get(file).GetRules())
             {
+                LogHandler.info("Rule: %s", mRule);
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
                     NormalizeColors(mSelector);
@@ -293,7 +294,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                     newProperties.addAll(BorderToProps(name, value, isImportant, order));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
-                else if (name.equals("background"))
+                else if (name.equals("background") && !value.contains(",")) // do not support multiple backgrounds
                 {
                     newProperties.addAll(BackgroundToProps(value, isImportant, order));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand background property into parts: '%s' : '%s', important=%s", name, value, isImportant);

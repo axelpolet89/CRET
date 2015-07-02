@@ -35,7 +35,7 @@
 00CCCC:Robin's Egg Blue
 00FF00:Green
 00FF7F:Spring Green
-00FFFF:Cyan / Aqua
+00FFFF:Cyan Aqua
 010D1A:Blue Charcoal
 011635:Midnight
 011D13:Holly
@@ -1435,7 +1435,7 @@ FEFCED:Orange White
 FF0000:Red
 FF007F:Rose
 FF00CC:Purple Pizzazz
-FF00FF:Magenta / Fuchsia
+FF00FF:Magenta Fuchsia
 FF2400:Scarlet
 FF3399:Wild Strawberry
 FF33CC:Razzle Dazzle Rose

@@ -281,6 +281,11 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                 Selector innerSelector = cSelector.getSimpleSelector();
                 Condition innerCondition = cSelector.getCondition();
 
+                if (innerCondition instanceof AndConditionImpl)
+                {
+                    innerCondition = RecursiveFindCondition((AndConditionImpl)innerCondition);
+                }
+
                 if (innerCondition instanceof IdConditionImpl)
                 {
                     IdConditionImpl idCondition = (IdConditionImpl) innerCondition;
@@ -347,6 +352,18 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
     }
 
 
+    private static Condition RecursiveFindCondition(AndConditionImpl condition)
+    {
+        Condition firstCondition = condition.getFirstCondition();
+        if(firstCondition instanceof AndConditionImpl)
+        {
+            return RecursiveFindCondition((AndConditionImpl)firstCondition);
+        }
+
+        return firstCondition;
+    }
+
+
     private static boolean FindMatchInClass(String classAttribute, String search)
     {
         for(String part : classAttribute.split("\\s"))
@@ -382,6 +399,9 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
      */
     private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
     {
+        if(attributes == null)
+            return null;
+
         Node node = attributes.getNamedItem(attributeName);
 
         if(node != null)

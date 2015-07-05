@@ -21,7 +21,7 @@ public class SassIgnoredRule extends SassRuleBase
     {
         builder.append("%s%s", prefix, _rule.toString()
                 .replace(": ;",": '';").replace(":;", ": '';")                              //paypal
-                .replace("content:/", "content:url(/").replace("_V_.png","_V_.png)")        //imdb
+                .replace("content:/", "content:url(/").replace("_V_.png","_V_.png")        //imdb
                 .replace("background: /", "background: url(/").replace(".png", ".png)"));   //vk
     }
 }

@@ -146,7 +146,17 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			int order = 0;
 			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
 			{
-				String cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
+				String cssUrl = relPath;
+
+				if(relPath.startsWith("//"))
+				{
+					URI uri = new URI(url);
+					cssUrl = String.format("%s:%s", uri.getScheme(), cssUrl);
+				}
+				else
+				{
+					cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
+				}
 
 				if (!_mcssFiles.containsKey(cssUrl))
 				{

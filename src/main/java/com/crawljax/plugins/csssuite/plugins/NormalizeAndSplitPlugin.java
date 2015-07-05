@@ -37,7 +37,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
             for(MCssRule mRule : cssRules.get(file).GetRules())
             {
-                LogHandler.info("Rule: %s", mRule);
+                LogHandler.debug("Rule: %s", mRule);
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
                     NormalizeColors(mSelector);

@@ -321,6 +321,43 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                         }
                     }
                 }
+                else if(innerCondition instanceof SubstringAttributeConditionImpl)
+                {
+                    SubstringAttributeConditionImpl selectorAttribute = (SubstringAttributeConditionImpl) innerCondition;
+                    String nodeAttribute = GetAttributeValue(node.getAttributes(), selectorAttribute.getLocalName());
+                    if(MatchNodeWithElementSelector(node, innerSelector) && nodeAttribute != null)
+                    {
+                        String fulltext = selectorAttribute.toString();
+                        String subsValue = selectorAttribute.getValue();
+
+                        if(subsValue.isEmpty())
+                        {
+                            return true;
+                        }
+
+                        if(fulltext.contains("*="))
+                        {
+                            if (nodeAttribute.contains(subsValue))
+                            {
+                                return true;
+                            }
+                        }
+                        else if(fulltext.contains("^="))
+                        {
+                            if(nodeAttribute.startsWith(subsValue))
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            if(nodeAttribute.endsWith(subsValue))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
                 else if (innerCondition instanceof PseudoClassConditionImpl)
                 {
                     if(innerCondition.toString().equals(":root"))
@@ -334,7 +371,7 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                 }
                 else
                 {
-                    LogHandler.warn("[DescToChild] Unsupported: ConditionalSelector '%s' is no ID, CLASS or ATTRIBUTE SELECTOR, but a '%s'", selector, selector.getSelectorType());
+                    LogHandler.warn("[DescToChild] Unsupported: ConditionalSelector '%s' is no ID, CLASS or ATTRIBUTE SELECTOR, but a '%s'", selector, selector.getClass());
                 }
             }
             else

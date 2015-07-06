@@ -31,6 +31,8 @@ public class SassVariable
         return _type;
     }
 
+    public String getValue() { return _value; }
+
     @Override
     public String toString()
     {

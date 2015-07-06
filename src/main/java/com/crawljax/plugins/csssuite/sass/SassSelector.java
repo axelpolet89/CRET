@@ -19,7 +19,7 @@ public class SassSelector
     private MSelector _original;
 
     private List<MProperty> _properties;
-    private List<SassCloneMixin> _includes;
+    private List<SassCloneMixin> _cloneIncludes;
     private List<String> _otherIncludes;
 
     public SassSelector(MSelector original)
@@ -29,13 +29,13 @@ public class SassSelector
         _selectorText = original.GetSelectorText();
         _properties = original.GetProperties();
 
-        _includes = new ArrayList<>();
+        _cloneIncludes = new ArrayList<>();
         _otherIncludes = new ArrayList<>();
     }
 
     public void AddCloneInclude(SassCloneMixin sassTemplate)
     {
-        _includes.add(sassTemplate);
+        _cloneIncludes.add(sassTemplate);
     }
 
     public void AddInclude(String include)
@@ -47,47 +47,7 @@ public class SassSelector
     {
         _properties.sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
 
-        //Map<MProperty, Integer> _props = new HashMap<>();
-//        Map<SassCloneMixin, Integer> _mixins = new HashMap<>();
-//        Set<SassCloneMixin> _processedMixins = new HashSet<>();
-//
-//        int idx = 0;
-//        for(SassCloneMixin cloneMixin : _includes)
-//        {
-//            _mixins.put(cloneMixin, idx);
-//            idx++;
-//        }
-//
-//
-//        for(MProperty mProperty : _properties)
-//        {
-//            _props.put(mProperty, idx);
-//            idx++;
-//        }
-//
-//        for(MProperty mProp : _props.keySet())
-//        {
-//            String[] mPropName = mProp.GetName().split("-");
-//
-//            for(SassCloneMixin mixin : _mixins.keySet())
-//            {
-//                for(MProperty mixinProp : mixin.GetProperties())
-//                {
-//                    String[] mixinPropName = mixinProp.GetName().split("-");
-//
-//                    if(mPropName[0].contains(mixinPropName[0]) || mixinPropName[0].contains(mPropName[0]))
-//                    {
-//                        if(mProp.GetOrder() < mixinProp.GetOrder())
-//                        {
-//                            _props.put(mProp, )
-//
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
-        for(SassCloneMixin cloneMixin : _includes)
+        for(SassCloneMixin cloneMixin : _cloneIncludes)
         {
             builder.appendLine("%s\t@include %s;", prefix, cloneMixin);
         }
@@ -101,6 +61,16 @@ public class SassSelector
         {
             builder.appendLine("%s\t%s", prefix, mProperty);
         }
+    }
+
+    public List<SassCloneMixin> getIncludes()
+    {
+        return _cloneIncludes;
+    }
+
+    public List<String> getOtherIncludes()
+    {
+        return _otherIncludes;
     }
 
     public String GetSelectorText()
@@ -145,7 +115,7 @@ public class SassSelector
 
     public List<String> GetSortedPropertiesText()
     {
-        List<String> result = _includes.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
+        List<String> result = _cloneIncludes.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
         result.addAll(_otherIncludes);
         result.addAll(_properties.stream().sorted((p1, p2) -> p1.toString().compareTo(p2.toString())).map(p -> p.toString()).collect(Collectors.toList()));
         return result;

@@ -43,6 +43,11 @@ public class SassRule extends SassRuleBase
         return _mediaQueries;
     }
 
+    public List<SassSelector> getSassSelectors()
+    {
+        return _sassSelectors;
+    }
+
     public void Print(SuiteStringBuilder builder, String prefix)
     {
         String selectorGroup = "";

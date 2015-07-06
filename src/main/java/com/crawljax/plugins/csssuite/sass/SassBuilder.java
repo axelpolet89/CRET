@@ -1,7 +1,6 @@
 package com.crawljax.plugins.csssuite.sass;
 
 import com.crawljax.plugins.csssuite.LogHandler;
-import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
@@ -11,7 +10,6 @@ import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.sass.variables.SassVarType;
 import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
-import com.steadystate.css.parser.media.MediaQuery;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +24,11 @@ public class SassBuilder
     private final MCssFile _mcssFile;
     private final List<SassVariable> _sassVariables;
     private final Map<String, String> _alreadyDefinedVars;
+
+    public SassBuilder(MCssFile mCssFile)
+    {
+        this(mCssFile, 999);
+    }
 
     public SassBuilder(MCssFile mCssFile, int propUpperLimit)
     {
@@ -82,6 +85,179 @@ public class SassBuilder
     }
 
 
+    /**
+     *
+     * @param selectors
+     */
+    private void GenerateVariables(List<MSelector> selectors)
+    {
+        ColorNameFinder ctn = new ColorNameFinder();
+
+        for(MSelector mSelector : selectors)
+        {
+            for(MProperty mProperty : mSelector.GetProperties())
+            {
+                if (mProperty.IsIgnored())
+                {
+                    continue;
+                }
+
+                String origName = mProperty.GetName();
+                String origValue = mProperty.GetValue();
+
+                try
+                {
+                    if (origName.equals("font-family"))
+                    {
+                        SassVarType varType = SassVarType.FONT;
+                        String varName = "font-stack";
+                        String varValue = origValue;
+
+                        varName = GenerateVariable(varName, varValue, varType, mProperty);
+                        String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
+                        String escapedName = String.format("\\$%s", varName);
+                        origValue = origValue.replaceFirst(escapedValue, escapedName);
+                    }
+                    else
+                    {
+                        String[] parts = origValue.split("\\s");
+                        for (String part : parts)
+                        {
+                            SassVarType varType = null;
+                            String varName = "";
+                            String varValue = "";
+
+                            if (part.contains("url"))
+                            {
+                                varType = SassVarType.URL;
+                                varName = "url";
+                                varValue = TryFindUrl(part);
+                            }
+                            else if (part.contains("rgba"))
+                            {
+                                String rgbaValue = TryFindRgba(part);
+                                String[] rgbaParts = rgbaValue.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
+
+                                varType = SassVarType.ALPHA_COLOR;
+                                varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim())));
+                                varValue = rgbaValue;
+                            }
+                            else if (part.contains("#"))
+                            {
+                                String hexValue = TryFindHex(part);
+
+                                varType = SassVarType.COLOR;
+                                varName = String.format("%s_%s", "color", ctn.TryGetNameForHex(hexValue));
+                                varValue = hexValue;
+                            }
+
+                            if (!varName.isEmpty() && !varValue.isEmpty())
+                            {
+                                varName = String.format("$%s", GenerateVariable(varName, varValue, varType, mProperty));
+
+                                String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
+                                String escapedName = String.format("\\%s", varName);
+
+                                if(origValue.contains(escapedValue))
+                                {
+                                    origValue = origValue.replaceFirst(escapedValue, escapedName);
+                                }
+                                else
+                                {
+                                    origValue = origValue.replace(varValue, varName);
+                                }
+                            }
+                        }
+                    }
+
+                    mProperty.SetNormalizedValue(origValue);
+                }
+                catch (Exception e)
+                {
+                    LogHandler.error(e, "[SassGenerator] Error occurred while creating SassVariable for property '%s' with value '%s' for selector '%s'",
+                            origName, origValue, mSelector.GetSelectorText());
+                }
+            }
+        }
+    }
+
+
+    private String GenerateVariable(String varName, String varValue, SassVarType varType, MProperty originalProperty)
+    {
+        // if varName already used, extend varName with an id
+        if (_alreadyDefinedVars.containsKey(varName) && !_alreadyDefinedVars.get(varName).equals(varValue))
+        {
+            int id = 1;
+            while (true)
+            {
+                String replace = String.format("%s_%d", varName, id);
+                if (!_alreadyDefinedVars.containsKey(replace) || (_alreadyDefinedVars.containsKey(replace) && _alreadyDefinedVars.get(replace).equals(varValue)))
+                {
+                    varName = replace;
+                    break;
+                }
+                id++;
+            }
+        }
+
+        if (!_alreadyDefinedVars.containsKey(varName))
+        {
+            SassVariable sv = new SassVariable(varType, varName, varValue, originalProperty);
+            _sassVariables.add(sv);
+            _alreadyDefinedVars.put(varName, varValue);
+        }
+
+        return varName;
+    }
+
+
+    private String TryFindUrl(String value)
+    {
+        int s =  value.indexOf("url(");
+        //int e = value.indexOf(")", s);
+        return value.substring(s, value.length());
+    }
+
+
+    private String TryFindHex(String value)
+    {
+        if(value.contains("#"))
+        {
+            int s =  value.indexOf("#");
+            int e = value.indexOf(" ", s);
+            if(e == -1)
+            {
+                e = value.indexOf(")", s);
+                if(e == -1)
+                {
+                    e = value.length();
+                }
+            }
+            return value.substring(s, e);
+        }
+
+        return "";
+    }
+
+
+    private String TryFindRgba(String value)
+    {
+        if(value.contains("rgba("))
+        {
+            int s =  value.indexOf("rgba(");
+            int e = value.indexOf(")", s);
+            return value.substring(s, e+1);
+        }
+
+        return "";
+    }
+
+
+    /**
+     *
+     * @param mixins
+     * @return
+     */
     private List<SassCloneMixin> ProcessAndFilterClones(List<SassCloneMixin> mixins)
     {
         List<SassCloneMixin> validMixins = new ArrayList<>();
@@ -137,6 +313,10 @@ public class SassBuilder
     }
 
 
+    /**
+     *
+     * @param mixin
+     */
     private void SortMixinValues(SassCloneMixin mixin)
     {
         mixin.GetRelatedSelectors().sort((s1, s2) ->
@@ -152,6 +332,10 @@ public class SassBuilder
     }
 
 
+    /**
+     *
+     * @param mixin
+     */
     private void RestoreCloneMixin(SassCloneMixin mixin)
     {
         List<MProperty> mixinProps = mixin.GetProperties();
@@ -165,7 +349,12 @@ public class SassBuilder
     }
 
 
-    private List<SassMixinBase> GenerateConvenienceMixins(List<SassSelector> allSelectors)
+    /**
+     *
+     * @param sassSelectors
+     * @return
+     */
+    private List<SassMixinBase> GenerateConvenienceMixins(List<SassSelector> sassSelectors)
     {
         List<SassMixinBase> mixins = new ArrayList<>();
 
@@ -175,7 +364,7 @@ public class SassBuilder
         boolean pUsed = false;
         boolean mUsed = false;
 
-        for(SassSelector sassSelector : allSelectors)
+        for(SassSelector sassSelector : sassSelectors)
         {
             List<MProperty> paddings = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("padding-")).collect(Collectors.toList());
             List<MProperty> margins = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("margin-")).collect(Collectors.toList());
@@ -211,6 +400,12 @@ public class SassBuilder
     }
 
 
+    /**
+     *
+     * @param selectors
+     * @param extensions
+     * @return
+     */
     private List<SassSelector> GenerateSassSelectors(List<MSelector> selectors, List<SassCloneMixin> extensions)
     {
         List<SassSelector> results = new ArrayList<>();
@@ -237,6 +432,14 @@ public class SassBuilder
         return results;
     }
 
+
+    /**
+     *
+     * @param sassSelectors
+     * @param mediaRules
+     * @param ignoredRules
+     * @return
+     */
     private List<SassRuleBase> GenerateSassRules(List<SassSelector> sassSelectors, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignoredRules)
     {
         // group selectors by their line number, maintain order by using LinkedHashMap
@@ -323,6 +526,13 @@ public class SassBuilder
     }
 
 
+    /**
+     *
+     * @param mediaRule
+     * @param selectors
+     * @param ignoredRules
+     * @return
+     */
     private SassMediaRule RecursiveGenerateMediaRules(MCssMediaRule mediaRule, List<SassSelector> selectors, List<MCssRuleBase> ignoredRules)
     {
         List<SassRuleBase> innerRules = new ArrayList<>();
@@ -353,211 +563,5 @@ public class SassBuilder
         }
 
         return new SassMediaRule(mediaRule.GetLineNumber(), mediaRule.GetMediaQueries(), innerRules);
-    }
-
-    private List<SassMediaRule> GenerateMediaRules(List<SassRule> sassRules)
-    {
-        List<SassMediaRule> mediaRules = new ArrayList<>();
-        Map<List<MediaQuery>, List<SassRuleBase>> mediaGroups = new LinkedHashMap<>(); // preserve order
-        List<MediaQuery> currentMedia = new ArrayList<>();
-
-        // find all sass rules that are contained inside one or more media-queries
-        for(SassRule sassRule : sassRules)
-        {
-            currentMedia = sassRule.getMediaQueries();
-
-            if(!mediaGroups.containsKey(currentMedia))
-            {
-                mediaGroups.put(currentMedia, new ArrayList<>());
-            }
-
-            mediaGroups.get(currentMedia).add(sassRule);
-        }
-
-        // remove any sass rule contained in a media rule from given list
-        // create sass media rules from media groups
-        for(List<MediaQuery> mediaQueries : mediaGroups.keySet())
-        {
-            if(mediaQueries.isEmpty())
-                continue;
-
-            List<SassRuleBase> rulesInMedia = mediaGroups.get(mediaQueries);
-
-            // set media-query line number to be the first rule's line no minus 1
-            int mediaLineNo = rulesInMedia.get(0).GetLineNumber() - 1;
-
-            mediaRules.add(new SassMediaRule(mediaLineNo, mediaQueries, rulesInMedia));
-
-            rulesInMedia.forEach(sassRules::remove);
-        }
-
-        return mediaRules;
-    }
-
-    private void GenerateVariables(List<MSelector> sassSelectors)
-    {
-        ColorNameFinder ctn = new ColorNameFinder();
-        BrowserColorParser bcp = new BrowserColorParser();
-
-        // for identification of browser colors in shorthand properties
-        Set browserColors = bcp.GetBrowserColors();
-
-        for(MSelector sassSelector : sassSelectors)
-        {
-            for(MProperty mProperty : sassSelector.GetProperties())
-            {
-                if (mProperty.IsIgnored())
-                {
-                    continue;
-                }
-
-                String origName = mProperty.GetName();
-                String origValue = mProperty.GetValue();
-
-                try
-                {
-                    if (origName.equals("font-family"))
-                    {
-                        SassVarType varType = SassVarType.FONT;
-                        String varName = "font-stack";
-                        String varValue = origValue;
-
-                        varName = GenerateVariable(varName, varValue, varType, mProperty);
-                        String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
-                        String escapedName = String.format("\\$%s", varName);
-                        origValue = origValue.replaceFirst(escapedValue, escapedName);
-                    }
-                    else
-                    {
-                        String[] parts = origValue.split("\\s");
-                        for (String part : parts)
-                        {
-                            SassVarType varType = null;
-                            String varName = "";
-                            String varValue = "";
-
-                            if (part.contains("url"))
-                            {
-                                varType = SassVarType.URL;
-                                varName = "url";
-                                varValue = TryFindUrl(part);
-                            }
-                            else if (part.contains("rgba"))
-                            {
-                                String rgbaValue = TryFindRgba(part);
-                                String[] rgbaParts = rgbaValue.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
-
-                                varType = SassVarType.ALPHA_COLOR;
-                                varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim())));
-                                varValue = rgbaValue;
-                            }
-                            else if (part.contains("#"))
-                            {
-                                String hexValue = TryFindHex(part);
-
-                                varType = SassVarType.COLOR;
-                                varName = String.format("%s_%s", "color", ctn.TryGetNameForHex(hexValue));
-                                varValue = hexValue;
-                            }
-
-                            if (!varName.isEmpty() && !varValue.isEmpty())
-                            {
-                                varName = String.format("$%s", GenerateVariable(varName, varValue, varType, mProperty));
-
-                                String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
-                                String escapedName = String.format("\\%s", varName);
-
-                                if(origValue.contains(escapedValue))
-                                {
-                                    origValue = origValue.replaceFirst(escapedValue, escapedName);
-                                }
-                                else
-                                {
-                                    origValue = origValue.replace(varValue, varName);
-                                }
-                            }
-                        }
-                    }
-
-                    mProperty.SetNormalizedValue(origValue);
-                }
-                catch (Exception e)
-                {
-                    LogHandler.error(e, "[SassGenerator] Error occurred while creating SassVariable for property '%s' with value '%s' for selector '%s'",
-                            origName, origValue, sassSelector.GetSelectorText());
-                }
-            }
-        }
-    }
-
-
-    private String GenerateVariable(String varName, String varValue, SassVarType varType, MProperty originalProperty)
-    {
-        // if varName already used, extend varName with an id
-        if (_alreadyDefinedVars.containsKey(varName) && !_alreadyDefinedVars.get(varName).equals(varValue))
-        {
-            int id = 1;
-            while (true)
-            {
-                String replace = String.format("%s_%d", varName, id);
-                if (!_alreadyDefinedVars.containsKey(replace) || (_alreadyDefinedVars.containsKey(replace) && _alreadyDefinedVars.get(replace).equals(varValue)))
-                {
-                    varName = replace;
-                    break;
-                }
-                id++;
-            }
-        }
-
-        if (!_alreadyDefinedVars.containsKey(varName))
-        {
-            SassVariable sv = new SassVariable(varType, varName, varValue, originalProperty);
-            _sassVariables.add(sv);
-            _alreadyDefinedVars.put(varName, varValue);
-        }
-
-        return varName;
-    }
-
-
-    private String TryFindUrl(String value)
-    {
-        int s =  value.indexOf("url(");
-        //int e = value.indexOf(")", s);
-        return value.substring(s, value.length());
-    }
-
-
-    private String TryFindHex(String value)
-    {
-        if(value.contains("#"))
-        {
-            int s =  value.indexOf("#");
-            int e = value.indexOf(" ", s);
-            if(e == -1)
-            {
-                e = value.indexOf(")", s);
-                if(e == -1)
-                {
-                    e = value.length();
-                }
-            }
-            return value.substring(s, e);
-        }
-
-        return "";
-    }
-
-
-    private String TryFindRgba(String value)
-    {
-        if(value.contains("rgba("))
-        {
-            int s =  value.indexOf("rgba(");
-            int e = value.indexOf(")", s);
-            return value.substring(s, e+1);
-        }
-
-        return "";
     }
 }

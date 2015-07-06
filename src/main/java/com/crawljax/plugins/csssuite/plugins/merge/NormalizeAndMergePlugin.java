@@ -84,8 +84,6 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
             }
 
             final String name = mProperty.GetName();
-            final String value = mProperty.GetValue();
-            final boolean isImportant = mProperty.IsImportant();
 
             if(name.contains("margin"))
             {

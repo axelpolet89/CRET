@@ -251,6 +251,7 @@ public class NormalizeTest
         Assert.assertEquals("background-attachment", properties.get(4).GetName());
         Assert.assertEquals("fixed", properties.get(4).GetValue());
 
+        // merge test
         NormalizeAndMergePlugin pmp = new NormalizeAndMergePlugin();
         pmp.Transform(files, new MatchedElements());
 

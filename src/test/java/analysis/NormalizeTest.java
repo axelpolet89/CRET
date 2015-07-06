@@ -318,7 +318,7 @@ public class NormalizeTest
 
         properties = selectors.get(12).GetProperties();
         Assert.assertEquals(1, properties.size());
-        Assert.assertEquals("border", properties.get(0).GetName());
+        Assert.assertEquals("border-style", properties.get(0).GetName());
         Assert.assertEquals("solid dotted", properties.get(0).GetValue());
 
         properties = selectors.get(13).GetProperties();

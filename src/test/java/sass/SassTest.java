@@ -63,7 +63,7 @@ public class SassTest
     @Test
     public void TestMixins() throws CssSuiteException
     {
-        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/sass_clonemixin_test.css");
+        MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/sass_mixin_test.css");
         Assert.assertNotNull(externalFile);
 
         Map<String, MCssFile> files = new HashMap<>();

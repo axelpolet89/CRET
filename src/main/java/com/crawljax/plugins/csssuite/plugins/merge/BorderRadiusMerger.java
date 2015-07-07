@@ -31,7 +31,8 @@ public class BorderRadiusMerger extends MergerBase
      * @param name
      * @param value
      */
-    protected void ParseFromSingle(String name, String value)
+    @Override
+    protected boolean ParseFromSingle(String name, String value)
     {
         String[] parts = name.split("-");
         String vert = parts[1];
@@ -65,11 +66,12 @@ public class BorderRadiusMerger extends MergerBase
         }
 
         _isSet = true;
+        return true;
     }
 
 
     @Override
-    public List<MProperty> BuildMProperties()
+    protected List<MProperty> MergeProperties()
     {
         String value;
 

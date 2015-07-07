@@ -31,7 +31,7 @@ public class BoxMerger extends MergerBase
      * @param name
      * @param value
      */
-    protected void ParseFromSingle(String name, String value)
+    protected boolean ParseFromSingle(String name, String value)
     {
         switch (name.split("-")[1])
         {
@@ -47,9 +47,12 @@ public class BoxMerger extends MergerBase
             case "left":
                 _left = value;
                 break;
+            default:
+                return false;
         }
 
         _isSet = true;
+        return true;
     }
 
 
@@ -58,7 +61,7 @@ public class BoxMerger extends MergerBase
      * @return
      */
     @Override
-    public List<MProperty> BuildMProperties()
+    protected List<MProperty> MergeProperties()
     {
         String value;
 

@@ -3,6 +3,7 @@ package com.crawljax.plugins.csssuite.plugins.merge;
 import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,6 +15,7 @@ public abstract class MergerBase
     protected boolean _isImportant;
     protected int _order;
     protected boolean _isSet;
+    protected final List<MProperty> _otherProps;
 
     /**
      *
@@ -22,13 +24,29 @@ public abstract class MergerBase
     public MergerBase(String name)
     {
         _name = name;
+        _otherProps = new ArrayList<>();
     }
+
+    /**
+     *
+     * @param name
+     * @param value
+     */
+    protected abstract boolean ParseFromSingle(String name, String value);
+
 
     /**
      *
      * @return
      */
-    public Boolean IsSet()
+    protected abstract List<MProperty> MergeProperties();
+
+
+    /**
+     *
+     * @return
+     */
+    public final Boolean IsSet()
     {
         return _isSet;
     }
@@ -38,7 +56,7 @@ public abstract class MergerBase
      *
      * @return
      */
-    public Boolean IsImportant()
+    public final Boolean IsImportant()
     {
         return _isImportant;
     }
@@ -66,22 +84,16 @@ public abstract class MergerBase
         }
 
         _order = Math.min(order, _order);
-        ParseFromSingle(name, value);
+        if(!ParseFromSingle(name, value))
+        {
+            _otherProps.add(new MProperty(name, value, isImportant, order));
+        }
         _isSet = true;
     }
 
-
-    /**
-     *
-     * @return
-     */
-    public abstract List<MProperty> BuildMProperties();
-
-
-    /**
-     *
-     * @param name
-     * @param value
-     */
-    protected abstract void ParseFromSingle(String name, String value);
+    public final List<MProperty> BuildMProperties()
+    {
+        _otherProps.addAll(MergeProperties());
+        return _otherProps;
+    }
 }

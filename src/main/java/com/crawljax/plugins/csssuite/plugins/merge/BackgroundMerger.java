@@ -39,7 +39,7 @@ public class BackgroundMerger extends MergerBase
      * @param name
      * @param value
      */
-    protected void ParseFromSingle(String name, String value)
+    protected boolean ParseFromSingle(String name, String value)
     {
         switch (name.split("-")[1])
         {
@@ -67,14 +67,17 @@ public class BackgroundMerger extends MergerBase
             case "attachment":
                 _attachment = value;
                 break;
+            default:
+                return false;
         }
 
         _isSet = true;
+        return true;
     }
 
 
     @Override
-    public List<MProperty> BuildMProperties()
+    protected List<MProperty> MergeProperties()
     {
         List<MProperty> result = new ArrayList<>();
 

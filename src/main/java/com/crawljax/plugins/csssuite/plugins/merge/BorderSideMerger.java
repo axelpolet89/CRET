@@ -17,7 +17,7 @@ public class BorderSideMerger extends BorderMerger
      * @param value
      */
     @Override
-    protected void ParseFromSingle(String name, String value)
+    protected boolean ParseFromSingle(String name, String value)
     {
         switch (name.split("-")[2])
         {
@@ -30,8 +30,11 @@ public class BorderSideMerger extends BorderMerger
             case "color":
                 _color = value;
                 break;
+            default:
+                return false;
         }
 
         _isSet = true;
+        return true;
     }
 }

@@ -24,24 +24,25 @@ public class OutlineMerger extends BorderMerger
      * @param value
      */
     @Override
-    protected void ParseFromSingle(String name, String value)
+    protected boolean ParseFromSingle(String name, String value)
     {
         if (name.contains("offset"))
         {
             _offset = value;
             _isSet = true;
+            return true;
         }
         else
         {
-            super.ParseFromSingle(name, value);
+            return super.ParseFromSingle(name, value);
         }
     }
 
 
     @Override
-    public List<MProperty> BuildMProperties()
+    protected List<MProperty> MergeProperties()
     {
-        List<MProperty> result = super.BuildMProperties();
+        List<MProperty> result = super.MergeProperties();
 
         if(!_offset.isEmpty())
         {

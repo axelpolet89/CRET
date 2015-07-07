@@ -29,7 +29,7 @@ public class BorderMerger extends MergerBase
      * @param name
      * @param value
      */
-    protected void ParseFromSingle(String name, String value)
+    protected boolean ParseFromSingle(String name, String value)
     {
         switch (name.split("-")[1])
         {
@@ -42,12 +42,16 @@ public class BorderMerger extends MergerBase
             case "color":
                 _color = value;
                 break;
+            default:
+               return false;
         }
+
+        return true;
     }
 
 
     @Override
-    public List<MProperty> BuildMProperties()
+    protected List<MProperty> MergeProperties()
     {
         List<MProperty> result = new ArrayList<>();
 

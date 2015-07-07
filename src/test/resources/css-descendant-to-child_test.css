@@ -48,3 +48,11 @@ body #page h3   /* Only child combinator between body #page */
 {
     color: white;
 }
+
+.class1.class2.class3 img{
+    color:red;
+}
+
+.class4.class5.class6 span{
+    color:blue;
+}

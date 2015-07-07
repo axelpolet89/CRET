@@ -95,8 +95,8 @@ public class SassTest
         Assert.assertEquals(1, selectors.get(7).getOtherIncludes().size());
 
         // convenience mixin test
-        Assert.assertEquals("padding($right:10px, $bottom:100px, $left:20px)", selectors.get(6).getOtherIncludes().get(0));
-        Assert.assertEquals("margin($right:10px, $bottom:100px, $left:20px)", selectors.get(7).getOtherIncludes().get(0));
+        Assert.assertEquals("padding($left:20px, $right:10px, $bottom:100px)", selectors.get(6).getOtherIncludes().get(0));
+        Assert.assertEquals("margin($left:20px, $right:10px, $bottom:100px)", selectors.get(7).getOtherIncludes().get(0));
 
         //clone mixin test is harder, due to randomness of FP-growth algoritm, different mixin names may be created in different runes
     }

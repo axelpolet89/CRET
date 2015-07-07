@@ -16,7 +16,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import javax.print.Doc;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -281,123 +280,126 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                 Selector innerSelector = cSelector.getSimpleSelector();
                 Condition innerCondition = cSelector.getCondition();
 
-                if (innerCondition instanceof AndConditionImpl)
-                {
-                    innerCondition = RecursiveFindCondition((AndConditionImpl)innerCondition);
-                }
-
-                if (innerCondition instanceof IdConditionImpl)
-                {
-                    IdConditionImpl idCondition = (IdConditionImpl) innerCondition;
-                    String attr = GetAttributeValue(node.getAttributes(), "id");
-                    if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && attr.equals(idCondition.getValue()))
-                    {
-                        return true;
-                    }
-                }
-                else if (innerCondition instanceof ClassConditionImpl)
-                {
-                    ClassConditionImpl classCondition = (ClassConditionImpl) innerCondition;
-                    String attr = GetAttributeValue(node.getAttributes(), "class");
-                    if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && FindMatchInClass(attr, classCondition.getValue()))
-                    {
-                        return true;
-                    }
-                }
-                else if (innerCondition instanceof AttributeConditionImpl)
-                {
-                    AttributeConditionImpl attrCondition = (AttributeConditionImpl) innerCondition;
-                    String attr = GetAttributeValue(node.getAttributes(), attrCondition.getLocalName());
-                    if(MatchNodeWithElementSelector(node, innerSelector) && attr != null)
-                    {
-                        if(attrCondition.getValue().isEmpty())
-                        {
-                            return true;
-                        }
-
-                        if (attr.equals(attrCondition.getValue()))
-                        {
-                            return true;
-                        }
-                    }
-                }
-                else if(innerCondition instanceof SubstringAttributeConditionImpl)
-                {
-                    SubstringAttributeConditionImpl selectorAttribute = (SubstringAttributeConditionImpl) innerCondition;
-                    String nodeAttribute = GetAttributeValue(node.getAttributes(), selectorAttribute.getLocalName());
-                    if(MatchNodeWithElementSelector(node, innerSelector) && nodeAttribute != null)
-                    {
-                        String fulltext = selectorAttribute.toString();
-                        String subsValue = selectorAttribute.getValue();
-
-                        if(subsValue.isEmpty())
-                        {
-                            return true;
-                        }
-
-                        if(fulltext.contains("*="))
-                        {
-                            if (nodeAttribute.contains(subsValue))
-                            {
-                                return true;
-                            }
-                        }
-                        else if(fulltext.contains("^="))
-                        {
-                            if(nodeAttribute.startsWith(subsValue))
-                            {
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            if(nodeAttribute.endsWith(subsValue))
-                            {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                else if (innerCondition instanceof PseudoClassConditionImpl)
-                {
-                    if(innerCondition.toString().equals(":root"))
-                    {
-                        return node instanceof Document;
-                    }
-                    else
-                    {
-                        return MatchNodeWithElementSelector(node, innerSelector);
-                    }
-                }
-                else
-                {
-                    LogHandler.warn("[DescToChild] Unsupported: ConditionalSelector '%s' is no ID, CLASS or ATTRIBUTE SELECTOR, but a '%s'", selector, selector.getClass());
-                }
+                return RecursiveMatchConditionToNode(innerSelector, innerCondition, node);
             }
             else
             {
-                LogHandler.warn("[DescToChild] Unsupported: Selector '%s' is no ElementSelector or ConditionalSelector", selector);
+                LogHandler.warn("[DescToChild] Unsupported: Selector '%s' is no ElementSelector or ConditionalSelector, but a %s", selector, selector.getClass());
             }
         }
         catch(Exception ex)
         {
             LogHandler.error(ex, "[DescToChild] Error while matching node to selector for node '%s' and selector '%s'", PrintNode(node), selector);
-            return false;
         }
 
         return false;
     }
 
 
-    private static Condition RecursiveFindCondition(AndConditionImpl condition)
+    private static boolean RecursiveMatchConditionToNode(Selector innerSelector, Condition condition, Node node)
     {
-        Condition firstCondition = condition.getFirstCondition();
-        if(firstCondition instanceof AndConditionImpl)
+        if(condition instanceof AndConditionImpl)
         {
-            return RecursiveFindCondition((AndConditionImpl)firstCondition);
+            AndConditionImpl andCondition = (AndConditionImpl)condition;
+            return  MatchConditionToNode(innerSelector, andCondition.getSecondCondition(), node)
+                    && RecursiveMatchConditionToNode(innerSelector, andCondition.getFirstCondition(), node);
         }
 
-        return firstCondition;
+        return MatchConditionToNode(innerSelector, condition, node);
+    }
+
+
+    private static boolean MatchConditionToNode(Selector innerSelector, Condition innerCondition, Node node)
+    {
+        if (innerCondition instanceof IdConditionImpl)
+        {
+            IdConditionImpl idCondition = (IdConditionImpl) innerCondition;
+            String attr = GetAttributeValue(node.getAttributes(), "id");
+            if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && attr.equals(idCondition.getValue()))
+            {
+                return true;
+            }
+        }
+        else if (innerCondition instanceof ClassConditionImpl)
+        {
+            ClassConditionImpl classCondition = (ClassConditionImpl) innerCondition;
+            String attr = GetAttributeValue(node.getAttributes(), "class");
+            if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && FindMatchInClass(attr, classCondition.getValue()))
+            {
+                return true;
+            }
+        }
+        else if (innerCondition instanceof AttributeConditionImpl)
+        {
+            AttributeConditionImpl attrCondition = (AttributeConditionImpl) innerCondition;
+            String attr = GetAttributeValue(node.getAttributes(), attrCondition.getLocalName());
+            if(MatchNodeWithElementSelector(node, innerSelector) && attr != null)
+            {
+                if(attrCondition.getValue().isEmpty())
+                {
+                    return true;
+                }
+
+                if (attr.equals(attrCondition.getValue()))
+                {
+                    return true;
+                }
+            }
+        }
+        else if(innerCondition instanceof SubstringAttributeConditionImpl)
+        {
+            SubstringAttributeConditionImpl selectorAttribute = (SubstringAttributeConditionImpl) innerCondition;
+            String nodeAttribute = GetAttributeValue(node.getAttributes(), selectorAttribute.getLocalName());
+            if(MatchNodeWithElementSelector(node, innerSelector) && nodeAttribute != null)
+            {
+                String fulltext = selectorAttribute.toString();
+                String subsValue = selectorAttribute.getValue();
+
+                if(subsValue.isEmpty())
+                {
+                    return true;
+                }
+
+                if(fulltext.contains("*="))
+                {
+                    if (nodeAttribute.contains(subsValue))
+                    {
+                        return true;
+                    }
+                }
+                else if(fulltext.contains("^="))
+                {
+                    if(nodeAttribute.startsWith(subsValue))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if(nodeAttribute.endsWith(subsValue))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        else if (innerCondition instanceof PseudoClassConditionImpl)
+        {
+            if(innerCondition.toString().equals(":root"))
+            {
+                return node instanceof Document;
+            }
+            else
+            {
+                return MatchNodeWithElementSelector(node, innerSelector);
+            }
+        }
+        else
+        {
+            LogHandler.warn("[DescToChild] Unsupported: ConditionalSelector '%s' is no ID, CLASS or ATTRIBUTE SELECTOR, but a '%s'", innerSelector, innerSelector.getClass());
+        }
+
+        return false;
     }
 
 
@@ -423,7 +425,9 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
     private static boolean MatchNodeWithElementSelector(Node node, Selector elementSelector)
     {
         if(elementSelector.toString().equals("*"))
+        {
             return true;
+        }
 
         return node.getNodeName().equalsIgnoreCase(elementSelector.toString());
     }

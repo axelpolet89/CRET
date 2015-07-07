@@ -412,6 +412,7 @@ public class SassBuilder
 
         for(MSelector mSelector : selectors)
         {
+            mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
             SassSelector ss = new SassSelector(mSelector);
 
             for(SassCloneMixin st : extensions)

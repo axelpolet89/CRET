@@ -97,7 +97,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                         text = text.replaceFirst(rgbaReplace, "");
 
                         String[] rgbaParts = rgbaOrig.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
-                        if(rgbaParts.length == 3 || rgbaParts[3].trim().equals("1"))
+                        if(rgbaParts.length == 3 || (rgbaParts.length == 4 && rgbaParts[3].trim().equals("1")))
                         {
                             String hexValue = RgbToHex(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim()));
                             newValue = newValue.replaceFirst(rgbaReplace, hexValue);

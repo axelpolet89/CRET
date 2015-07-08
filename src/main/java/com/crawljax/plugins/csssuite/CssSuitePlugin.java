@@ -394,10 +394,18 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		Map<String, String> externalMapping = new LinkedHashMap<>();
 		int externalIdx = 1;
 
+//		Set<String> emptyFiles = new HashSet<>();
+
 		boolean filesInError = false;
 
 		for(String fileName : source.keySet())
 		{
+//			if(source.get(fileName).GetRules().stream().noneMatch(r -> r.GetSelectors().size() > 0))
+//			{
+//				emptyFiles.add(fileName);
+//				continue;
+//			}
+
 			LogHandler.info("[GenerateCssAndSass] Generate output file objects for filename '%s'", fileName);
 
 			boolean inError = false;
@@ -483,6 +491,27 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		boolean cssInError = false;
 		boolean sassInError = false;
 		boolean sassToCssInError = false;
+
+//		if(!emptyFiles.isEmpty())
+//		{
+//			try
+//			{
+//				FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("empty_files.txt")));
+//				esWriter.write("the following files are transformed to empty:\n");
+//				for (String fileName : emptyFiles)
+//				{
+//					esWriter.append(String.format("%s\n", fileName));
+//				}
+//				esWriter.flush();
+//				esWriter.close();
+//			}
+//			catch (IOException e)
+//			{
+//				LogHandler.error(e, "[GenerateCssAndSass] Error in generating empty files list");
+//			}
+//
+//			source.keySet().removeAll(emptyFiles);
+//		}
 
 		if(!externalMapping.isEmpty())
 		{

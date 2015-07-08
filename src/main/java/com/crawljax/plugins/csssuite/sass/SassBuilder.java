@@ -121,6 +121,10 @@ public class SassBuilder
                     else
                     {
                         String[] parts = origValue.split("\\s");
+                        if(parts.length > 10)
+                        {
+                            parts = new String[]{origValue};
+                        }
                         for (String part : parts)
                         {
                             SassVarType varType = null;

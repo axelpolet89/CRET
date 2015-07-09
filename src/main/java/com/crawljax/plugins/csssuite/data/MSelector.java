@@ -381,7 +381,7 @@ public class MSelector
 				if(elementType.equalsIgnoreCase("input"))
 				{
 					String type = GetAttributeValue(attributes, "type");
-					if(type.equalsIgnoreCase("checkbox") || type.equalsIgnoreCase("radio") || type.equalsIgnoreCase("option"))
+					if(type != null && type.equalsIgnoreCase("checkbox") || type.equalsIgnoreCase("radio") || type.equalsIgnoreCase("option"))
 						return true;
 				}
 				break;
@@ -392,7 +392,7 @@ public class MSelector
 				if(elementType.equalsIgnoreCase("input"))
 				{
 					String type = GetAttributeValue(attributes, "type");
-					if(type.equalsIgnoreCase("button") || type.equalsIgnoreCase("text"))
+					if(type != null && type.equalsIgnoreCase("button") || type.equalsIgnoreCase("text"))
 						return true;
 				}
 				break;
@@ -410,8 +410,16 @@ public class MSelector
 	 * @param attributeName
 	 * @return
 	 */
+	/**
+	 * @param attributes
+	 * @param attributeName
+	 * @return the value for the given attribute, or NULL
+	 */
 	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
 	{
+		if(attributes == null)
+			return null;
+
 		Node node = attributes.getNamedItem(attributeName);
 
 		if(node != null)
@@ -419,6 +427,7 @@ public class MSelector
 
 		return null;
 	}
+
 
 
 	/**

@@ -114,7 +114,12 @@ public class MCssRule extends MCssRuleBase
 	 */
 	private static String TryFindW3cErrorForSelector(Selector selector, Set<Defect> w3cErrors)
 	{
-		int lineNumber = ((LocatableImpl)selector).getLocator().getLineNumber();
+		if(!(selector instanceof LocatableImpl))
+		{
+			return "";
+		}
+
+		int lineNumber = ((LocatableImpl) selector).getLocator().getLineNumber();
 
 		Optional<Defect> match = w3cErrors.stream().filter(error -> error.line() == lineNumber
 															&& !error.message().contains("Parse Error")

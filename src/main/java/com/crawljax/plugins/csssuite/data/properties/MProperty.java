@@ -20,6 +20,7 @@ public class MProperty
 	private String _status;
 	private boolean _isEffective;
 	private boolean _isInvalidUndo;
+	private boolean _invalidUndoSet;
 
 
 	/**
@@ -38,6 +39,7 @@ public class MProperty
 		_isImportant = isImportant;
 		_w3cError = w3cError;
 		_isInvalidUndo = false;
+		_invalidUndoSet = false;
 		_order = order;
 
 		if(name.contains("-moz-") || name.contains("-webkit-") || name.contains("-ms-") || name.contains("-o-") || name.contains("-khtml-"))
@@ -217,6 +219,12 @@ public class MProperty
 	 */
 	public void SetInvalidUndo(boolean invalid)
 	{
+		if(_invalidUndoSet && !_isInvalidUndo)
+			return;
+
+		if(!_invalidUndoSet)
+			_invalidUndoSet = true;
+
 		_isInvalidUndo = invalid;
 	}
 

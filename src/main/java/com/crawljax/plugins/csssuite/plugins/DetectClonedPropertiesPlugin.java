@@ -7,6 +7,7 @@ import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,16 @@ import java.util.Map;
  */
 public class DetectClonedPropertiesPlugin implements ICssPostCrawlPlugin
 {
+    private int _clonedDeclarationsRemoved = 0;
+
     @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
+    public void getStatistics(SuiteStringBuilder builder, String prefix)
+    {
+        builder.appendLine("%s<cloned_declarations_removed>%d</cloned_declarations_removed>", prefix, _clonedDeclarationsRemoved);
+    }
+
+    @Override
+    public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         for(String fileName : cssRules.keySet())
         {
@@ -42,11 +51,14 @@ public class DetectClonedPropertiesPlugin implements ICssPostCrawlPlugin
                                 if((!current.IsImportant() || other.IsImportant()) && current.GetValueVendor().isEmpty())
                                 {
                                     clonedProps.add(current);
-                                    LogHandler.debug("[DetectClonedProperties] Property with '%s' in selector '%s' of file '%s' is a clone of a later declared property, and considered ineffective, will be removed", current, mSelector, fileName);
+                                    _clonedDeclarationsRemoved++;
+                                    LogHandler.debug("[DetectClonedProperties] Property with '%s' in selector '%s' of file '%s' is a clone of a LATER declared property, and considered ineffective, will be removed", current, mSelector, fileName);
                                 }
                                 else if (current.IsImportant() && !other.IsImportant())
                                 {
                                     clonedProps.add(other);
+                                    _clonedDeclarationsRemoved++;
+                                    LogHandler.debug("[DetectClonedProperties] Property with '%s' in selector '%s' of file '%s' is a clone of a PREVIOUS declared property, and considered ineffective, will be removed", current, mSelector, fileName);
                                 }
                             }
                         }

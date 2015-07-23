@@ -49,6 +49,12 @@ public class MCssRule extends MCssRuleBase
 	}
 
 
+	@Override
+	public boolean IsCompatibleWithRule()
+	{
+		return true;
+	}
+
 	/**
 	 * Parse all selectors from this _rule and add them to the _selectors, parse properties once and try to find W3C errors for selectors in this rule
 	 */

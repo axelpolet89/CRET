@@ -3,7 +3,6 @@ package com.crawljax.plugins.csssuite.verification;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
-import com.crawljax.plugins.csssuite.data.ElementWrapper;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
@@ -103,12 +102,12 @@ public class CssOnDomVerifier
         MatchedElements matchedElementsGnr = new MatchedElements();
 
         NormalizeAndSplitPlugin normalizer = new NormalizeAndSplitPlugin();
-        originalStyles = normalizer.Transform(originalStyles, matchedElementsOrig);
-        generatedStyles = normalizer.Transform(generatedStyles, matchedElementsGnr);
+        originalStyles = normalizer.transform(originalStyles, matchedElementsOrig);
+        generatedStyles = normalizer.transform(generatedStyles, matchedElementsGnr);
 
         DetectClonedPropertiesPlugin clonedProps = new DetectClonedPropertiesPlugin();
-        originalStyles = clonedProps.Transform(originalStyles, matchedElementsOrig);
-        generatedStyles = clonedProps.Transform(generatedStyles, matchedElementsGnr);
+        originalStyles = clonedProps.transform(originalStyles, matchedElementsOrig);
+        generatedStyles = clonedProps.transform(generatedStyles, matchedElementsGnr);
 
         // perform matched element analysis
         for(StateVertex state : states.keySet())
@@ -376,13 +375,6 @@ public class CssOnDomVerifier
         builder.appendLine("%s<missing_but_default_props>%d</missing_but_default_props>", prefix, _totalDefaultPropsOrig.size());
         builder.appendLine("%s<missing_props>%d</missing_props>", prefix, _totalMissingProps.size());
         builder.appendLine("%s<additional_props>%d</additional_props>", prefix,_totalAdditionalProps.size());
-    }
-
-    public String GenerateXml()
-    {
-        SuiteStringBuilder builder = new SuiteStringBuilder();
-        GenerateXml(builder, "");
-        return builder.toString();
     }
 
     public boolean ContainsEffectiveProps(List<MProperty> properties)

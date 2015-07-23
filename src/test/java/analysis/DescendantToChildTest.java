@@ -65,7 +65,7 @@ public class DescendantToChildTest
         }
 
         // post crawling
-        Map<String, MCssFile> postResult =  dtoc.Transform(eff.Transform(files, matchedElements), matchedElements);
+        Map<String, MCssFile> postResult =  dtoc.transform(eff.transform(files, matchedElements), matchedElements);
 
         List<MSelector> validSelectors = new ArrayList<>();
         for(MCssRule rule : postResult.get("external").GetRules())

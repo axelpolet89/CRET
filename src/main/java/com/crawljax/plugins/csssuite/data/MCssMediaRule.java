@@ -18,6 +18,12 @@ public class MCssMediaRule extends MCssRuleBase
         super(rule, queries, parent);
     }
 
+    @Override
+    public boolean IsCompatibleWithMediaRule()
+    {
+        return true;
+    }
+
     public void SetInnerRules(List<MCssRuleBase> innerRules)
     {
         _innerRules = innerRules;

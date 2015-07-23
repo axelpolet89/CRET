@@ -57,7 +57,7 @@ public class CssUndoDetectorTest
         ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
 
         // post crawling
-        Map<String, MCssFile> postResult =  undoDetector.Transform(effectivenessPlugin.Transform(normalizer.Transform(files, matchedElements), matchedElements), matchedElements);
+        Map<String, MCssFile> postResult =  undoDetector.transform(effectivenessPlugin.transform(normalizer.transform(files, matchedElements), matchedElements), matchedElements);
 
         List<MSelector> validSelectors = new ArrayList<>();
         for(MCssRule rule : postResult.get("external").GetRules())

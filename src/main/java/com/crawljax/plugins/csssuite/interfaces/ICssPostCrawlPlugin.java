@@ -2,6 +2,7 @@ package com.crawljax.plugins.csssuite.interfaces;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.Map;
 
@@ -10,5 +11,6 @@ import java.util.Map;
  */
 public interface ICssPostCrawlPlugin
 {
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements);
+    public void getStatistics(SuiteStringBuilder builder, String prefix);
+    public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements);
 }

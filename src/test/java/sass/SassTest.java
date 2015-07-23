@@ -40,8 +40,8 @@ public class SassTest
 
         NormalizeAndSplitPlugin splitPlugin = new NormalizeAndSplitPlugin();
         NormalizeAndMergePlugin mergePlugin = new NormalizeAndMergePlugin();
-        splitPlugin.Transform(files, new MatchedElements());
-        mergePlugin.Transform(files, new MatchedElements());
+        splitPlugin.transform(files, new MatchedElements());
+        mergePlugin.transform(files, new MatchedElements());
 
         SassBuilder sassBuilder = new SassBuilder(externalFile);
         SassFile sassFile = sassBuilder.CssToSass();
@@ -71,8 +71,8 @@ public class SassTest
 
         NormalizeAndSplitPlugin splitPlugin = new NormalizeAndSplitPlugin();
         NormalizeAndMergePlugin mergePlugin = new NormalizeAndMergePlugin();
-        splitPlugin.Transform(files, new MatchedElements());
-        mergePlugin.Transform(files, new MatchedElements());
+        splitPlugin.transform(files, new MatchedElements());
+        mergePlugin.transform(files, new MatchedElements());
 
         SassBuilder sassBuilder = new SassBuilder(externalFile);
         SassFile sassFile = sassBuilder.CssToSass();

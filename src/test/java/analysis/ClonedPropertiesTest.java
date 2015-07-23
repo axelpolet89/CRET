@@ -39,8 +39,8 @@ public class ClonedPropertiesTest
         NormalizeAndSplitPlugin splitPlugin = new NormalizeAndSplitPlugin();
         DetectClonedPropertiesPlugin clonedProperties = new DetectClonedPropertiesPlugin();
 
-        splitPlugin.Transform(files, new MatchedElements());
-        clonedProperties.Transform(files, new MatchedElements());
+        splitPlugin.transform(files, new MatchedElements());
+        clonedProperties.transform(files, new MatchedElements());
 
         List<MSelector> selectors = new ArrayList<>();
         for(MCssRule rule : files.get("external").GetRules())

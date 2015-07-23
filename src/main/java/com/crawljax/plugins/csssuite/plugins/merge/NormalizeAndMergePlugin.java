@@ -7,6 +7,7 @@ import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.*;
 
@@ -21,7 +22,12 @@ public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
     private Map<MProperty, MSelector> _propSelMap = new HashMap<>();
 
     @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
+    public void getStatistics(SuiteStringBuilder builder, String prefix)
+    {
+    }
+
+    @Override
+    public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         for (String file : cssRules.keySet())
         {

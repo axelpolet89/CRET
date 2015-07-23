@@ -8,6 +8,7 @@ import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.DefaultStylesHelper;
+import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,8 +23,18 @@ import java.util.stream.Collectors;
  */
 public class DetectUndoingPlugin implements ICssPostCrawlPlugin
 {
+    private int _defaultDeclarationsRemoved = 0;
+    private int _emptySelectorsRemoved = 0;
+
     @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
+    public void getStatistics(SuiteStringBuilder builder, String prefix)
+    {
+        builder.appendLine("%s<default_declarations_removed>%d</default_declarations_removed>", prefix, _defaultDeclarationsRemoved);
+        builder.appendLine("%s<default_selectors_removed>%d</default_selectors_removed>", prefix, _emptySelectorsRemoved);
+    }
+
+    @Override
+    public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         LogHandler.info("[CssAnalyzer] Performing analysis of invalid undo styles on matched CSS selectors...");
 
@@ -175,7 +186,7 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
      * @param file
      * @return
      */
-    private static MCssFile FilterUndoRules(MCssFile file)
+    private MCssFile FilterUndoRules(MCssFile file)
     {
         for(MCssRule mRule : file.GetRules())
         {
@@ -188,6 +199,7 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
                     if(mProperty.IsInvalidUndo())
                     {
                         LogHandler.debug("[CssUndoDetector] Property %s with value %s in selector %s is an INVALID undo style", mProperty.GetName(), mProperty.GetValue(), mSelector);
+                        _defaultDeclarationsRemoved++;
                     }
                 }
 
@@ -196,6 +208,7 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
                 if(!mSelector.HasEffectiveProperties())
                 {
                     emptySelectors.add(mSelector);
+                    _emptySelectorsRemoved++;
                 }
             }
 

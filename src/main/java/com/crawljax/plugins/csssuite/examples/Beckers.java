@@ -14,7 +14,7 @@ public class Beckers {
 	private static final int waitAfterEvent = 400;
 	private static final int waitAfterReload = 400;
 
-	private static final String INDEX = "http://www.beckerelectric.com";
+	private static final String INDEX = "http://www.oaklandmetro.org";
 
 	public static void main(String[] args) {
 		CrawljaxConfigurationBuilder builder = CrawljaxConfiguration.builderFor(INDEX);
@@ -32,10 +32,10 @@ public class Beckers {
 
 		builder.setBrowserConfig(new BrowserConfiguration(BrowserType.FIREFOX, 1));
 
-		CssSuitePlugin cssSuite = new CssSuitePlugin("becker_electric", INDEX);
+		CssSuitePlugin cssSuite = new CssSuitePlugin("oaklandmetro", INDEX);
 		cssSuite._enableSassGeneration = true;
 		cssSuite._enableVerification = true;
-		cssSuite.EnableDebug();
+		cssSuite.enableDebug();
 
 		builder.addPlugin(cssSuite);
 

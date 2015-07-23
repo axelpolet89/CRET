@@ -29,15 +29,18 @@ import java.util.Map;
  */
 public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
 {
-    private final Map<DescendantSelectorImpl, Boolean> _descendants;
+    private final Map<DescendantSelectorImpl, Boolean> _descendants = new HashMap<>();
+    private int _selectorsTransformed = 0;
 
-    public ChildCombinatorPlugin()
+
+    @Override
+    public void getStatistics(SuiteStringBuilder builder, String prefix)
     {
-        _descendants = new HashMap<>();
+        builder.appendLine("%s<descendant_to_child_transformations>%d</descendant_to_child_transformations>", prefix, _selectorsTransformed);
     }
 
     @Override
-    public Map<String, MCssFile> Transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
+    public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
         for(String fileName : cssRules.keySet())
         {
@@ -86,6 +89,8 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
                         MSelector newSelector = new MSelector(newW3cSelector, mSelector);
                         newSelectors.put(mSelector, newSelector);
                         LogHandler.debug("[DescToChild] [%s] New MSelector created: '%s', will replace old", mSelector, newSelector);
+
+                        _selectorsTransformed++;
                     }
                 }
 

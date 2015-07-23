@@ -2,10 +2,10 @@ package com.crawljax.plugins.csssuite;
 
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 
 import com.cathive.sass.SassContext;
 import com.cathive.sass.SassFileContext;
@@ -22,7 +22,6 @@ import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
 import com.crawljax.plugins.csssuite.sass.SassFile;
-import com.crawljax.plugins.csssuite.sass.SassRuleBase;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.crawljax.plugins.csssuite.verification.CssOnDomVerifier;
@@ -30,8 +29,6 @@ import com.steadystate.css.parser.media.MediaQuery;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
-import org.apache.log4j.xml.DOMConfigurator;
-import org.jaxen.function.StringFunction;
 import org.w3c.dom.Document;
 
 import com.crawljax.core.CrawlSession;
@@ -42,7 +39,6 @@ import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import com.crawljax.plugins.csssuite.parser.CssParser;
-import sun.rmi.runtime.Log;
 
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
@@ -50,29 +46,40 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	public boolean _enableW3cValidation = false;
 	public boolean _enableSassGeneration = false;
 	public boolean _enableVerification = false;
+	public boolean _enableStatistics = false;
 	public int _clonePropsUpperLimit = 999;
 
+	/* fields */
 	private final String _siteName;
 	private final String _siteIndex;
-
-	private final List<String> _processedCssFiles;
 	private int _originalCssLOC;
 
-	private Map<String, MCssFile> _origMcssFiles;
-	private Map<String, MCssFile> _mcssFiles;
-	private Map<StateVertex, LinkedHashMap<String, Integer>> _stateCssFileMap;
+	// files that apply per discovered DOM state
+	private final Map<StateVertex, LinkedHashMap<String, Integer>> _stateCssFiles;
 
+	// originally discovered CSS files
+	private final Map<String, MCssFile> _origMcssFiles;
+
+	// optimized CSS files
+	private Map<String, MCssFile> _newMcssFiles;
+
+	// matched elements analysis, crawltime
 	private final MatchedElements _matchedElements;
+
+	// additional transformations, post-crawltime
 	private final List<ICssPostCrawlPlugin> _postPlugins;
 
-	private final Map<String, File> _newCssFiles;
+	// generated CSS/SASS files
+	private final Map<String, File> _targetCssFiles;
+	private final Map<String, File> _targetSassFiles;
+	private final Map<String, File> _targetCssFromSassFiles;
 
 	private final File _outputFile = new File("output/csssuite" + String.format("%s", new SimpleDateFormat("ddMMyy-hhmmss").format(new Date())) + ".txt");
 
-	public CssSuitePlugin(String siteName, String _siteIndex)
+	public CssSuitePlugin(String siteName, String siteIndex)
 	{
 		_siteName = siteName;
-		this._siteIndex = _siteIndex;
+		_siteIndex = siteIndex;
 
 		//DOMConfigurator.configure("log4j.xml");
 
@@ -82,42 +89,53 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_originalCssLOC = 0;
 
+		_stateCssFiles = new HashMap<>();
+
 		_origMcssFiles = new HashMap<>();
-		_mcssFiles = new HashMap<>();
-		_stateCssFileMap = new HashMap<>();
+		_newMcssFiles = new HashMap<>();
 
-		_processedCssFiles = new ArrayList<>();
-
-		_postPlugins = new ArrayList<>();
 		_matchedElements = new MatchedElements();
 
-		_newCssFiles = new HashMap<>();
-
+		_postPlugins = new ArrayList<>();
 		_postPlugins.add(new NormalizeAndSplitPlugin());
 		_postPlugins.add(new DetectClonedPropertiesPlugin());
 		_postPlugins.add(new EffectivenessPlugin());
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorPlugin());
 		_postPlugins.add(new NormalizeAndMergePlugin());
+
+		_targetCssFiles = new HashMap<>();
+		_targetSassFiles = new HashMap<>();
+		_targetCssFromSassFiles = new HashMap<>();
 	}
 
-	public void EnableDebug()
+	/**
+	 *
+	 */
+	public void enableDebug()
 	{
 		LogManager.getLogger("css.suite.logger").setLevel(Level.DEBUG);
 	}
 
+
+	/**
+	 *
+	 * @param context
+	 * @param newState
+	 */
+	@Override
 	public void onNewState(CrawlerContext context, StateVertex newState)
 	{
 		LogHandler.info("[NEW STATE] %s", newState.getUrl());
 
 		// if the external CSS files are not parsed yet, do so
 		LogHandler.info("Parse CSS rules...");
-		LinkedHashMap<String, Integer> stateFileOrder = ParseCssRulesForState(context, newState);
+		LinkedHashMap<String, Integer> stateFileOrder = parseCssRulesForState(context, newState);
 
 		try
 		{
-			ElementSelectorMatcher.MatchElementsToDocument(newState.getName(), newState.getDocument(), _mcssFiles, stateFileOrder, _matchedElements);
-			_stateCssFileMap.put(newState, stateFileOrder);
+			ElementSelectorMatcher.MatchElementsToDocument(newState.getName(), newState.getDocument(), _newMcssFiles, stateFileOrder, _matchedElements);
+			_stateCssFiles.put(newState, stateFileOrder);
 		}
 		catch (Exception ex)
 		{
@@ -127,145 +145,16 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 
 	/**
-	 *
-	 * @param context
-	 * @param state
-	 * @return
+	 * Process discovered CSS files, after crawling complete
+	 * @param session
+	 * @param exitReason
 	 */
-	private LinkedHashMap<String, Integer> ParseCssRulesForState(CrawlerContext context, StateVertex state)
-	{
-		final String url = context.getBrowser().getCurrentUrl();
-		final LinkedHashMap<String, Integer> stateFileOrder = new LinkedHashMap<>();
-
-		try
-		{
-			final Document dom = state.getDocument();
-
-			//_domCssFileNameMap.put(dom, new ArrayList<>());
-
-			int order = 0;
-			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
-			{
-				String cssUrl = relPath;
-
-				if(relPath.startsWith("//"))
-				{
-					URI uri = new URI(url);
-					cssUrl = String.format("%s:%s", uri.getScheme(), cssUrl);
-				}
-				else
-				{
-					cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
-				}
-
-				if (!_mcssFiles.containsKey(cssUrl))
-				{
-					LogHandler.info("[FOUND NEW CSS FILE] " + cssUrl);
-
-					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
-
-					_originalCssLOC += CountLOC(cssCode);
-
-					_origMcssFiles.put(cssUrl,  ParseCssRules(cssUrl, cssCode));
-					_mcssFiles.put(cssUrl,  ParseCssRules(cssUrl, cssCode));
-					//_domCssFileNameMap.get(dom).add(cssUrl);
-				}
-
-				//retain order of css files referenced in DOM
-				stateFileOrder.put(cssUrl, order);
-				order++;
-			}
-
-			// get all the embedded <STYLE> rules, save per HTML page
-			if (!_mcssFiles.containsKey(url))
-			{
-				String embeddedCode = CSSDOMHelper.ParseEmbeddedStyles(dom);
-
-				if(!embeddedCode.isEmpty())
-					LogHandler.info("[FOUND NEW EMBEDDED RULES] " + url);
-
-				_originalCssLOC += CountLOC(embeddedCode);
-
-				_origMcssFiles.put(url, ParseCssRules(url, embeddedCode));
-				_mcssFiles.put(url, ParseCssRules(url, embeddedCode));
-				//_domCssFileNameMap.get(dom).add(url);
-			}
-
-			// embedded style sheet has higher order
-			order++;
-			stateFileOrder.put(url, order);
-		}
-		catch (Exception ex)
-		{
-			LogHandler.error(ex);
-		}
-
-		return stateFileOrder;
-	}
-
-
-	/**
-	 *
-	 * @param url
-	 * @param code
-	 */
-	private MCssFile ParseCssRules(String url, String code)
-	{
-		CssParser parser = new CssParser();
-
-		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
-
-		List<String> parseErrors = parser.GetParseErrors();
-		for(String parseError : parseErrors)
-		{
-			LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
-		}
-
-		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size());
-
-		return file;
-	}
-
-
-	private Map<String, MCssFile> ExecutePostTransformations()
-	{
-		LogHandler.info("[CSS SUITE PLUGIN] Execute POST crawl-time transformations...");
-
-		Map<String, MCssFile> rules = _mcssFiles;
-		for(ICssPostCrawlPlugin plugin : _postPlugins)
-		{
-			rules = plugin.Transform(_mcssFiles, _matchedElements);
-		}
-		return rules;
-	}
-
-
-	private int CountLOC(String cssText) {
-		int count = 0;
-		cssText = cssText.replaceAll("\\{", "{\n");
-		cssText = cssText.replaceAll("\\}", "}\n");
-		cssText = cssText.replaceAll("\\}", "}\n");
-		cssText = cssText.replaceAll("\\;", ";\n");
-
-		if (cssText != null && !cssText.equals("")) {
-			LineNumberReader ln = new LineNumberReader(new StringReader(cssText));
-			try {
-				while (ln.readLine() != null) {
-					count++;
-				}
-			} catch (IOException e) {
-				LogHandler.error(e.getMessage(), e);
-			}
-		}
-		return count;
-	}
-
 	@Override
 	public void postCrawling(CrawlSession session, ExitStatus exitReason)
 	{
 		int totalCssRules = 0;
 		int totalCssSelectors = 0;
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			totalCssRules += entry.getValue().GetRules().size();
 			for (MCssRule mrule : entry.getValue().GetRules())
@@ -285,8 +174,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		int used = PrintMatchedRules(bufferUsed);
 		int unused = PrintUnmatchedRules(bufferUnused);
 
-		Map<String, MCssFile> rules = ExecutePostTransformations();
-		_mcssFiles = rules;
+		Map<String, MCssFile> rules = executePostTransformations();
+		_newMcssFiles = rules;
 
 		final int[] countOrig = {0};
 		final int[] countNew = {0};
@@ -297,10 +186,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		for(String fileName : _origMcssFiles.keySet())
 		{
 			_origMcssFiles.get(fileName).GetRules().stream().forEach(r -> countOrig[0] += r.GetSelectors().size());
-			_mcssFiles.get(fileName).GetRules().stream().forEach(r -> countNew[0] += r.GetSelectors().size());
+			_newMcssFiles.get(fileName).GetRules().stream().forEach(r -> countNew[0] += r.GetSelectors().size());
 
 			_origMcssFiles.get(fileName).GetRules().stream().forEach(r -> r.GetSelectors().forEach(s -> countOrigProps[0] += s.GetProperties().size()));
-			_mcssFiles.get(fileName).GetRules().stream().forEach(r -> r.GetSelectors().forEach(s -> countNewProps[0] += s.GetProperties().size()));
+			_newMcssFiles.get(fileName).GetRules().stream().forEach(r -> r.GetSelectors().forEach(s -> countNewProps[0] += s.GetProperties().size()));
 		}
 
 
@@ -308,10 +197,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		int ineffectiveInt = PrintIneffectiveSelectors(ineffectiveBuffer);
 
 		output.append("Analyzed " + session.getConfig().getUrl() + " on "
-		        + new SimpleDateFormat("dd/MM/yy-hh:mm:ss").format(new Date()) + "\n");
+				+ new SimpleDateFormat("dd/MM/yy-hh:mm:ss").format(new Date()) + "\n");
 
-		output.append("-> Files with CSS code: " + _mcssFiles.keySet().size() + "\n");
-		for (String address : _mcssFiles.keySet())
+		output.append("-> Files with CSS code: " + _newMcssFiles.keySet().size() + "\n");
+		for (String address : _newMcssFiles.keySet())
 		{
 			output.append("    Address: " + address + "\n");
 		}
@@ -336,8 +225,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		// output.append("->> Duplicate Selectors: " + duplicates + "\n\n");
 		output.append("By deleting unused rules, css size reduced by: "
-		        + Math.ceil((double) NewCssSizeBytes() / OriginalCssSizeBytes() * 100) + " percent"
-		        + "\n");
+				+ Math.ceil((double) NewCssSizeBytes() / OriginalCssSizeBytes() * 100) + " percent"
+				+ "\n");
 
 		/*
 		 * This is where the com.crawljax.plugins.csssuite.visualizer gets called.
@@ -367,17 +256,174 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			LogHandler.error(e.getMessage(), e);
 		}
 
-		boolean errors = GenerateCssAndSass(rules, _enableSassGeneration);
-
-		if(_enableVerification && !errors)
+		if(generateTargetFiles(rules))
 		{
-			VerifyGeneratedCss();
+			boolean codeErrors = generateCssAndSass(rules, _enableSassGeneration);
+
+			if(!codeErrors)
+			{
+				if (_enableVerification)
+				{
+					verifyGeneratedCss();
+				}
+
+				if(_enableStatistics)
+				{
+					generateStatistics();
+				}
+			}
 		}
 	}
 
 
+	/**
+	 * @param context
+	 * @param state
+	 * @return a mapping relating a discovered CSS file to the order in which it is used in a browser
+	 */
+	private LinkedHashMap<String, Integer> parseCssRulesForState(CrawlerContext context, StateVertex state)
+	{
+		final String url = context.getBrowser().getCurrentUrl();
+		final LinkedHashMap<String, Integer> stateFileOrder = new LinkedHashMap<>();
 
-	private boolean GenerateCssAndSass(Map<String, MCssFile> source, boolean generateSass)
+		try
+		{
+			final Document dom = state.getDocument();
+
+			int order = 0;
+			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
+			{
+				String cssUrl = relPath;
+
+				if(relPath.startsWith("//"))
+				{
+					URI uri = new URI(url);
+					cssUrl = String.format("%s:%s", uri.getScheme(), cssUrl);
+				}
+				else
+				{
+					cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
+				}
+
+				if (!_newMcssFiles.containsKey(cssUrl))
+				{
+					LogHandler.info("[FOUND NEW CSS FILE] " + cssUrl);
+
+					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
+
+					_originalCssLOC += countLOC(cssCode);
+
+					_origMcssFiles.put(cssUrl,  parseCssRules(cssUrl, cssCode));
+					_newMcssFiles.put(cssUrl,  parseCssRules(cssUrl, cssCode));
+				}
+
+				//retain order of css files referenced in DOM
+				stateFileOrder.put(cssUrl, order);
+				order++;
+			}
+
+			// get all the embedded <STYLE> rules, save per HTML page
+			if (!_newMcssFiles.containsKey(url))
+			{
+				String embeddedCode = CSSDOMHelper.ParseEmbeddedStyles(dom);
+
+				if(!embeddedCode.isEmpty())
+				{
+					LogHandler.info("[FOUND NEW EMBEDDED RULES] " + url);
+				}
+
+				_originalCssLOC += countLOC(embeddedCode);
+
+				_origMcssFiles.put(url, parseCssRules(url, embeddedCode));
+				_newMcssFiles.put(url, parseCssRules(url, embeddedCode));
+			}
+
+			// embedded style sheet has higher order
+			order++;
+			stateFileOrder.put(url, order);
+		}
+		catch (Exception ex)
+		{
+			LogHandler.error(ex);
+		}
+
+		return stateFileOrder;
+	}
+
+
+	/**
+	 *
+	 * @param url
+	 * @param code
+	 */
+	private MCssFile parseCssRules(String url, String code)
+	{
+		CssParser parser = new CssParser();
+
+		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
+
+		List<String> parseErrors = parser.GetParseErrors();
+		for(String parseError : parseErrors)
+		{
+			LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
+		}
+
+		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size());
+
+		return file;
+	}
+
+
+	/**
+	 * Execute all transformations meant to be performed after discovering all CSS files
+	 * @return the set of transformed McssFiles
+	 */
+	private Map<String, MCssFile> executePostTransformations()
+	{
+		LogHandler.info("[CSS SUITE PLUGIN] Execute POST crawl-time transformations...");
+
+		Map<String, MCssFile> rules = _newMcssFiles;
+		for(ICssPostCrawlPlugin plugin : _postPlugins)
+		{
+			rules = plugin.transform(_newMcssFiles, _matchedElements);
+		}
+		return rules;
+	}
+
+
+	/**
+	 * Count lines of code in a given CSS string
+	 * @param cssText
+	 * @return number of lines of code
+	 */
+	private int countLOC(String cssText)
+	{
+		int count = 0;
+
+		cssText = cssText.replaceAll("\\{", "{\n");
+		cssText = cssText.replaceAll("\\}", "}\n");
+		cssText = cssText.replaceAll("\\}", "}\n");
+		cssText = cssText.replaceAll("\\;", ";\n");
+
+		if (cssText != null && !cssText.equals(""))
+		{
+			LineNumberReader ln = new LineNumberReader(new StringReader(cssText));
+			try
+			{
+				while (ln.readLine() != null)
+				{
+					count++;
+				}
+			} catch (IOException e) {
+				LogHandler.error(e.getMessage(), e);
+			}
+		}
+
+		return count;
+	}
+
+
+	private boolean generateTargetFiles(Map<String, MCssFile> source)
 	{
 		LogHandler.info("[GenerateCssAndSass] START CODE GENERATION...");
 
@@ -385,27 +431,16 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		String cssOutputRoot = String.format("%s\\CSS(def)\\", root);
 		String sassOutputRoot = String.format("%s\\SASS\\", root);
 
-		Map<String, File> cssFiles = new LinkedHashMap<>();
-		Map<String, File> sassFiles = new LinkedHashMap<>();
-
 		Map<String, String> embeddedMapping = new LinkedHashMap<>();
 		int embeddedIdx = 1;
 
 		Map<String, String> externalMapping = new LinkedHashMap<>();
 		int externalIdx = 1;
 
-//		Set<String> emptyFiles = new HashSet<>();
-
 		boolean filesInError = false;
 
 		for(String fileName : source.keySet())
 		{
-//			if(source.get(fileName).GetRules().stream().noneMatch(r -> r.GetSelectors().size() > 0))
-//			{
-//				emptyFiles.add(fileName);
-//				continue;
-//			}
-
 			LogHandler.info("[GenerateCssAndSass] Generate output file objects for filename '%s'", fileName);
 
 			boolean inError = false;
@@ -436,7 +471,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			try
 			{
-				cssFiles.put(fileName, FileHelper.CreateFileAndDirs(cssRootDir.concat(cssFile)));
+				_targetCssFiles.put(fileName, FileHelper.CreateFileAndDirs(cssRootDir.concat(cssFile)));
 			}
 			catch (Exception e)
 			{
@@ -445,7 +480,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for CSS file '%s' at root '%s'", cssFile, cssRootDir);
 			}
 
-			if(!generateSass || inError)
+			if(inError)
 			{
 				continue;
 			}
@@ -455,7 +490,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			try
 			{
-				sassFiles.put(fileName, FileHelper.CreateFileAndDirs(sassRootDir.concat(sassFile)));
+				_targetSassFiles.put(fileName, FileHelper.CreateFileAndDirs(sassRootDir.concat(sassFile)));
 			}
 			catch (Exception e)
 			{
@@ -464,54 +499,29 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS file '%s' at root '%s'", sassFile, sassRootDir);
 			}
 
-			String genCssFile = cssRootDir.concat(cssFile).replace("CSS(def)", "CSS(sass)");
-
 			if(inError)
 			{
 				continue;
 			}
 
+			String cssFromSassFile = cssRootDir.concat(cssFile).replace("CSS(def)", "CSS(sass)");
 			try
 			{
-				_newCssFiles.put(fileName, FileHelper.CreateFileAndDirs(genCssFile));
+				_targetCssFromSassFiles.put(fileName, FileHelper.CreateFileAndDirs(cssFromSassFile));
 			}
 			catch (Exception e)
 			{
 				filesInError = true;
-				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS-to-CSS file at path '%s'", genCssFile);
+				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS-to-CSS file at path '%s'", cssFromSassFile);
 			}
 		}
+
 
 		if(filesInError)
 		{
 			LogHandler.info("[GenerateCssAndSass] Errors occurred while building File objects, do not continue code generation");
-			return true;
+			return false;
 		}
-
-		boolean cssInError = false;
-		boolean sassInError = false;
-		boolean sassToCssInError = false;
-
-//		if(!emptyFiles.isEmpty())
-//		{
-//			try
-//			{
-//				FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("empty_files.txt")));
-//				esWriter.write("the following files are transformed to empty:\n");
-//				for (String fileName : emptyFiles)
-//				{
-//					esWriter.append(String.format("%s\n", fileName));
-//				}
-//				esWriter.flush();
-//				esWriter.close();
-//			}
-//			catch (IOException e)
-//			{
-//				LogHandler.error(e, "[GenerateCssAndSass] Error in generating empty files list");
-//			}
-//
-//			source.keySet().removeAll(emptyFiles);
-//		}
 
 		if(!externalMapping.isEmpty())
 		{
@@ -551,13 +561,30 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 		}
 
+		return true;
+	}
+
+
+	/**
+	 * Main method that generates CSS from a given set of MCssFiles
+	 * Optionally, it will also generate SASS code including
+	 * @param mcssFiles
+	 * @param generateSass
+	 * @return
+	 */
+	private boolean generateCssAndSass(Map<String, MCssFile> mcssFiles, boolean generateSass)
+	{
+		boolean cssInError = false;
+		boolean sassInError = false;
+		boolean sassToCssInError = false;
+
 		// CSS before SASS transformation
 		CssWriter writer = new CssWriter();
-		for(String fileName : source.keySet())
+		for(String fileName : mcssFiles.keySet())
 		{
 			try
 			{
-				writer.Generate(cssFiles.get(fileName), source.get(fileName));
+				writer.Generate(_targetCssFiles.get(fileName), mcssFiles.get(fileName));
 			}
 			catch (Exception e)
 			{
@@ -570,11 +597,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			Map<String, SassFile> sassFileObjects = new HashMap<>();
 			// create SCSS objects from CSS files, including clone detection and other SCSS-specific transformations
-			for(String fileName : source.keySet())
+			for(String fileName : mcssFiles.keySet())
 			{
 				LogHandler.info("[Generate SCSS Code] Start building SASS objects for file %s...", fileName);
 
-				SassBuilder sassBuilder = new SassBuilder(source.get(fileName), _clonePropsUpperLimit);
+				SassBuilder sassBuilder = new SassBuilder(mcssFiles.get(fileName), _clonePropsUpperLimit);
 				sassFileObjects.put(fileName, sassBuilder.CssToSass());
 			}
 
@@ -588,7 +615,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				try
 				{
 					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", fileName);
-					scssFiles.put(fileName, sassWriter.GenerateSassCode(sassFiles.get(fileName), sassFileObjects.get(fileName)));
+					scssFiles.put(fileName, sassWriter.GenerateSassCode(_targetSassFiles.get(fileName), sassFileObjects.get(fileName)));
 				}
 				catch (Exception e)
 				{
@@ -608,7 +635,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 						SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
 						ctx.getOptions().setOutputStyle(SassOutputStyle.NESTED);
 
-						FileOutputStream outputStream = new FileOutputStream(_newCssFiles.get(fileName));
+						FileOutputStream outputStream = new FileOutputStream(_targetCssFromSassFiles.get(fileName));
 						ctx.compile(outputStream);
 
 						outputStream.flush();
@@ -617,7 +644,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					catch (Exception e)
 					{
 						sassToCssInError = true;
-						LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _newCssFiles.get(fileName));
+						LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _targetCssFiles.get(fileName));
 					}
 				}
 			}
@@ -627,34 +654,17 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	}
 
 
-
-	private void VerifyGeneratedCss()
+	/**
+	 *
+	 */
+	private void verifyGeneratedCss()
 	{
-		LogHandler.info("[VERIFICATION] Parse the new generated CSS files...");
-
-		CssParser parser = new CssParser();
-		Map<String, MCssFile> generatedCssFiles = new HashMap<>();
-
-		for(String fileName : _newCssFiles.keySet())
-		{
-			try
-			{
-				String cssCode = new String(Files.readAllBytes(_newCssFiles.get(fileName).toPath()), "UTF-8");
-				generatedCssFiles.put(fileName, parser.ParseCssIntoMCssRules(fileName, cssCode));
-			}
-			catch (Exception ex)
-			{
-				LogHandler.error(ex, "[VERIFICATION] Cannot read lines or parse css code from new file %s", _newCssFiles.get(fileName).toPath());
-			}
-		}
-
 		LogHandler.info("[VERIFICATION] Start verification for all found DOM states with original and new CSS files");
 		CssOnDomVerifier verifier = new CssOnDomVerifier();
 
-
 		try
 		{
-			verifier.Verify(_stateCssFileMap, _origMcssFiles, generatedCssFiles);
+			verifier.Verify(_stateCssFiles, _origMcssFiles, parseGeneratedCss());
 
 			SuiteStringBuilder builder = new SuiteStringBuilder();
 			builder.append("<site>");
@@ -679,15 +689,142 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 *
 	 * @return
 	 */
-	private String PrintFiles()
+	private Map<String, MCssFile> parseGeneratedCss()
 	{
-		StringBuilder builder = new StringBuilder();
-		for(String file : _processedCssFiles)
+		LogHandler.info("[GENERATED CSS] Parse generated CSS files...");
+
+		CssParser parser = new CssParser();
+		Map<String, MCssFile> generatedCssFiles = new HashMap<>();
+
+		for(String fileName : _targetCssFiles.keySet())
 		{
-			builder.append("#" + _processedCssFiles.indexOf(file) + ": " + file + "\n");
+			try
+			{
+				String cssCode = new String(Files.readAllBytes(_targetCssFiles.get(fileName).toPath()), "UTF-8");
+				generatedCssFiles.put(fileName, parser.ParseCssIntoMCssRules(fileName, cssCode));
+			}
+			catch (Exception ex)
+			{
+				LogHandler.error(ex, "[GENERATED CSS] Cannot read lines or parse css code from new file %s", _targetCssFiles.get(fileName).toPath());
+			}
 		}
-		return builder.toString();
+
+		return  generatedCssFiles;
 	}
+
+
+	private void generateStatistics()
+	{
+		LogHandler.info("[STATISTICS] Start verification for all found DOM states with original and new CSS files");
+
+		try
+		{
+			SuiteStringBuilder builder = new SuiteStringBuilder();
+			builder.append("<site>");
+			builder.appendLine("\t<site_name>%s</site_name>\n", _siteName);
+
+			generateFileStatistics(builder);
+
+			for(ICssPostCrawlPlugin plugin : _postPlugins)
+			{
+				plugin.getStatistics(builder, "\t");
+			}
+
+			builder.appendLine("</site>");
+
+			File verificationOutput = FileHelper.CreateFileAndDirs("./output/statistics/statistics_summary.xml");
+			FileWriter writer = new FileWriter(verificationOutput, true);
+			writer.append(builder.toString());
+			writer.flush();
+			writer.close();
+		}
+		catch (Exception ex)
+		{
+			LogHandler.error(ex, "[STATISTICS] Error occurred in verification process");
+		}
+	}
+
+
+	/**
+	 *
+	 * @param builder
+	 */
+	private void generateFileStatistics(SuiteStringBuilder builder)
+	{
+		String prefix = "\t";
+
+		int OrS = 0;
+		int OrD = 0;
+
+		int OpS = 0;
+		int OpD = 0;
+
+		for(MCssFile mCssFile : _origMcssFiles.values())
+		{
+			OrS += getStatistics(mCssFile, this::countRuleSelectors);
+			OrD += getStatistics(mCssFile, this::countRuleDeclarations);
+		}
+
+		for(MCssFile mCssFile : _newMcssFiles.values())
+		{
+			OpS += getStatistics(mCssFile, this::countRuleSelectors);
+			OpD += getStatistics(mCssFile, this::countRuleDeclarations);
+		}
+
+		builder.appendLine("%s<OrS>%d</OrS>", prefix, OrS);
+		builder.appendLine("%s<OrD>%d</OrD>", prefix, OrD);
+		builder.appendLine("%s<OpS>%d</OpS>", prefix, OpS);
+		builder.appendLine("%s<OpD>%d</OpD>", prefix, OpD);
+	}
+
+
+	private int countRuleSelectors(MCssRule mCssRule)
+	{
+		return mCssRule.GetSelectors().size();
+	}
+
+	private int countRuleDeclarations(MCssRule mCssRule)
+	{
+		int count = 0;
+		for(MSelector mSelector : mCssRule.GetSelectors())
+		{
+			count += mSelector.GetProperties().size();
+		}
+		return count;
+	}
+
+	private int getStatistics(MCssFile mCssFile, Function<MCssRule, Integer> statisticsFunction)
+	{
+		int count = 0;
+
+		for(MCssRule mCssRule : mCssFile.GetRules())
+		{
+			count += statisticsFunction.apply(mCssRule);
+		}
+
+		return count;
+	}
+
+
+//	private int recursiveCountMediaSelectors(MCssMediaRule mediaRule, Function<MCssRule, Integer> statisticsFunction)
+//	{
+//		int count = 0;
+//
+//		for(MCssRuleBase ruleBase : mediaRule.GetInnerRules())
+//		{
+//			if(ruleBase.IsCompatibleWithRule())
+//			{
+//				count += statisticsFunction.apply((MCssRule)ruleBase);
+//			}
+//
+//			if(ruleBase.IsCompatibleWithMediaRule())
+//			{
+//				count += recursiveCountMediaSelectors((MCssMediaRule)ruleBase, statisticsFunction);
+//			}
+//		}
+//
+//		return count;
+//	}
 
 
 	/**
@@ -700,7 +837,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		int counterEffectiveSelectors = 0;
 		buffer.append("\n========== EFFECTIVE CSS SELECTORS ==========\n");
 
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			List<MCssRule> rules = entry.getValue().GetRules();
 
@@ -750,7 +887,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		int counterIneffectiveSelectors = 0;
 		buffer.append("========== INEFFECTIVE CSS SELECTORS ==========\n");
 
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			List<MCssRule> rules = entry.getValue().GetRules();
 
@@ -788,7 +925,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		buffer.append("========== UNMATCHED CSS RULES ==========\n");
 		int counter = 0;
 
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			List<MCssRule> rules = entry.getValue().GetRules();
 
@@ -826,7 +963,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		buffer.append("========== MATCHED CSS RULES ==========\n");
 
 		int counter = 0;
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			List<MCssRule> rules = entry.getValue().GetRules();
 
@@ -862,7 +999,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private int CountAllProperties()
 	{
 		int counter = 0;
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			for (MCssRule rule : entry.getValue().GetRules())
 			{
@@ -885,7 +1022,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		int counter = 0;
 
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			List<MCssRule> rules = entry.getValue().GetRules();
 
@@ -918,7 +1055,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private int CountIgnoredProperties()
 	{
 		int counter = 0;
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			for (MCssRule rule : entry.getValue().GetRules())
 			{
@@ -945,7 +1082,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	{
 		int result = 0;
 
-		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
+		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
 		{
 			for (MCssRule mRule : entry.getValue().GetRules())
 			{

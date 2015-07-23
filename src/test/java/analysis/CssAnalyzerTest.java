@@ -74,7 +74,7 @@ public class CssAnalyzerTest
 		Assert.assertArrayEquals(Arrays.asList("ul li a", ".input-content").toArray(),
 				matchedInternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
 
-		Map<String, MCssFile> postResult = new EffectivenessPlugin().Transform(files, matchedElements);
+		Map<String, MCssFile> postResult = new EffectivenessPlugin().transform(files, matchedElements);
 
 		List<MSelector> effectiveExternal = new ArrayList<>();
 		List<MSelector> effectiveInternal = new ArrayList<>();
@@ -198,7 +198,7 @@ public class CssAnalyzerTest
 		Assert.assertArrayEquals(Arrays.asList("div#footer", "div#footer", "div#footer", "body .extra-content", ".extra-content", "body .extra-content", ".extra-content").toArray(),
 				matchedExternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
 
-		Map<String, MCssFile> postResult = new EffectivenessPlugin().Transform(files, matchedElements);
+		Map<String, MCssFile> postResult = new EffectivenessPlugin().transform(files, matchedElements);
 
 		List<MSelector> effectiveExternal = new ArrayList<>();
 		for(MCssRule rule : postResult.get("external").GetRules())

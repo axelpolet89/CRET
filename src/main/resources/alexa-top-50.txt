@@ -9,8 +9,6 @@ http://www.taobao.com
 http://www.live.com
 http://www.linkedin.com
 http://www.amazon.com
-http://www.sberbank.ru
-http://www.weibo.com
 http://www.wordpress.com
 http://www.yandex.ru
 http://www.bing.com
@@ -18,7 +16,6 @@ http://www.tmall.com
 http://www.vk.com
 http://www.ebay.com
 http://www.pinterest.com
-http://www.163.com
 http://www.ask.com
 http://www.soso.com
 http://www.msn.com
@@ -42,9 +39,12 @@ http://www.fc2.com
 http://www.reddit.com
 http://www.cnn.com
 http://www.pcgames.com.cn
-http://www.vube.com
 http://www.go.com
 http://www.adobe.com
 http://www.odnoklassniki.ru
 http://www.alipay.com
 http://www.conduit.com
+http://www.about.com
+http://www.newgrounds.com
+http://www.semrush.com
+http://www.gmw.cn

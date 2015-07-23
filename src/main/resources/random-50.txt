@@ -1,7 +1,6 @@
 http://www.dvdmaniacs.net
 http://www.whitestuff.com
 http://www.javascriptkit.com
-http://www.angelfire.com
 http://www.megnut.com
 http://www.kickerclub.com
 http://www.bandwidthplace.com
@@ -21,7 +20,6 @@ http://www.linklust.com
 http://www.slgtm.com
 http://www.freewarejava.com
 http://www.onthebox.com
-http://www.inmotionmagazine.com
 http://www.dynamicdrive.com
 http://www.indeterminate.de
 http://www.oaklandmetro.org
@@ -48,3 +46,5 @@ http://www.regretless.com
 http://www.earache.com
 http://www.karlo.org
 http://www.dublab.com
+http://www.aspcr.com
+http://www.regretless.com

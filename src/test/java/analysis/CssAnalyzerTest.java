@@ -1,6 +1,6 @@
 package analysis;
 
-import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
+import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;

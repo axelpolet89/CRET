@@ -23,15 +23,17 @@ import java.util.*;
  */
 public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 {
-    private BrowserColorParser _browserColorParser;
-    public NormalizeAndSplitPlugin()
-    {
-        _browserColorParser = new BrowserColorParser();
-    }
+    private BrowserColorParser _browserColorParser = new BrowserColorParser();
+    private int _normalizedColors = 0;
+    private int _normalizedUrls = 0;
+    private int _normalizedZeroes = 0;
 
     @Override
     public void getStatistics(SuiteStringBuilder builder, String prefix)
     {
+        builder.appendLine("%s<NC>%d</NC>", prefix, _normalizedColors);
+        builder.appendLine("%s<NU>%d</NU>", prefix, _normalizedUrls);
+        builder.appendLine("%s<NZ>%d</NZ>", prefix, _normalizedZeroes);
     }
 
     @Override
@@ -83,6 +85,8 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                 // transform any rgb(...) value into it's hexadecimal representation
                 while (newValue.contains("rgb("))
                 {
+                    _normalizedColors++;
+
                     String rgbValue = TryFindRgb(newValue);
                     String rgbReplace = rgbValue.replace("(", "\\(").replace(")", "\\)");
 
@@ -98,6 +102,8 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
                     while (text.contains("rgba("))
                     {
+                        _normalizedColors++;
+
                         String rgbaOrig = TryFindRgba(text);
                         String rgbaReplace = rgbaOrig.replace("(", "\\(").replace(")", "\\)");
                         text = text.replaceFirst(rgbaReplace, "");
@@ -124,6 +130,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
                 String newPart = _browserColorParser.TryParseColorToHex(part);
                 if(!part.equals(newPart))
                 {
+                    _normalizedColors++;
                     newValue = newValue.replace(part, newPart);
                 }
                 else if(part.equals("transparent"))
@@ -141,7 +148,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
      * Normalize zero values and url values
      * @param mSelector
      */
-    private static void NormalizeZeroes(MSelector mSelector)
+    private void NormalizeZeroes(MSelector mSelector)
     {
         for(MProperty mProperty : mSelector.GetProperties())
         {
@@ -154,11 +161,13 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
             if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
                     value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
             {
+                _normalizedZeroes++;
                 mProperty.SetNormalizedValue("0");
                 LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
             }
             else if (mProperty.GetOriginalValue().contains("0."))
             {
+                _normalizedZeroes++;
                 mProperty.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
             }
         }
@@ -169,7 +178,7 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
      * Normalize zero values and url values
      * @param mSelector
      */
-    private static void NormalizeUrls(MSelector mSelector)
+    private void NormalizeUrls(MSelector mSelector)
     {
         for(MProperty mProperty : mSelector.GetProperties())
         {
@@ -180,10 +189,12 @@ public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
 
             if(origValue.contains("http://"))
             {
+                _normalizedUrls++;
                 mProperty.SetNormalizedValue(origValue.replaceAll("http://", ""));
             }
             else if(origValue.contains("https://"))
             {
+                _normalizedUrls++;
                 mProperty.SetNormalizedValue(origValue.replaceAll("https://", ""));
             }
         }

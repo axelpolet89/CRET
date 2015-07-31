@@ -16,12 +16,12 @@ import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.generator.SassWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
 import com.crawljax.plugins.csssuite.plugins.*;
-import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessPlugin;
+import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.csssuite.sass.SassBuilder;
-import com.crawljax.plugins.csssuite.sass.SassFile;
+import com.crawljax.plugins.csssuite.sass.SassStatistics;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.crawljax.plugins.csssuite.verification.CssOnDomVerifier;
@@ -52,7 +52,6 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	/* fields */
 	private final String _siteName;
 	private final String _siteIndex;
-	private int _originalCssLOC;
 
 	// files that apply per discovered DOM state
 	private final Map<StateVertex, LinkedHashMap<String, Integer>> _stateCssFiles;
@@ -76,6 +75,11 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private final File _outputFile = new File("output/csssuite" + String.format("%s", new SimpleDateFormat("ddMMyy-hhmmss").format(new Date())) + ".txt");
 
+	// statistics
+	private int _originalCssLOC;
+	private int _domstates;
+	private final List<SassStatistics> _sassStatistics;
+
 	public CssSuitePlugin(String siteName, String siteIndex)
 	{
 		_siteName = siteName;
@@ -88,6 +92,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		LogHandler.info("TARGET: %s at URL %s", _siteName, this._siteIndex);
 
 		_originalCssLOC = 0;
+		_domstates = 0;
 
 		_stateCssFiles = new HashMap<>();
 
@@ -107,6 +112,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		_targetCssFiles = new HashMap<>();
 		_targetSassFiles = new HashMap<>();
 		_targetCssFromSassFiles = new HashMap<>();
+		_sassStatistics = new ArrayList<>();
 	}
 
 	/**
@@ -127,9 +133,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	public void onNewState(CrawlerContext context, StateVertex newState)
 	{
 		LogHandler.info("[NEW STATE] %s", newState.getUrl());
+		_domstates++;
 
 		// if the external CSS files are not parsed yet, do so
-		LogHandler.info("Parse CSS rules...");
+		LogHandler.info("[NEW STATE] Parse CSS rules...");
 		LinkedHashMap<String, Integer> stateFileOrder = parseCssRulesForState(context, newState);
 
 		try
@@ -139,7 +146,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		}
 		catch (Exception ex)
 		{
-			LogHandler.error(ex, "[MATCH SELECTORS] Error occurred while matching selectors for state %s", newState.getName());
+			LogHandler.error(ex, "[NEW STATE] [MATCH SELECTORS] Error occurred while matching selectors for state %s", newState.getName());
 		}
 	}
 
@@ -313,8 +320,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 					_originalCssLOC += countLOC(cssCode);
 
-					_origMcssFiles.put(cssUrl,  parseCssRules(cssUrl, cssCode));
-					_newMcssFiles.put(cssUrl,  parseCssRules(cssUrl, cssCode));
+					_origMcssFiles.put(cssUrl, parseCssRules(cssUrl, cssCode));
+					_newMcssFiles.put(cssUrl, parseCssRules(cssUrl, cssCode));
 				}
 
 				//retain order of css files referenced in DOM
@@ -595,27 +602,22 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		if(generateSass)
 		{
-			Map<String, SassFile> sassFileObjects = new HashMap<>();
-			// create SCSS objects from CSS files, including clone detection and other SCSS-specific transformations
-			for(String fileName : mcssFiles.keySet())
-			{
-				LogHandler.info("[Generate SCSS Code] Start building SASS objects for file %s...", fileName);
-
-				SassBuilder sassBuilder = new SassBuilder(mcssFiles.get(fileName), _clonePropsUpperLimit);
-				sassFileObjects.put(fileName, sassBuilder.CssToSass());
-			}
-
 			// store generated SCSS files
 			Map<String, File> scssFiles = new HashMap<>();
 
 			// generate SCSS code from SCSS objects
 			SassWriter sassWriter = new SassWriter();
-			for (String fileName : sassFileObjects.keySet())
+			for (String fileName : mcssFiles.keySet())
 			{
 				try
 				{
 					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", fileName);
-					scssFiles.put(fileName, sassWriter.GenerateSassCode(_targetSassFiles.get(fileName), sassFileObjects.get(fileName)));
+
+					SassBuilder sassBuilder = new SassBuilder(mcssFiles.get(fileName), _clonePropsUpperLimit);
+					scssFiles.put(fileName, sassWriter.GenerateSassCode(_targetSassFiles.get(fileName), sassBuilder.CssToSass()));
+
+					//gather statistics for this file
+					_sassStatistics.add(sassBuilder.getStatistics());
 				}
 				catch (Exception e)
 				{
@@ -723,12 +725,14 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			builder.append("<site>");
 			builder.appendLine("\t<site_name>%s</site_name>\n", _siteName);
 
-			generateFileStatistics(builder);
+			generateFileStatistics(builder, "\t");
 
 			for(ICssPostCrawlPlugin plugin : _postPlugins)
 			{
 				plugin.getStatistics(builder, "\t");
 			}
+
+			generateSassStatistics(builder, "\t");
 
 			builder.appendLine("</site>");
 
@@ -749,10 +753,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	 *
 	 * @param builder
 	 */
-	private void generateFileStatistics(SuiteStringBuilder builder)
+	private void generateFileStatistics(SuiteStringBuilder builder, String prefix)
 	{
-		String prefix = "\t";
-
 		int OrS = 0;
 		int OrD = 0;
 
@@ -771,9 +773,13 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			OpD += getStatistics(mCssFile, this::countRuleDeclarations);
 		}
 
+		builder.appendLine("%s<LOC>%d</LOC>", prefix, _originalCssLOC);
+		builder.appendLine("%s<DOM_states>%d</DOM_states>", prefix, _domstates);
+
 		builder.appendLine("%s<OrS>%d</OrS>", prefix, OrS);
-		builder.appendLine("%s<OrD>%d</OrD>", prefix, OrD);
 		builder.appendLine("%s<OpS>%d</OpS>", prefix, OpS);
+
+		builder.appendLine("%s<OrD>%d</OrD>", prefix, OrD);
 		builder.appendLine("%s<OpD>%d</OpD>", prefix, OpD);
 	}
 
@@ -805,26 +811,32 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		return count;
 	}
 
+	private void generateSassStatistics(SuiteStringBuilder builder, String prefix)
+	{
+		int V = 0;
+		int VT = 0;
+		int C = 0;
+		int CT = 0;
+		int M = 0;
+		int MT = 0;
 
-//	private int recursiveCountMediaSelectors(MCssMediaRule mediaRule, Function<MCssRule, Integer> statisticsFunction)
-//	{
-//		int count = 0;
-//
-//		for(MCssRuleBase ruleBase : mediaRule.GetInnerRules())
-//		{
-//			if(ruleBase.IsCompatibleWithRule())
-//			{
-//				count += statisticsFunction.apply((MCssRule)ruleBase);
-//			}
-//
-//			if(ruleBase.IsCompatibleWithMediaRule())
-//			{
-//				count += recursiveCountMediaSelectors((MCssMediaRule)ruleBase, statisticsFunction);
-//			}
-//		}
-//
-//		return count;
-//	}
+		for(SassStatistics statistics : _sassStatistics)
+		{
+			V += statistics.variableCount;
+			VT += statistics.declarationsTouchedByVars;
+			C += statistics.cloneSetCount;
+			CT += statistics.declarationsTouchedByClones;
+			M += statistics.mergeMixinCount;
+			MT += statistics.declarationsTouchedByMerges;
+		}
+
+		builder.appendLine("%s<V>%d</V>", prefix, V);
+		builder.appendLine("%s<VT>%d</VT>", prefix, VT);
+		builder.appendLine("%s<C>%d</C>", prefix, C);
+		builder.appendLine("%s<CT>%d</CT>", prefix, CT);
+		builder.appendLine("%s<M>%d</M>", prefix, M);
+		builder.appendLine("%s<MT>%d</MT>", prefix, MT);
+	}
 
 
 	/**

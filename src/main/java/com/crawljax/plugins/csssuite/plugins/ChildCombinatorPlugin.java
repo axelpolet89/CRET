@@ -36,7 +36,7 @@ public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
     @Override
     public void getStatistics(SuiteStringBuilder builder, String prefix)
     {
-        builder.appendLine("%s<descendant_to_child_transformations>%d</descendant_to_child_transformations>", prefix, _selectorsTransformed);
+        builder.appendLine("%s<DCS>%d</DCS>", prefix, _selectorsTransformed);
     }
 
     @Override

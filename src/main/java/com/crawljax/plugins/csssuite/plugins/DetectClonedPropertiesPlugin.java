@@ -23,7 +23,7 @@ public class DetectClonedPropertiesPlugin implements ICssPostCrawlPlugin
     @Override
     public void getStatistics(SuiteStringBuilder builder, String prefix)
     {
-        builder.appendLine("%s<cloned_declarations_removed>%d</cloned_declarations_removed>", prefix, _clonedDeclarationsRemoved);
+        builder.appendLine("%s<CD>%d</CD>", prefix, _clonedDeclarationsRemoved);
     }
 
     @Override

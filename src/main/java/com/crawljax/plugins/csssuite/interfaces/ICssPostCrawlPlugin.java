@@ -11,6 +11,6 @@ import java.util.Map;
  */
 public interface ICssPostCrawlPlugin
 {
-    public void getStatistics(SuiteStringBuilder builder, String prefix);
     public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements);
+    public void getStatistics(SuiteStringBuilder builder, String prefix);
 }

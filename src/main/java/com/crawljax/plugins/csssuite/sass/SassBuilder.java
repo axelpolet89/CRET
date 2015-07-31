@@ -20,10 +20,11 @@ import java.util.stream.Collectors;
 public class SassBuilder
 {
     private final int _propUpperLimit;
-    private final int _mixinMinPropCount = 2;
+    private final int _mixinMinPropCount;
     private final MCssFile _mcssFile;
     private final List<SassVariable> _sassVariables;
     private final Map<String, String> _alreadyDefinedVars;
+    private final SassStatistics _statistics;
 
     public SassBuilder(MCssFile mCssFile)
     {
@@ -32,10 +33,18 @@ public class SassBuilder
 
     public SassBuilder(MCssFile mCssFile, int propUpperLimit)
     {
+        _mixinMinPropCount = 0;
         _propUpperLimit = propUpperLimit;
         _mcssFile = mCssFile;
         _sassVariables = new ArrayList<>();
         _alreadyDefinedVars = new HashMap<>();
+        _statistics = new SassStatistics();
+    }
+
+    public SassStatistics getStatistics()
+    {
+        _statistics.variableCount = _sassVariables.size();
+        return _statistics;
     }
 
     public SassFile CssToSass()
@@ -69,7 +78,6 @@ public class SassBuilder
 
         LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
         List<SassCloneMixin> validMixins = ProcessAndFilterClones(cd.GenerateMixins(validSelectors));
-        LogHandler.debug("[SassGenerator] Found %d templates that apply to %d or more properties and are efficient for file %s", validMixins.size(), _mixinMinPropCount, _mcssFile.GetName());
 
         LogHandler.debug("[SassGenerator] Generate SASS selectors...");
         List<SassSelector> sassSelectors = GenerateSassSelectors(validSelectors, validMixins);
@@ -125,14 +133,30 @@ public class SassBuilder
                         {
                             parts = new String[]{origValue};
                         }
-                        for (String part : parts)
+                        for (int i = 0; i < parts.length; i++)
                         {
                             SassVarType varType = null;
                             String varName = "";
                             String varValue = "";
 
-                            if (part.contains("url"))
+                            String part = parts[i];
+
+                            if (part.contains("url("))
                             {
+                                if(!part.endsWith(")"))
+                                {
+                                    for(int j = i+1; j < parts.length; j++)
+                                    {
+                                        String part2 = parts[j];
+                                        part = part + part2;
+                                        if(part2.endsWith(")"))
+                                        {
+                                            i = j;
+                                            break;
+                                        }
+                                    }
+                                }
+
                                 varType = SassVarType.URL;
                                 varName = "url";
                                 varValue = TryFindUrl(part);
@@ -170,6 +194,8 @@ public class SassBuilder
                                 {
                                     origValue = origValue.replace(varValue, varName);
                                 }
+
+                                _statistics.declarationsTouchedByVars++;
                             }
                         }
                     }
@@ -296,6 +322,8 @@ public class SassBuilder
                 if(count >= mixinSize)
                 {
                     validMixins.add(mixin);
+                    _statistics.cloneSetCount++;
+                    _statistics.declarationsTouchedByClones += mixinSize * mixin.GetRelatedSelectors().size();
                 }
                 else
                 {
@@ -379,6 +407,8 @@ public class SassBuilder
                 sassSelector.RemoveProperties(paddings);
 
                 pUsed = true;
+                _statistics.mergeMixinCount++;
+                _statistics.declarationsTouchedByMerges += paddings.size();
             }
 
             if(margins.size() > 1)
@@ -387,6 +417,8 @@ public class SassBuilder
                 sassSelector.RemoveProperties(margins);
 
                 mUsed = true;
+                _statistics.mergeMixinCount++;
+                _statistics.declarationsTouchedByMerges += margins.size();
             }
         }
 

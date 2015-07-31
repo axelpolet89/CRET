@@ -1,10 +1,12 @@
-package com.crawljax.plugins.csssuite.plugins.analysis;
+package com.crawljax.plugins.csssuite.plugins;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessAnalysis;
+import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.*;
@@ -18,9 +20,9 @@ public class EffectivenessPlugin implements ICssPostCrawlPlugin
 	@Override
 	public void getStatistics(SuiteStringBuilder builder, String prefix)
 	{
-		builder.appendLine("%s<unmatched_selectors_removed>%d</unmatched_selectors_removed>", prefix, _unmatchedSelectors);
-		builder.appendLine("%s<ineffective_selectors_removed>%d</ineffective_selectors_removed>", prefix, _ineffectiveSelectors);
-		builder.appendLine("%s<ineffective_declarations_removed>%d</ineffective_declarations_removed>", prefix, _ineffectiveDeclarations);
+		builder.appendLine("%s<US>%d</US>", prefix, _unmatchedSelectors);
+		builder.appendLine("%s<IS>%d</IS>", prefix, _ineffectiveSelectors);
+		builder.appendLine("%s<ID>%d</ID>", prefix, _ineffectiveDeclarations);
 	}
 
 

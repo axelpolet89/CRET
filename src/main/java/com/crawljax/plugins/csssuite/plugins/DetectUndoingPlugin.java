@@ -29,8 +29,8 @@ public class DetectUndoingPlugin implements ICssPostCrawlPlugin
     @Override
     public void getStatistics(SuiteStringBuilder builder, String prefix)
     {
-        builder.appendLine("%s<default_declarations_removed>%d</default_declarations_removed>", prefix, _defaultDeclarationsRemoved);
-        builder.appendLine("%s<default_selectors_removed>%d</default_selectors_removed>", prefix, _emptySelectorsRemoved);
+        builder.appendLine("%s<DD>%d</DD>", prefix, _defaultDeclarationsRemoved);
+        builder.appendLine("%s<DS>%d</DS>", prefix, _emptySelectorsRemoved);
     }
 
     @Override

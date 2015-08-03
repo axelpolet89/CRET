@@ -5,7 +5,7 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
@@ -17,7 +17,7 @@ import java.util.*;
  *
  * This class is responsible for merging split-up properties into their shorthand equivalents
  */
-public class NormalizeAndMergePlugin implements ICssPostCrawlPlugin
+public class NormalizeAndMergePlugin implements ICssTransformer
 {
     private Map<MProperty, MSelector> _propSelMap = new HashMap<>();
 

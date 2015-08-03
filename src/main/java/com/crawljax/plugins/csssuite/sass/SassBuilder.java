@@ -47,7 +47,7 @@ public class SassBuilder
         return _statistics;
     }
 
-    public SassFile CssToSass()
+    public SassFile generateSass()
     {
         CloneDetector cd = new CloneDetector();
 

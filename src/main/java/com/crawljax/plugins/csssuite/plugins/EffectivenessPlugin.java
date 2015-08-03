@@ -4,14 +4,14 @@ import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessAnalysis;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.*;
 
-public class EffectivenessPlugin implements ICssPostCrawlPlugin
+public class EffectivenessPlugin implements ICssTransformer
 {
 	private int _unmatchedSelectors = 0;
 	private int _ineffectiveSelectors = 0;

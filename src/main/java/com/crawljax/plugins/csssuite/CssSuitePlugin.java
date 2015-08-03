@@ -14,7 +14,7 @@ import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.generator.SassWriter;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.*;
 import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
@@ -66,7 +66,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private final MatchedElements _matchedElements;
 
 	// additional transformations, post-crawltime
-	private final List<ICssPostCrawlPlugin> _postPlugins;
+	private final List<ICssTransformer> _postPlugins;
 
 	// generated CSS/SASS files
 	private final Map<String, File> _targetCssFiles;
@@ -390,7 +390,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		LogHandler.info("[CSS SUITE PLUGIN] Execute POST crawl-time transformations...");
 
 		Map<String, MCssFile> rules = _newMcssFiles;
-		for(ICssPostCrawlPlugin plugin : _postPlugins)
+		for(ICssTransformer plugin : _postPlugins)
 		{
 			rules = plugin.transform(_newMcssFiles, _matchedElements);
 		}
@@ -614,7 +614,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", fileName);
 
 					SassBuilder sassBuilder = new SassBuilder(mcssFiles.get(fileName), _clonePropsUpperLimit);
-					scssFiles.put(fileName, sassWriter.GenerateSassCode(_targetSassFiles.get(fileName), sassBuilder.CssToSass()));
+					scssFiles.put(fileName, sassWriter.GenerateSassCode(_targetSassFiles.get(fileName), sassBuilder.generateSass()));
 
 					//gather statistics for this file
 					_sassStatistics.add(sassBuilder.getStatistics());
@@ -727,7 +727,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			generateFileStatistics(builder, "\t");
 
-			for(ICssPostCrawlPlugin plugin : _postPlugins)
+			for(ICssTransformer plugin : _postPlugins)
 			{
 				plugin.getStatistics(builder, "\t");
 			}

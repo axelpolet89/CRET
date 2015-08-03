@@ -44,7 +44,7 @@ public class SassTest
         mergePlugin.transform(files, new MatchedElements());
 
         SassBuilder sassBuilder = new SassBuilder(externalFile);
-        SassFile sassFile = sassBuilder.CssToSass();
+        SassFile sassFile = sassBuilder.generateSass();
 
         List<SassVariable> vars = sassFile.getVariables();
         Assert.assertEquals(5, vars.size());
@@ -75,7 +75,7 @@ public class SassTest
         mergePlugin.transform(files, new MatchedElements());
 
         SassBuilder sassBuilder = new SassBuilder(externalFile);
-        SassFile sassFile = sassBuilder.CssToSass();
+        SassFile sassFile = sassBuilder.generateSass();
 
         List<SassVariable> vars = sassFile.getVariables();
         List<SassCloneMixin> mixins = sassFile.getCloneMixins();

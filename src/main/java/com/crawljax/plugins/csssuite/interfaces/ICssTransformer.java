@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by axel on 5/18/2015.
  */
-public interface ICssPostCrawlPlugin
+public interface ICssTransformer
 {
     public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements);
     public void getStatistics(SuiteStringBuilder builder, String prefix);

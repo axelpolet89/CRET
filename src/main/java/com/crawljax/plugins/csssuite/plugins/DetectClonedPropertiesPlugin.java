@@ -5,7 +5,7 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by axel on 6/12/2015.
  */
-public class DetectClonedPropertiesPlugin implements ICssPostCrawlPlugin
+public class DetectClonedPropertiesPlugin implements ICssTransformer
 {
     private int _clonedDeclarationsRemoved = 0;
 

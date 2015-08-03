@@ -5,7 +5,7 @@ import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.DefaultStylesHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * the property is effective
  * the property overrides no other effective property
  */
-public class DetectUndoingPlugin implements ICssPostCrawlPlugin
+public class DetectUndoingPlugin implements ICssTransformer
 {
     private int _defaultDeclarationsRemoved = 0;
     private int _emptySelectorsRemoved = 0;

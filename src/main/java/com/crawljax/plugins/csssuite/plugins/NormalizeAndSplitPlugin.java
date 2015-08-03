@@ -6,7 +6,7 @@ import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
@@ -21,7 +21,7 @@ import java.util.*;
  * 2) normalize zero values
  * 3) normalize url values
  */
-public class NormalizeAndSplitPlugin implements ICssPostCrawlPlugin
+public class NormalizeAndSplitPlugin implements ICssTransformer
 {
     private BrowserColorParser _browserColorParser = new BrowserColorParser();
     private int _normalizedColors = 0;

@@ -5,7 +5,7 @@ import com.crawljax.plugins.csssuite.data.ElementWrapper;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.interfaces.ICssPostCrawlPlugin;
+import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
@@ -27,7 +27,7 @@ import java.util.Map;
  * Performs analysis on a MSelector and it's matched elements,
  * by crawling the parents and siblings of those DOM elements using the specification of the selector
  */
-public class ChildCombinatorPlugin implements ICssPostCrawlPlugin
+public class ChildCombinatorPlugin implements ICssTransformer
 {
     private final Map<DescendantSelectorImpl, Boolean> _descendants = new HashMap<>();
     private int _selectorsTransformed = 0;

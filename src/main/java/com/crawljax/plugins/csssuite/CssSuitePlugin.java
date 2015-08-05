@@ -11,7 +11,6 @@ import com.cathive.sass.SassContext;
 import com.cathive.sass.SassFileContext;
 import com.cathive.sass.SassOutputStyle;
 import com.crawljax.plugins.csssuite.data.*;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.generator.CssWriter;
 import com.crawljax.plugins.csssuite.generator.SassWriter;
 import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
@@ -25,8 +24,7 @@ import com.crawljax.plugins.csssuite.sass.SassStatistics;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.crawljax.plugins.csssuite.verification.CssOnDomVerifier;
-import com.steadystate.css.parser.media.MediaQuery;
-import org.apache.commons.io.FileUtils;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.w3c.dom.Document;
@@ -159,109 +157,8 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	@Override
 	public void postCrawling(CrawlSession session, ExitStatus exitReason)
 	{
-		int totalCssRules = 0;
-		int totalCssSelectors = 0;
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			totalCssRules += entry.getValue().GetRules().size();
-			for (MCssRule mrule : entry.getValue().GetRules())
-			{
-				totalCssSelectors += mrule.GetSelectors().size();
-
-			}
-		}
-
-		StringBuffer output = new StringBuffer();
-		StringBuffer bufferUnused = new StringBuffer();
-		StringBuffer bufferUsed = new StringBuffer();
-		StringBuffer undefinedClasses = new StringBuffer();
-		StringBuffer effective = new StringBuffer();
-		StringBuffer ineffectiveBuffer = new StringBuffer();
-
-		int used = PrintMatchedRules(bufferUsed);
-		int unused = PrintUnmatchedRules(bufferUnused);
-
 		Map<String, MCssFile> rules = executePostTransformations();
 		_newMcssFiles = rules;
-
-		final int[] countOrig = {0};
-		final int[] countNew = {0};
-
-		final int[] countOrigProps = {0};
-		final int[] countNewProps = {0};
-
-		for(String fileName : _origMcssFiles.keySet())
-		{
-			_origMcssFiles.get(fileName).GetRules().stream().forEach(r -> countOrig[0] += r.GetSelectors().size());
-			_newMcssFiles.get(fileName).GetRules().stream().forEach(r -> countNew[0] += r.GetSelectors().size());
-
-			_origMcssFiles.get(fileName).GetRules().stream().forEach(r -> r.GetSelectors().forEach(s -> countOrigProps[0] += s.GetProperties().size()));
-			_newMcssFiles.get(fileName).GetRules().stream().forEach(r -> r.GetSelectors().forEach(s -> countNewProps[0] += s.GetProperties().size()));
-		}
-
-
-		int effectiveInt = PrintEffectiveSelectors(effective);
-		int ineffectiveInt = PrintIneffectiveSelectors(ineffectiveBuffer);
-
-		output.append("Analyzed " + session.getConfig().getUrl() + " on "
-				+ new SimpleDateFormat("dd/MM/yy-hh:mm:ss").format(new Date()) + "\n");
-
-		output.append("-> Files with CSS code: " + _newMcssFiles.keySet().size() + "\n");
-		for (String address : _newMcssFiles.keySet())
-		{
-			output.append("    Address: " + address + "\n");
-		}
-		// output.append("Total CSS Size: " + getTotalCssRulesSize() + " bytes" + "\n");
-
-		output.append("-> LOC (CSS): " + _originalCssLOC + "\n");
-		output.append("-> Total Defined CSS rules: " + totalCssRules + "\n");
-		output.append("-> Total Defined CSS selectors: " + totalCssSelectors + " from which: \n");
-		int ignored = totalCssSelectors - (unused + used);
-		output.append("   -> Ignored (:link, :hover, etc):   " + ignored + "\n");
-		output.append("   -> Unmatched: " + unused + "\n");
-		output.append("   -> Matched:   " + used + "\n");
-		output.append("   -> Ineffective: " + ineffectiveInt + "\n");
-		output.append("   -> Effective: " + effectiveInt + "\n");
-		output.append("-> Total Defined CSS Properties: " + CountAllProperties() + "\n");
-		output.append("   -> Ignored Properties: " + CountIgnoredProperties() + "\n");
-		output.append("   -> Unused Properties: " + CountUnusedProperties() + "\n");
-
-		// output.append("-> Effective CSS Rules: " + CSSProxyPlugin.cssTraceSet.size() + "\n");
-
-		// output.append("   -> Effective: " + effectiveInt + "\n");
-
-		// output.append("->> Duplicate Selectors: " + duplicates + "\n\n");
-		output.append("By deleting unused rules, css size reduced by: "
-				+ Math.ceil((double) NewCssSizeBytes() / OriginalCssSizeBytes() * 100) + " percent"
-				+ "\n");
-
-		/*
-		 * This is where the com.crawljax.plugins.csssuite.visualizer gets called.
-		 */
-		String tmpStr = new String();
-		tmpStr = output.toString().replace("\n", "<br>");
-		String url = session.getConfig().getUrl().toString();
-
-		/* This is where the Visualizer plug-in is invoked */
-/*		CillaVisualizer cv = new CillaVisualizer();
-		cv.openVisualizer(url, tmpStr, cssRules, elementsWithNoClassDef);*/
-
-		output.append(ineffectiveBuffer.toString());
-		output.append(effective.toString());
-		output.append(bufferUnused.toString());
-		// output.append(bufferUsed.toString());
-		output.append(undefinedClasses);
-		// output.append(duplicateSelectors);
-
-
-		try
-		{
-			FileUtils.writeStringToFile(_outputFile, output.toString());
-		}
-		catch (IOException e)
-		{
-			LogHandler.error(e.getMessage(), e);
-		}
 
 		if(generateTargetFiles(rules))
 		{
@@ -392,7 +289,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		Map<String, MCssFile> rules = _newMcssFiles;
 		for(ICssTransformer plugin : _postPlugins)
 		{
-			rules = plugin.transform(_newMcssFiles, _matchedElements);
+			rules = plugin.transform(rules, _matchedElements);
 		}
 		return rules;
 	}
@@ -596,7 +493,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			catch (Exception e)
 			{
 				cssInError = true;
-				LogHandler.error(e, "[Generate CSS Code] Error while generating CSS code for file %s", fileName);
+				LogHandler.error(e, "[Generate CSS Code] Error while generating CSS code for file %s", _targetCssFiles.get(fileName));
 			}
 		}
 
@@ -611,7 +508,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				try
 				{
-					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", fileName);
+					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", _targetSassFiles.get(fileName));
 
 					SassBuilder sassBuilder = new SassBuilder(mcssFiles.get(fileName), _clonePropsUpperLimit);
 					scssFiles.put(fileName, sassWriter.GenerateSassCode(_targetSassFiles.get(fileName), sassBuilder.generateSass()));
@@ -836,338 +733,5 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		builder.appendLine("%s<CT>%d</CT>", prefix, CT);
 		builder.appendLine("%s<M>%d</M>", prefix, M);
 		builder.appendLine("%s<MT>%d</MT>", prefix, MT);
-	}
-
-
-	/**
-	 *
-	 * @param buffer
-	 * @return
-	 */
-	private int PrintEffectiveSelectors(StringBuffer buffer) {
-
-		int counterEffectiveSelectors = 0;
-		buffer.append("\n========== EFFECTIVE CSS SELECTORS ==========\n");
-
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			List<MCssRule> rules = entry.getValue().GetRules();
-
-			buffer.append("\n== IN CSS: " + entry.getKey() + "\n");
-
-			for (MCssRule rule : rules)
-			{
-				List<MSelector> selectors = rule.GetMatchedSelectors();
-
-				for (MSelector selector : selectors)
-				{
-					if (selector.HasEffectiveProperties())
-					{
-						buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
-						buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
-						buffer.append("   Selector: " + selector.GetSelectorText() + "\n");
-
-						for(MediaQuery query : selector.GetMediaQueries())
-						{
-							buffer.append("   Media-query: " + query + "\n");
-						}
-
-						counterEffectiveSelectors++;
-
-						for (MProperty prop : selector.GetProperties())
-						{
-							buffer.append("   Property " + prop.Print() + "\n");
-						}
-					}
-
-					buffer.append("\n");
-				}
-			}
-		}
-
-		return counterEffectiveSelectors;
-	}
-
-
-	/**
-	 *
-	 * @param buffer
-	 * @return
-	 */
-	private int PrintIneffectiveSelectors(StringBuffer buffer) {
-
-		int counterIneffectiveSelectors = 0;
-		buffer.append("========== INEFFECTIVE CSS SELECTORS ==========\n");
-
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			List<MCssRule> rules = entry.getValue().GetRules();
-
-			buffer.append("== IN CSS: " + entry.getKey() + "\n");
-
-			for (MCssRule rule : rules)
-			{
-				for (MSelector selector : rule.GetMatchedSelectors())
-				{
-					if (!selector.HasEffectiveProperties() && !selector.IsIgnored())
-					{
-						buffer.append("Ineffective: ");
-						buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
-
-						buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
-						buffer.append(" Selector: " + selector.GetSelectorText() + "\n\n");
-
-						counterIneffectiveSelectors++;
-					}
-				}
-			}
-		}
-
-		return counterIneffectiveSelectors;
-	}
-
-
-	/**
-	 *
-	 * @param buffer
-	 * @return
-	 */
-	private int PrintUnmatchedRules(StringBuffer buffer)
-	{
-		buffer.append("========== UNMATCHED CSS RULES ==========\n");
-		int counter = 0;
-
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			List<MCssRule> rules = entry.getValue().GetRules();
-
-			buffer.append("== UNMATCHED RULES IN: " + entry.getKey() + "\n");
-			for (MCssRule rule : rules)
-			{
-				List<MSelector> selectors = rule.GetUnmatchedSelectors();
-				counter += selectors.size();
-
-				if (selectors.size() > 0)
-				{
-					buffer.append("Unmatched: ");
-					buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
-					buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
-
-					for (MSelector selector : selectors)
-					{
-						buffer.append(selector.Print() + "\n");
-					}
-				}
-			}
-		}
-
-		return counter;
-	}
-
-
-	/**
-	 *
-	 * @param buffer
-	 * @return
-	 */
-	private int PrintMatchedRules(StringBuffer buffer)
-	{
-		buffer.append("========== MATCHED CSS RULES ==========\n");
-
-		int counter = 0;
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			List<MCssRule> rules = entry.getValue().GetRules();
-
-			buffer.append("== MATCHED RULES IN: " + entry.getKey() + "\n");
-			for (MCssRule rule : rules)
-			{
-				List<MSelector> selectors = rule.GetMatchedSelectors();
-				counter += selectors.size();
-
-				if (selectors.size() > 0)
-				{
-					buffer.append("Matched: ");
-					buffer.append("CSS rule: " + rule.GetStyleRule().getCssText() + "\n");
-					buffer.append("at line: " + rule.GetLocator().getLineNumber() + "\n");
-
-					for (MSelector selector : selectors)
-					{
-						buffer.append(selector.Print() + "\n");
-					}
-				}
-			}
-
-		}
-
-		return counter;
-	}
-
-
-	/**
-	 *
-	 * @return
-	 */
-	private int CountAllProperties()
-	{
-		int counter = 0;
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			for (MCssRule rule : entry.getValue().GetRules())
-			{
-				for(MSelector selector : rule.GetSelectors())
-				{
-					counter += selector.GetProperties().size();
-				}
-			}
-		}
-
-		return counter;
-	}
-
-
-	/**
-	 *
-	 * @return
-	 */
-	private int CountUnusedProperties() {
-
-		int counter = 0;
-
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			List<MCssRule> rules = entry.getValue().GetRules();
-
-			for (MCssRule rule : rules)
-			{
-				List<MSelector> selectors = rule.GetSelectors();
-
-				for (MSelector selector : selectors)
-				{
-					if (!selector.IsIgnored())
-					{
-						for (MProperty prop : selector.GetProperties())
-						{
-							if (!prop.IsEffective()) {
-								counter++;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return counter;
-	}
-
-	/**
-	 *
-	 * @return
-	 */
-	private int CountIgnoredProperties()
-	{
-		int counter = 0;
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			for (MCssRule rule : entry.getValue().GetRules())
-			{
-				List<MSelector> selectors = rule.GetSelectors();
-				for (MSelector selector : selectors)
-				{
-					if (selector.IsIgnored())
-					{
-						counter += selector.GetProperties().size();
-					}
-				}
-			}
-		}
-
-		return counter;
-	}
-
-
-	/**
-	 *
-	 * @return
-	 */
-	private int OriginalCssSizeBytes()
-	{
-		int result = 0;
-
-		for (Map.Entry<String, MCssFile> entry : _newMcssFiles.entrySet())
-		{
-			for (MCssRule mRule : entry.getValue().GetRules())
-			{
-				result += mRule.GetStyleRule().getCssText().trim().replace("{", "").replace("}", "")
-				                .replace(",", "").replace(" ", "").getBytes().length;
-
-			}
-		}
-
-		return result;
-	}
-
-
-	/**
-	 *
-	 * @return
-	 */
-	private int NewCssSizeBytes()
-	{
-		return 0;
-
-//		boolean effective;
-//		boolean exit = false;
-//		int result = 0;
-//
-//		int counter = 0;
-//		for (Map.Entry<String, MCssFile> entry : _mcssFiles.entrySet())
-//		{
-//			for (MCssRule mRule : entry.getValue().GetRules())
-//			{
-//				List<MSelector> selector = mRule.GetSelectors();
-//				for (int i = 0; i < selector.size(); i++)
-//				{
-//					if (!selector.get(i).IsIgnored())
-//					{
-//						exit = true;
-//
-//						List<MProperty> property = selector.get(i).GetProperties();
-//						for (int j = 0; j < property.size(); j++)
-//						{
-//							if (!property.get(j).IsEffective())
-//							{
-//								effective = false;
-//								for (int k = i + 1; k < selector.size(); k++)
-//								{
-//									if (!selector.get(k).IsIgnored()) {
-//										if (selector.get(k).GetProperties().get(j).IsEffective())
-//										{
-//											effective = true;
-//											break;
-//										}
-//									}
-//								}
-//								if (!effective)
-//								{
-//									counter++;
-//									result += property.get(j).ComputeSizeBytes();
-//								}
-//							}
-//						}
-//
-//					}
-//
-//					if (exit)
-//					{
-//						if (counter == selector.get(i).GetProperties().size())
-//							result += selector.get(i).ComputeSizeBytes();
-//						break;
-//					}
-//				}
-//			}
-//		}
-//
-//		return result;
 	}
 }

@@ -19,7 +19,6 @@ http://www.shirky.com
 http://www.linklust.com
 http://www.slgtm.com
 http://www.freewarejava.com
-http://www.onthebox.com
 http://www.dynamicdrive.com
 http://www.indeterminate.de
 http://www.oaklandmetro.org
@@ -32,7 +31,6 @@ http://www.usdept-arttech.net
 http://www.shehaal.com
 http://www.moviemistakes.com
 http://www.babylon.com
-http://www.theyearofourlord.com
 http://www.filmpicker.com
 http://www.pterodactyl.info
 http://www.lanacion.com.ar
@@ -41,10 +39,12 @@ http://www.coudal.com
 http://www.maplestory.com
 http://www.quiz1000.ca
 http://www.blogjam.com
-http://www.illruminations.com
-http://www.regretless.com
 http://www.earache.com
 http://www.karlo.org
 http://www.dublab.com
 http://www.aspcr.com
 http://www.regretless.com
+http://www.magicmarkerrecords.com
+http://www.letourmentvert.com
+http://www.48hourfilm.com
+http://www.realstorygroup.com

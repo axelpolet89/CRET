@@ -1,5 +1,6 @@
 package com.crawljax.plugins.csssuite.sass;
 
+import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.*;
 import com.crawljax.plugins.csssuite.data.properties.MProperty;
@@ -129,10 +130,12 @@ public class SassBuilder
                     else
                     {
                         String[] parts = origValue.split("\\s");
+
                         if(parts.length > 10)
                         {
                             parts = new String[]{origValue};
                         }
+
                         for (int i = 0; i < parts.length; i++)
                         {
                             SassVarType varType = null;
@@ -141,42 +144,51 @@ public class SassBuilder
 
                             String part = parts[i];
 
-                            if (part.contains("url("))
+                            try
                             {
-                                if(!part.endsWith(")"))
+                                if (part.contains("url("))
                                 {
-                                    for(int j = i+1; j < parts.length; j++)
+                                    if (!part.endsWith(")"))
                                     {
-                                        String part2 = parts[j];
-                                        part = part + part2;
-                                        if(part2.endsWith(")"))
+                                        for (int j = i + 1; j < parts.length; j++)
                                         {
-                                            i = j;
-                                            break;
+                                            String part2 = parts[j];
+                                            part = part + part2;
+                                            if (part2.endsWith(")"))
+                                            {
+                                                i = j;
+                                                break;
+                                            }
                                         }
                                     }
+
+                                    varType = SassVarType.URL;
+                                    varName = "url";
+                                    varValue = TryFindUrl(part);
                                 }
+                                else if (part.contains("rgba"))
+                                {
+                                    String rgbaValue = TryFindRgba(part);
+                                    String[] rgbaParts = rgbaValue.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
 
-                                varType = SassVarType.URL;
-                                varName = "url";
-                                varValue = TryFindUrl(part);
+                                    varType = SassVarType.ALPHA_COLOR;
+                                    varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim())));
+                                    varValue = rgbaValue;
+                                }
+                                else if (part.contains("#"))
+                                {
+                                    String hexValue = TryFindHex(part);
+
+                                    varType = SassVarType.COLOR;
+                                    varName = String.format("%s_%s", "color", ctn.TryGetNameForHex(hexValue));
+                                    varValue = hexValue;
+                                }
                             }
-                            else if (part.contains("rgba"))
+                            catch (CssSuiteException ex)
                             {
-                                String rgbaValue = TryFindRgba(part);
-                                String[] rgbaParts = rgbaValue.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
-
-                                varType = SassVarType.ALPHA_COLOR;
-                                varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim())));
-                                varValue = rgbaValue;
-                            }
-                            else if (part.contains("#"))
-                            {
-                                String hexValue = TryFindHex(part);
-
-                                varType = SassVarType.COLOR;
-                                varName = String.format("%s_%s", "color", ctn.TryGetNameForHex(hexValue));
-                                varValue = hexValue;
+                                LogHandler.error(ex, "[SassGenerator] Error occurred while creating SassVariable for property '%s' with value '%s' for selector '%s'",
+                                        origName, origValue, mSelector.GetSelectorText());
+                                continue;
                             }
 
                             if (!varName.isEmpty() && !varValue.isEmpty())

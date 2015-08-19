@@ -59,7 +59,10 @@ public class SassSelector
 
         for(MProperty mProperty : _properties)
         {
-            builder.appendLine("%s\t%s", prefix, mProperty);
+            if(!mProperty.IsFaulty())
+            {
+                builder.appendLine("%s\t%s", prefix, mProperty);
+            }
         }
     }
 

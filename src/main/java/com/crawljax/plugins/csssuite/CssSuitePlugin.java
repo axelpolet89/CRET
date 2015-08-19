@@ -683,7 +683,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private int countRuleSelectors(MCssRule mCssRule)
 	{
-		return mCssRule.GetSelectors().size();
+		return (int)mCssRule.GetSelectors().stream().filter(s -> !s.IsIgnored()).count();
 	}
 
 	private int countRuleDeclarations(MCssRule mCssRule)
@@ -691,7 +691,10 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		int count = 0;
 		for(MSelector mSelector : mCssRule.GetSelectors())
 		{
-			count += mSelector.GetProperties().size();
+			if(!mSelector.IsIgnored())
+			{
+				count += mSelector.GetProperties().stream().filter(p -> !p.IsIgnored()).count();
+			}
 		}
 		return count;
 	}

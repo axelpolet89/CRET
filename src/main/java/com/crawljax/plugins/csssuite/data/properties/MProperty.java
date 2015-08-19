@@ -11,6 +11,7 @@ public class MProperty
 	private final String _originalValue;
 	private final String _w3cError;
 	private final boolean _isIgnored;
+	private final boolean _isFaulty;
 	private final boolean _isImportant;
 	private final String _nameVendorPrefix;
 	private final String _valueVendorPrefix;
@@ -77,6 +78,7 @@ public class MProperty
 		}
 
 		_isIgnored = !w3cError.isEmpty() || !_valueVendorPrefix.isEmpty() || value.contains("-gradient") || value.contains("progid:") || name.startsWith("_");
+		_isFaulty = value.trim().isEmpty();
 	}
 
 
@@ -123,6 +125,7 @@ public class MProperty
 		_nameVendorPrefix = property.GetNameVendor();
 		_valueVendorPrefix = property.GetValueVendor();
 		_order = property.GetOrder();
+		_isFaulty = property.IsFaulty();
 	}
 
 
@@ -152,6 +155,9 @@ public class MProperty
 	{
 		return _isImportant;
 	}
+
+	/** Getter */
+	public boolean IsFaulty() { return _isFaulty; }
 
 	/** Getter */
 	public String GetNameVendor() { return _nameVendorPrefix; }

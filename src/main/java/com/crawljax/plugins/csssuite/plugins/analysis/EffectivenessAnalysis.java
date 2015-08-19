@@ -28,8 +28,8 @@ public class EffectivenessAnalysis
 
                     for (int j = i + 1; j < selectors.size(); j++)
                     {
-                        boolean compareOnValueAndImportant = false;
-                        boolean compareOnImportant = false;
+                        boolean pseudoCompare = false;
+                        boolean mediaCompare = false;
 
                         MSelector nextSelector = selectors.get(j);
 
@@ -43,7 +43,7 @@ public class EffectivenessAnalysis
                         // however, regular will also apply
                         if (selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
                         {
-                            compareOnImportant = true;
+                            mediaCompare = true;
                         }
 
                         // both selectors have different media-queries
@@ -67,23 +67,23 @@ public class EffectivenessAnalysis
                         {
                             if (!selector.HasEqualPseudoClass(nextSelector))
                             {
-                                compareOnValueAndImportant = true;
+                                pseudoCompare = true;
                             }
                         }
 
-                        if (compareOnValueAndImportant)
+                        if (pseudoCompare)
                         {
-                            ComparePropertiesOnValueAndImportant(property, nextSelector, overridden, alreadyEffective);
+                            CompareDeclarationsPs(property, nextSelector, overridden, alreadyEffective);
                         }
-                        else if (compareOnImportant)
+                        else if (mediaCompare)
                         {
-                            ComparePropertiesOnImportant(property, nextSelector, overridden);
+                            CompareDeclarationsMq(property, nextSelector, overridden);
                         }
                         else
                         {
                             // by default: if both selectors apply under the same condition, simply check matching property names
                             // otherwise, the only way for next selector to be ineffective is too have same property name AND value
-                            CompareProperties(property, nextSelector, overridden, alreadyEffective);
+                            CompareDeclarations(property, nextSelector, overridden, alreadyEffective);
                         }
                     }
                 }
@@ -99,7 +99,7 @@ public class EffectivenessAnalysis
      * @param otherSelector
      * @param overridden
      */
-    private static Void CompareProperties(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+    private static Void CompareDeclarations(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
         for (MProperty nextProperty : otherSelector.GetProperties())
         {
@@ -130,7 +130,7 @@ public class EffectivenessAnalysis
      * @param otherSelector
      * @param overridden
      */
-    private static void ComparePropertiesOnValueAndImportant(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+    private static void CompareDeclarationsPs(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
         for (MProperty nextProperty : otherSelector.GetProperties())
         {
@@ -161,7 +161,7 @@ public class EffectivenessAnalysis
      * @param otherSelector
      * @param overridden
      */
-    private static void ComparePropertiesOnImportant(MProperty property, MSelector otherSelector, String overridden)
+    private static void CompareDeclarationsMq(MProperty property, MSelector otherSelector, String overridden)
     {
         for (MProperty nextProperty : otherSelector.GetProperties())
         {

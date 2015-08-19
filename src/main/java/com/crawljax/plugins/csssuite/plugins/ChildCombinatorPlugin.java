@@ -340,7 +340,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
             String attr = GetAttributeValue(node.getAttributes(), attrCondition.getLocalName());
             if(MatchNodeWithElementSelector(node, innerSelector) && attr != null)
             {
-                if(attrCondition.getValue().isEmpty())
+                if(attrCondition.getValue() == null || attrCondition.getValue().isEmpty())
                 {
                     return true;
                 }

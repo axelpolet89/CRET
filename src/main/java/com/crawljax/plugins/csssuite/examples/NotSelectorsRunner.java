@@ -37,12 +37,12 @@ public class NotSelectorsRunner
             detailWriter.write("<sites>");
             detailWriter.flush();
 
-            List<String> lines = Files.readAllLines(Paths.get("./src/main/resources/alexa-top-50.txt"));
+            List<String> lines = Files.readAllLines(Paths.get("./src/main/resources/random-50.txt"));
 
             for(int i = 0; i < lines.size(); i++)
             {
 
-                if(i != 22 && i != 48)
+                if(i !=49)
                     continue;
 
                 CrawljaxConfiguration.CrawljaxConfigurationBuilder builder = CrawljaxConfiguration.builderFor(lines.get(i));

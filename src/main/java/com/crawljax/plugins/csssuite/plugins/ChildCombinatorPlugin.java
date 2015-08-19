@@ -59,31 +59,27 @@ public class ChildCombinatorPlugin implements ICssTransformer
                         continue;
                     }
 
-                    _descendants.clear();
+                    LogHandler.debug("[DescToChild] [%s] Selector may transformed using a child-combinator instead of a descendant-combinator", mSelector);
 
                     Selector w3cSelector = mSelector.GetW3cSelector();
-
-                    LogHandler.debug("[DescToChild] [%s] Selector sequence may transformed using a child-combinator instead of a descendant-combinator", mSelector);
-
                     List<ElementWrapper> selectorElements = mSelector.GetMatchedElements();
 
-                    // verify whether matched elements allow for child-combinators instead of descendant-combinators
+                    _descendants.clear();
+
+                    // verify whether ALL elements selected by given selector allow for child-combinators instead of descendant-combinators
                     for (ElementWrapper ew : selectorElements)
                     {
-                        RecursiveFindDescendants(TryFilterPseudoElement(w3cSelector), ew.GetElement(), mSelector);
+                        recursiveFindDescendants(tryFilterPseudoElement(w3cSelector), ew.GetElement(), mSelector);
                     }
 
-                    // if the selector does contains those selectors, replace them
+                    // are there any descendant selectors in given selector, which could be transformable?
                     if(_descendants.values().contains(true))
                     {
                         long size = _descendants.values().stream().filter(d -> d).count();
                         count += size;
 
-                        LogHandler.debug("[DescToChild] [%s] Selector sequence contains '%d' descendant-combinators that can be replaced by child-combinators", mSelector, size);
-
-                        LogHandler.debug("[DescToChild] [%s] Old selector text: '%s'", mSelector, w3cSelector);
-                        Selector newW3cSelector = RecursiveUpdateSelector(w3cSelector);
-                        LogHandler.debug("[DescToChild] [%s] New selector text: '%s'", mSelector, newW3cSelector);
+                        LogHandler.debug("[DescToChild] [%s] Selector contains '%d' descendant-combinators that can be replaced by child-combinators", mSelector, size);
+                        Selector newW3cSelector = recursiveUpdateSelector(w3cSelector);
 
                         // call copy constructor to create MSelector replacement
                         MSelector newSelector = new MSelector(newW3cSelector, mSelector);
@@ -94,14 +90,14 @@ public class ChildCombinatorPlugin implements ICssTransformer
                     }
                 }
 
-                // finally, replace some selector in this mRule
+                // replace in CSS rule
                 for(MSelector oldSelector : newSelectors.keySet())
                 {
                     mRule.ReplaceSelector(oldSelector, newSelectors.get(oldSelector));
                 }
             }
 
-            LogHandler.info("[DescToChild] Removed a total of %d over-qualified descendant-combinators, replaced by child-combinators", count);
+            LogHandler.info("[DescToChild] Removed a total of %d over-qualified descendant-combinators, replaced them by child-combinators", count);
         }
 
         return cssRules;
@@ -110,13 +106,13 @@ public class ChildCombinatorPlugin implements ICssTransformer
 
 
     /**
-     * Filter pseudo-element from a selector, since it is recognized as a descendant combinator (while it is not)
+     * Filter pseudo-element from a selector, since it is recognized as a descendant combinator (while it is not in scope of this plug-in)
      * It can only be applied once, at the end of the subject selector sequence (http://www.w3.org/TR/css3-selectors/)
      * Therefore, it only has to be filtered once
      * @param selector
-     * @return
+     * @return selector without pseudo element
      */
-    private static Selector TryFilterPseudoElement(Selector selector)
+    private static Selector tryFilterPseudoElement(Selector selector)
     {
         if(selector instanceof DescendantSelectorImpl)
         {
@@ -142,11 +138,11 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * @param node
      * @param mSelector
      */
-    private void RecursiveFindDescendants(Selector selector, Node node, MSelector mSelector)
+    private void recursiveFindDescendants(Selector selector, Node node, MSelector mSelector)
     {
         if(selector instanceof ChildSelectorImpl)
         {
-            RecursiveFindDescendants(((ChildSelectorImpl)selector).getAncestorSelector(), node.getParentNode(), mSelector);
+            recursiveFindDescendants(((ChildSelectorImpl) selector).getAncestorSelector(), node.getParentNode(), mSelector);
         }
         else if (selector instanceof SiblingSelector)
         {
@@ -160,18 +156,17 @@ public class ChildCombinatorPlugin implements ICssTransformer
                 boolean found;
                 do
                 {
-                    found = TrySelectNodeWithCss(previousSelector, previousNode, mSelector);
+                    found = trySelectNodeWithCss(previousSelector, previousNode, mSelector);
                     previousNode = previousNode.getPreviousSibling();
                 }
                 while(!found);
             }
 
-            RecursiveFindDescendants(previousSelector, previousNode, mSelector);
+            recursiveFindDescendants(previousSelector, previousNode, mSelector);
         }
         else if (selector instanceof DescendantSelector)
         {
             DescendantSelectorImpl dSel = (DescendantSelectorImpl)selector;
-
             Node parent = node.getParentNode();
             Selector ancestor = dSel.getAncestorSelector();
 
@@ -179,7 +174,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
 
             boolean atDocumentRoot = false;
 
-            if (TrySelectNodeWithCss(ancestor, parent, mSelector))
+            if (trySelectNodeWithCss(ancestor, parent, mSelector))
             {
                 if(!_descendants.containsKey(dSel))
                 {
@@ -206,14 +201,14 @@ public class ChildCombinatorPlugin implements ICssTransformer
                     }
                     else
                     {
-                        found = TrySelectNodeWithCss(ancestor, parent, mSelector);
+                        found = trySelectNodeWithCss(ancestor, parent, mSelector);
                     }
                 }
             }
 
             if(!atDocumentRoot)
             {
-                RecursiveFindDescendants(ancestor, parent, mSelector);
+                recursiveFindDescendants(ancestor, parent, mSelector);
             }
         }
     }
@@ -228,7 +223,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * @param mSelector
      * @return
      */
-    private static boolean TrySelectNodeWithCss(Selector selector, Node node, MSelector mSelector)
+    private static boolean trySelectNodeWithCss(Selector selector, Node node, MSelector mSelector)
     {
         Selector selToMatch = null;
         if(selector instanceof SimpleSelector || selector instanceof PseudoElementSelectorImpl)
@@ -248,14 +243,13 @@ public class ChildCombinatorPlugin implements ICssTransformer
             selToMatch = ((DescendantSelector)selector).getSimpleSelector();
         }
 
-        if (TrySelectNodeWithCss(node, selToMatch))
+        if (trySelectNodeWithCss(node, selToMatch))
         {
-            LogHandler.debug("[DescToChild] [%s] Node '%s' is selectable by simple selector '%s' of selector '%s'", mSelector, PrintNode(node), selToMatch, selector);
-
+            LogHandler.debug("[DescToChild] [%s] Node '%s' is selectable by simple selector '%s' of selector '%s'", mSelector, printNode(node), selToMatch, selector);
             return true;
         }
 
-        LogHandler.debug("[DescToChild] [%s] Node '%s' is NOT selectable by simple selector '%s' of selector '%s'", mSelector, PrintNode(node), selToMatch, selector);
+        LogHandler.debug("[DescToChild] [%s] Node '%s' is NOT selectable by simple selector '%s' of selector '%s'", mSelector, printNode(node), selToMatch, selector);
         return false;
     }
 
@@ -270,13 +264,13 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * @param selector
      * @return true if node is selectable by given selector
      */
-    private static boolean TrySelectNodeWithCss(Node node, Selector selector)
+    private static boolean trySelectNodeWithCss(Node node, Selector selector)
     {
         try
         {
             if (selector instanceof ElementSelectorImpl)
             {
-                return MatchNodeWithElementSelector(node, selector);
+                return matchNodeWithElementSelector(node, selector);
             }
             else if (selector instanceof ConditionalSelectorImpl)
             {
@@ -285,7 +279,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
                 Selector innerSelector = cSelector.getSimpleSelector();
                 Condition innerCondition = cSelector.getCondition();
 
-                return RecursiveMatchConditionToNode(innerSelector, innerCondition, node);
+                return recursiveMatchConditionToNode(innerSelector, innerCondition, node);
             }
             else
             {
@@ -294,33 +288,50 @@ public class ChildCombinatorPlugin implements ICssTransformer
         }
         catch(Exception ex)
         {
-            LogHandler.error(ex, "[DescToChild] Error while matching node to selector for node '%s' and selector '%s'", PrintNode(node), selector);
+            LogHandler.error(ex, "[DescToChild] Error while matching node to selector for node '%s' and selector '%s'", printNode(node), selector);
         }
 
         return false;
     }
 
 
-    private static boolean RecursiveMatchConditionToNode(Selector innerSelector, Condition condition, Node node)
+    /**
+     * Recursively match multiple conditions of a selector to a single node
+     * Recursive call is executed when selector like '.class1.class2.class3'
+     * Otherwise match single condition to single node
+     * @param innerSelector
+     * @param condition
+     * @param node
+     * @return
+     */
+    private static boolean recursiveMatchConditionToNode(Selector innerSelector, Condition condition, Node node)
     {
         if(condition instanceof AndConditionImpl)
         {
             AndConditionImpl andCondition = (AndConditionImpl)condition;
-            return  MatchConditionToNode(innerSelector, andCondition.getSecondCondition(), node)
-                    && RecursiveMatchConditionToNode(innerSelector, andCondition.getFirstCondition(), node);
+            return  matchConditionToNode(innerSelector, andCondition.getSecondCondition(), node)
+                    && recursiveMatchConditionToNode(innerSelector, andCondition.getFirstCondition(), node);
         }
 
-        return MatchConditionToNode(innerSelector, condition, node);
+        return matchConditionToNode(innerSelector, condition, node);
     }
 
 
-    private static boolean MatchConditionToNode(Selector innerSelector, Condition innerCondition, Node node)
+    /**
+     * Main method to match a given condition to a given node, by parsing the attributes contained in that node (except for pseudo-elements)
+     * Supports IDs, classes, attributes, substring attributes and pseudo-elements
+     * @param innerSelector
+     * @param innerCondition
+     * @param node
+     * @return
+     */
+    private static boolean matchConditionToNode(Selector innerSelector, Condition innerCondition, Node node)
     {
         if (innerCondition instanceof IdConditionImpl)
         {
             IdConditionImpl idCondition = (IdConditionImpl) innerCondition;
-            String attr = GetAttributeValue(node.getAttributes(), "id");
-            if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && attr.equals(idCondition.getValue()))
+            String attr = getAttributeValue(node.getAttributes(), "id");
+            if (matchNodeWithElementSelector(node, innerSelector) && attr != null && attr.equals(idCondition.getValue()))
             {
                 return true;
             }
@@ -328,8 +339,8 @@ public class ChildCombinatorPlugin implements ICssTransformer
         else if (innerCondition instanceof ClassConditionImpl)
         {
             ClassConditionImpl classCondition = (ClassConditionImpl) innerCondition;
-            String attr = GetAttributeValue(node.getAttributes(), "class");
-            if (MatchNodeWithElementSelector(node, innerSelector) && attr != null && FindMatchInClass(attr, classCondition.getValue()))
+            String attr = getAttributeValue(node.getAttributes(), "class");
+            if (matchNodeWithElementSelector(node, innerSelector) && attr != null && findMatchInClass(attr, classCondition.getValue()))
             {
                 return true;
             }
@@ -337,8 +348,8 @@ public class ChildCombinatorPlugin implements ICssTransformer
         else if (innerCondition instanceof AttributeConditionImpl)
         {
             AttributeConditionImpl attrCondition = (AttributeConditionImpl) innerCondition;
-            String attr = GetAttributeValue(node.getAttributes(), attrCondition.getLocalName());
-            if(MatchNodeWithElementSelector(node, innerSelector) && attr != null)
+            String attr = getAttributeValue(node.getAttributes(), attrCondition.getLocalName());
+            if(matchNodeWithElementSelector(node, innerSelector) && attr != null)
             {
                 if(attrCondition.getValue() == null || attrCondition.getValue().isEmpty())
                 {
@@ -354,8 +365,8 @@ public class ChildCombinatorPlugin implements ICssTransformer
         else if(innerCondition instanceof SubstringAttributeConditionImpl)
         {
             SubstringAttributeConditionImpl selectorAttribute = (SubstringAttributeConditionImpl) innerCondition;
-            String nodeAttribute = GetAttributeValue(node.getAttributes(), selectorAttribute.getLocalName());
-            if(MatchNodeWithElementSelector(node, innerSelector) && nodeAttribute != null)
+            String nodeAttribute = getAttributeValue(node.getAttributes(), selectorAttribute.getLocalName());
+            if(matchNodeWithElementSelector(node, innerSelector) && nodeAttribute != null)
             {
                 String fulltext = selectorAttribute.toString();
                 String subsValue = selectorAttribute.getValue();
@@ -396,7 +407,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
             }
             else
             {
-                return MatchNodeWithElementSelector(node, innerSelector);
+                return matchNodeWithElementSelector(node, innerSelector);
             }
         }
         else
@@ -408,26 +419,12 @@ public class ChildCombinatorPlugin implements ICssTransformer
     }
 
 
-    private static boolean FindMatchInClass(String classAttribute, String search)
-    {
-        for(String part : classAttribute.split("\\s"))
-        {
-            if(part.equals(search))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
     /**
      * @param node
      * @param elementSelector
      * @return true if given node matches the given element-selector (div, body, etc..) by name, or if element-selector equals '*'
      */
-    private static boolean MatchNodeWithElementSelector(Node node, Selector elementSelector)
+    private static boolean matchNodeWithElementSelector(Node node, Selector elementSelector)
     {
         if(elementSelector.toString().equals("*"))
         {
@@ -443,7 +440,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * @param attributeName
      * @return the value for the given attribute, or NULL
      */
-    private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
+    private static String getAttributeValue(NamedNodeMap attributes, String attributeName)
     {
         if(attributes == null)
             return null;
@@ -457,6 +454,25 @@ public class ChildCombinatorPlugin implements ICssTransformer
     }
 
 
+    /**
+     * Match a given class text to the class attribute, when it is contained in it
+     * @param classAttribute
+     * @param search
+     * @return
+     */
+    private static boolean findMatchInClass(String classAttribute, String search)
+    {
+        for(String part : classAttribute.split("\\s"))
+        {
+            if(part.equals(search))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * Update given selector in place and return it
@@ -464,30 +480,30 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * @param selector
      * @return selector with one or more descendants replaced by childs
      */
-    private Selector RecursiveUpdateSelector(Selector selector)
+    private Selector recursiveUpdateSelector(Selector selector)
     {
         if(selector instanceof ChildSelectorImpl)
         {
             ChildSelectorImpl cSel = (ChildSelectorImpl) selector;
-            cSel.setAncestorSelector(RecursiveUpdateSelector(cSel.getAncestorSelector()));
+            cSel.setAncestorSelector(recursiveUpdateSelector(cSel.getAncestorSelector()));
         }
         else if(selector instanceof SiblingSelector)
         {
             if(selector instanceof DirectAdjacentSelectorImpl)
             {
                 DirectAdjacentSelectorImpl sSel = (DirectAdjacentSelectorImpl) selector;
-                sSel.setSelector(RecursiveUpdateSelector(sSel.getSelector()));
+                sSel.setSelector(recursiveUpdateSelector(sSel.getSelector()));
             }
             else
             {
                 GeneralAdjacentSelectorImpl sSel = (GeneralAdjacentSelectorImpl) selector;
-                sSel.setSelector(RecursiveUpdateSelector(sSel.getSelector()));
+                sSel.setSelector(recursiveUpdateSelector(sSel.getSelector()));
             }
         }
         else if (selector instanceof DescendantSelectorImpl)
         {
             DescendantSelectorImpl dSel = (DescendantSelectorImpl)selector;
-            dSel.setAncestorSelector(RecursiveUpdateSelector(dSel.getAncestorSelector()));
+            dSel.setAncestorSelector(recursiveUpdateSelector(dSel.getAncestorSelector()));
 
             // here we actually replace a given descendant-combinator with a child-combinator
             if(_descendants.containsKey(dSel) && _descendants.get(dSel))
@@ -499,28 +515,28 @@ public class ChildCombinatorPlugin implements ICssTransformer
         return selector;
     }
 
-
-
+    
     /**
      * @param node
      * @return Simple print of a node in HTML format, including attributes
      */
-    private static String PrintNode(Node node)
+    private static String printNode(Node node)
     {
         SuiteStringBuilder builder = new SuiteStringBuilder();
 
         if(node instanceof Document)
+        {
             return "DOCUMENT ROOT";
+        }
 
         builder.append("<%s", node.getNodeName());
 
-        NamedNodeMap map = node.getAttributes();
-
-        if(map != null)
+        NamedNodeMap nodeAttributes = node.getAttributes();
+        if(nodeAttributes != null)
         {
-            for (int i = 0; i < map.getLength(); i++)
+            for (int i = 0; i < nodeAttributes.getLength(); i++)
             {
-                builder.append(" %s=\"%s\"", map.item(i).getNodeName(), map.item(i).getNodeValue());
+                builder.append(" %s=\"%s\"", nodeAttributes.item(i).getNodeName(), nodeAttributes.item(i).getNodeValue());
             }
         }
 

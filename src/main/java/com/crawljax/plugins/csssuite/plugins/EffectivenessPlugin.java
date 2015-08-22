@@ -68,7 +68,7 @@ public class EffectivenessPlugin implements ICssTransformer
 
 
 	/**
-	 * Filter all ineffective rules or individual selectors within those rules by their (in)effective properties
+	 * Filter all ineffective rules or individual selectors within those rules by their (in)effective declarations
 	 * @param file
 	 * @return
 	 */
@@ -87,11 +87,11 @@ public class EffectivenessPlugin implements ICssTransformer
 
 			for(MSelector mSelector : mRule.GetMatchedSelectors())
 			{
-				if(mSelector.HasEffectiveProperties())
+				if(mSelector.HasEffectiveDeclarations())
 				{
 					effective = true;
-					_ineffectiveDeclarations += mSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && !p.IsEffective()).count();
-					mSelector.RemoveIneffectiveProperties();
+					_ineffectiveDeclarations += mSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored() && !p.IsEffective()).count();
+					mSelector.RemoveIneffectiveDeclarations();
 				}
 				else
 				{

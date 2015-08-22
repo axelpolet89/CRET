@@ -4,7 +4,7 @@ import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
@@ -81,12 +81,12 @@ public class CssAnalyzerTest
 
 		for(MCssRule rule : postResult.get("external").GetRules())
 		{
-			effectiveExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveProperties()).collect(Collectors.toList()));
+			effectiveExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveDeclarations()).collect(Collectors.toList()));
 		}
 
 		for(MCssRule rule : postResult.get("internal").GetRules())
 		{
-			effectiveInternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveProperties()).collect(Collectors.toList()));
+			effectiveInternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveDeclarations()).collect(Collectors.toList()));
 		}
 
 		//assert correct amount of internal and external effective selectors
@@ -117,50 +117,50 @@ public class CssAnalyzerTest
 		Assert.assertEquals(8, effectiveExternal.size());
 		Assert.assertEquals(1, effectiveInternal.size());
 
-		List<MProperty> properties = effectiveExternal.get(0).GetProperties();
+		List<MDeclaration> properties = effectiveExternal.get(0).GetDeclarations();
 
 		// div#footer
 		Assert.assertEquals(properties.size(), 1);
 		Assert.assertEquals(properties.get(0).GetName(), "color");
 
 		// #footer
-		properties = effectiveExternal.get(1).GetProperties();
+		properties = effectiveExternal.get(1).GetDeclarations();
 		Assert.assertEquals(properties.size(), 1);
 		Assert.assertEquals(properties.get(0).GetName(), "background");
 
 		// #footer
-		properties = effectiveExternal.get(2).GetProperties();
+		properties = effectiveExternal.get(2).GetDeclarations();
 		Assert.assertEquals(properties.size(), 2);
 		Assert.assertEquals(properties.get(0).GetName(), "margin");
 		Assert.assertEquals(properties.get(1).GetName(), "padding");
 
 		// #wishlist2 li:first-child
-		properties = effectiveExternal.get(3).GetProperties();
+		properties = effectiveExternal.get(3).GetDeclarations();
 		Assert.assertEquals(properties.size(), 1);
 		Assert.assertEquals(properties.get(0).GetName(), "background-color");
 
 		// #wishlist3 li a:hover
-		properties = effectiveExternal.get(4).GetProperties();
+		properties = effectiveExternal.get(4).GetDeclarations();
 		Assert.assertEquals(properties.size(), 1);
 		Assert.assertEquals(properties.get(0).GetName(), "border");
 
 		// #wishlist3 li a:link
-		properties = effectiveExternal.get(5).GetProperties();
+		properties = effectiveExternal.get(5).GetDeclarations();
 		Assert.assertEquals(properties.size(), 1);
 		Assert.assertEquals(properties.get(0).GetName(), "border");
 
 		// ul li a
-		properties = effectiveExternal.get(6).GetProperties();
+		properties = effectiveExternal.get(6).GetDeclarations();
 		Assert.assertEquals(properties.size(), 1);
 		Assert.assertEquals(properties.get(0).GetName(), "color");
 
 		// ul li a
-		properties = effectiveExternal.get(7).GetProperties();
+		properties = effectiveExternal.get(7).GetDeclarations();
 		Assert.assertEquals(properties.size(), 1);
 		Assert.assertEquals(properties.get(0).GetName(), "color");
 
 		// INTERNAL ul li a
-		properties = effectiveInternal.get(0).GetProperties();
+		properties = effectiveInternal.get(0).GetDeclarations();
 		Assert.assertEquals(properties.size(), 2);
 		Assert.assertEquals(properties.get(0).GetName(), "font-size");
 		Assert.assertEquals(properties.get(1).GetName(), "display");
@@ -203,7 +203,7 @@ public class CssAnalyzerTest
 		List<MSelector> effectiveExternal = new ArrayList<>();
 		for(MCssRule rule : postResult.get("external").GetRules())
 		{
-			effectiveExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveProperties()).collect(Collectors.toList()));
+			effectiveExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveDeclarations()).collect(Collectors.toList()));
 		}
 
 		//assert correct amount of internal and external effective selectors
@@ -218,12 +218,12 @@ public class CssAnalyzerTest
 
 			if (i == 5)
 			{
-				Assert.assertEquals(1, sel.GetProperties().size());
-				Assert.assertEquals("color", sel.GetProperties().get(0).GetName());
+				Assert.assertEquals(1, sel.GetDeclarations().size());
+				Assert.assertEquals("color", sel.GetDeclarations().get(0).GetName());
 			}
 			else
 			{
-				for (MProperty prop : sel.GetProperties())
+				for (MDeclaration prop : sel.GetDeclarations())
 				{
 					Assert.assertTrue(prop.IsEffective());
 				}

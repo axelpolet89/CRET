@@ -1,6 +1,6 @@
 package com.crawljax.plugins.csssuite.plugins.merge;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,9 +77,9 @@ public class BackgroundMerger extends MergerBase
 
 
     @Override
-    protected List<MProperty> MergeProperties()
+    protected List<MDeclaration> MergeProperties()
     {
-        List<MProperty> result = new ArrayList<>();
+        List<MDeclaration> result = new ArrayList<>();
 
         String value = "";
 
@@ -100,7 +100,7 @@ public class BackgroundMerger extends MergerBase
         }
         else if (!_size.isEmpty())
         {
-            result.add(new MProperty("background-size", _size, IsImportant(), true, _order));
+            result.add(new MDeclaration("background-size", _size, IsImportant(), true, _order));
         }
 
         if(!_origin.isEmpty())
@@ -117,7 +117,7 @@ public class BackgroundMerger extends MergerBase
 
         if(!value.isEmpty())
         {
-            result.add(new MProperty(_name, value, _isImportant, true, _order));
+            result.add(new MDeclaration(_name, value, _isImportant, true, _order));
         }
 
         return result;

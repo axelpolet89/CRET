@@ -3,8 +3,8 @@ package analysis;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
-import com.crawljax.plugins.csssuite.plugins.DetectClonedPropertiesPlugin;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
+import com.crawljax.plugins.csssuite.plugins.DetectClonedDeclarationsPlugin;
 import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import helpers.TestHelper;
@@ -37,7 +37,7 @@ public class ClonedPropertiesTest
         files.put("external", externalFile);
 
         NormalizeAndSplitPlugin splitPlugin = new NormalizeAndSplitPlugin();
-        DetectClonedPropertiesPlugin clonedProperties = new DetectClonedPropertiesPlugin();
+        DetectClonedDeclarationsPlugin clonedProperties = new DetectClonedDeclarationsPlugin();
 
         splitPlugin.transform(files, new MatchedElements());
         clonedProperties.transform(files, new MatchedElements());
@@ -48,21 +48,21 @@ public class ClonedPropertiesTest
             selectors.addAll(rule.GetSelectors());
         }
 
-        List<MProperty> properties = selectors.get(0).GetProperties();
+        List<MDeclaration> properties = selectors.get(0).GetDeclarations();
         Assert.assertEquals(5,properties.size());
         Assert.assertEquals("border-width: 1px;", properties.get(2).toString());
         Assert.assertEquals("border-style: solid;", properties.get(3).toString());
         Assert.assertEquals("border-color: #ff0000;", properties.get(4).toString());
 
 
-        properties = selectors.get(1).GetProperties();
+        properties = selectors.get(1).GetDeclarations();
         Assert.assertEquals(4,properties.size());
         Assert.assertEquals("padding-top: 40px;", properties.get(0).toString());
         Assert.assertEquals("padding-right: 40px;", properties.get(1).toString());
         Assert.assertEquals("padding-bottom: 40px;", properties.get(2).toString());
         Assert.assertEquals("padding-left: 40px;", properties.get(3).toString());
 
-        properties = selectors.get(2).GetProperties();
+        properties = selectors.get(2).GetDeclarations();
         Assert.assertEquals(4,properties.size());
         Assert.assertEquals("padding-top: 30px !important;", properties.get(0).toString());
         Assert.assertEquals("padding-right: 30px !important;", properties.get(1).toString());

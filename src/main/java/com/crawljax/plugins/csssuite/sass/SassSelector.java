@@ -2,7 +2,7 @@ package com.crawljax.plugins.csssuite.sass;
 
 import com.crawljax.plugins.csssuite.data.MCssRuleBase;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.steadystate.css.parser.media.MediaQuery;
@@ -18,7 +18,7 @@ public class SassSelector
     private String _selectorText;
     private MSelector _original;
 
-    private List<MProperty> _properties;
+    private List<MDeclaration> _declarations;
     private List<SassCloneMixin> _cloneIncludes;
     private List<String> _otherIncludes;
 
@@ -27,7 +27,7 @@ public class SassSelector
         _original = original;
 
         _selectorText = original.GetSelectorText();
-        _properties = original.GetProperties();
+        _declarations = original.GetDeclarations();
 
         _cloneIncludes = new ArrayList<>();
         _otherIncludes = new ArrayList<>();
@@ -45,7 +45,7 @@ public class SassSelector
 
     public void PrintContents(SuiteStringBuilder builder, String prefix)
     {
-        _properties.sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+        _declarations.sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
 
         for(SassCloneMixin cloneMixin : _cloneIncludes)
         {
@@ -57,11 +57,11 @@ public class SassSelector
             builder.appendLine("%s\t@include %s;", prefix, otherMixin);
         }
 
-        for(MProperty mProperty : _properties)
+        for(MDeclaration mDeclaration : _declarations)
         {
-            if(!mProperty.IsFaulty())
+            if(!mDeclaration.IsFaulty())
             {
-                builder.appendLine("%s\t%s", prefix, mProperty);
+                builder.appendLine("%s\t%s", prefix, mDeclaration);
             }
         }
     }
@@ -97,8 +97,8 @@ public class SassSelector
 
     public boolean HasEqualDeclarationsByText(SassSelector other)
     {
-        List<String> sorted = GetSortedPropertiesText();
-        List<String> otherSorted = other.GetSortedPropertiesText();
+        List<String> sorted = GetSortedDeclarationsText();
+        List<String> otherSorted = other.GetSortedDeclarationsText();
 
         if(sorted.size() != otherSorted.size())
         {
@@ -116,21 +116,21 @@ public class SassSelector
         return true;
     }
 
-    public List<String> GetSortedPropertiesText()
+    public List<String> GetSortedDeclarationsText()
     {
         List<String> result = _cloneIncludes.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
         result.addAll(_otherIncludes);
-        result.addAll(_properties.stream().sorted((p1, p2) -> p1.toString().compareTo(p2.toString())).map(p -> p.toString()).collect(Collectors.toList()));
+        result.addAll(_declarations.stream().sorted((p1, p2) -> p1.toString().compareTo(p2.toString())).map(p -> p.toString()).collect(Collectors.toList()));
         return result;
     }
 
-    public List<MProperty> GetProperties()
+    public List<MDeclaration> GetProperties()
     {
-        return _properties;
+        return _declarations;
     }
 
-    public void RemoveProperties(List<MProperty> properties)
+    public void RemoveDeclarations(List<MDeclaration> declarations)
     {
-        _properties.removeAll(properties);
+        _declarations.removeAll(declarations);
     }
 }

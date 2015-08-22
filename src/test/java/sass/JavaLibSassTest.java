@@ -9,7 +9,7 @@ import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
@@ -75,8 +75,8 @@ public class JavaLibSassTest
 
             for(int j = 0; j < refSelectors.size(); j++)
             {
-                List<MProperty> refProperties = refSelectors.get(j).GetProperties();
-                List<MProperty> libSassProperties = libSassSelectors.get(j).GetProperties();
+                List<MDeclaration> refProperties = refSelectors.get(j).GetDeclarations();
+                List<MDeclaration> libSassProperties = libSassSelectors.get(j).GetDeclarations();
 
                 List<MediaQuery> refMedia = refSelectors.get(j).GetMediaQueries();
                 List<MediaQuery> libSassMedia = libSassSelectors.get(j).GetMediaQueries();

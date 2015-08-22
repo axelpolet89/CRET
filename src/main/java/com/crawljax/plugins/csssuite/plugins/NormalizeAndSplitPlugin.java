@@ -4,8 +4,8 @@ import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
 import com.crawljax.plugins.csssuite.data.*;
-import com.crawljax.plugins.csssuite.data.properties.MBorderProperty;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MBorderDeclaration;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
@@ -16,7 +16,7 @@ import java.util.*;
 /**
  * Created by axel on 5/27/2015.
  *
- * This class is responsible for normalizing property values contained in MSelectors
+ * This class is responsible for normalizing declaration values contained in MSelectors
  * 1) split shorthand declarations into separate parts
  * 2) normalize zero values
  * 3) normalize url values
@@ -41,7 +41,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
     {
         for (String file : cssRules.keySet())
         {
-            LogHandler.info("[CssNormalizer] Start normalization of properties for file '%s'", file);
+            LogHandler.info("[CssNormalizer] Start normalization of declarations for file '%s'", file);
 
             for(MCssRule mRule : cssRules.get(file).GetRules())
             {
@@ -53,8 +53,8 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                     NormalizeZeroes(mSelector);
                     NormalizeUrls(mSelector);
 
-                    //sort properties again
-                    mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+                    //sort declarations again
+                    mSelector.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
                 }
             }
         }
@@ -70,14 +70,14 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      */
     private void NormalizeColors(MSelector mSelector)
     {
-        for(MProperty mProperty : mSelector.GetProperties())
+        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
         {
-            if(mProperty.IsIgnored())
+            if(mDeclaration.IsIgnored())
             {
                 continue;
             }
 
-            final String origValue = mProperty.GetValue();
+            final String origValue = mDeclaration.GetValue();
             String newValue = origValue;
 
             if(origValue.contains("rgb"))
@@ -139,7 +139,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 }
             }
 
-            mProperty.SetNormalizedValue(newValue);
+            mDeclaration.SetNormalizedValue(newValue);
         }
     }
 
@@ -150,25 +150,25 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      */
     private void NormalizeZeroes(MSelector mSelector)
     {
-        for(MProperty mProperty : mSelector.GetProperties())
+        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
         {
-            if(mProperty.IsIgnored())
+            if(mDeclaration.IsIgnored())
                 continue;
 
-            final String origValue = mProperty.GetValue();
-            final String value = mProperty.GetValue().replaceAll("\\s", "");
+            final String origValue = mDeclaration.GetValue();
+            final String value = mDeclaration.GetValue().replaceAll("\\s", "");
 
             if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
                     value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
             {
                 _normalizedZeroes++;
-                mProperty.SetNormalizedValue("0");
-                LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mProperty.GetOriginalValue(), mProperty.GetValue());
+                mDeclaration.SetNormalizedValue("0");
+                LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mDeclaration.GetOriginalValue(), mDeclaration.GetValue());
             }
-            else if (mProperty.GetOriginalValue().contains("0."))
+            else if (mDeclaration.GetOriginalValue().contains("0."))
             {
                 _normalizedZeroes++;
-                mProperty.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
+                mDeclaration.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
             }
         }
     }
@@ -180,22 +180,22 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      */
     private void NormalizeUrls(MSelector mSelector)
     {
-        for(MProperty mProperty : mSelector.GetProperties())
+        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
         {
-            if(mProperty.IsIgnored())
+            if(mDeclaration.IsIgnored())
                 continue;
 
-            final String origValue = mProperty.GetValue();
+            final String origValue = mDeclaration.GetValue();
 
             if(origValue.contains("http://"))
             {
                 _normalizedUrls++;
-                mProperty.SetNormalizedValue(origValue.replaceAll("http://", ""));
+                mDeclaration.SetNormalizedValue(origValue.replaceAll("http://", ""));
             }
             else if(origValue.contains("https://"))
             {
                 _normalizedUrls++;
-                mProperty.SetNormalizedValue(origValue.replaceAll("https://", ""));
+                mDeclaration.SetNormalizedValue(origValue.replaceAll("https://", ""));
             }
         }
     }
@@ -251,98 +251,93 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     * Split any shorthand margin, padding, border, border-radius, outline and background property into parts
+     * Split any shorthand margin, padding, border, border-radius, outline and background declaration into parts
      * @param mSelector
      */
     private static void SplitShortHandDeclarations(MSelector mSelector)
     {
-        List<MProperty> newProperties = new ArrayList<>();
+        List<MDeclaration> newDeclarations = new ArrayList<>();
 
-        for(MProperty mProperty : mSelector.GetProperties())
+        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
         {
-            if(mProperty.IsIgnored())
+            if(mDeclaration.IsIgnored())
             {
-                newProperties.add(mProperty);
+                newDeclarations.add(mDeclaration);
                 continue;
             }
 
-            final String name = mProperty.GetName();
-            final String value = mProperty.GetValue();
-            final boolean isImportant = mProperty.IsImportant();
-            final int order = mProperty.GetOrder();
+            final String name = mDeclaration.GetName();
+            final String value = mDeclaration.GetValue();
+            final boolean isImportant = mDeclaration.IsImportant();
+            final int order = mDeclaration.GetOrder();
 
 
             try
             {
                 if (name.equals("margin") || name.equals("padding"))
                 {
-                    newProperties.addAll(BoxToProps(value, isImportant, order, name + "-%s"));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
+                    newDeclarations.addAll(BoxToProps(value, isImportant, order, name + "-%s"));
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
                     String spec = name.replace("border-","");
-                    newProperties.addAll(BoxToProps(value, isImportant, order, "border-%s-" + spec));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' property value into parts: '%s', important=%s", name, value, isImportant);
+                    newDeclarations.addAll(BoxToProps(value, isImportant, order, "border-%s-" + spec));
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
                     if(name.equals("border-radius"))
                     {
-                        newProperties.addAll(BorderRadiusToProps(value, mProperty.GetNameVendor(), isImportant, order));
-                        LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                        newDeclarations.addAll(BorderRadiusToProps(value, mDeclaration.GetNameVendor(), isImportant, order));
+                        LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else if(name.equals("border"))
                     {
                         //todo: transform border parts into box parts, however difficult to implement significant impact in merger...
                         //especially because of ordering...
-//                        List<MProperty> borderProps = BorderToProps(name, value, isImportant, order);
-//                        for(MProperty borderProp : borderProps)
-//                        {
-//                            newProperties.addAll(BoxToProps(borderProp.GetValue(), borderProp.IsImportant(), borderProp.GetOrder(), "border-%s-" + borderProp.GetName().split("-")[1]));
-//                        }
 
-                        newProperties.addAll(BorderToProps(name, value, isImportant, order));
-                        LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                        newDeclarations.addAll(BorderToProps(name, value, isImportant, order));
+                        LogHandler.debug("[CssNormalizer] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else if(name.equals("border-top") || name.equals("border-right") || name.equals("border-bottom") || name.equals("border-left"))
                     {
-                        newProperties.addAll(BorderToProps(name, value, isImportant, order));
-                        LogHandler.debug("[CssNormalizer] Transformed shorthand border property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                        newDeclarations.addAll(BorderToProps(name, value, isImportant, order));
+                        LogHandler.debug("[CssNormalizer] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else
                     {
-                        newProperties.add(mProperty);
+                        newDeclarations.add(mDeclaration);
                     }
                 }
                 else if(name.equals("outline"))
                 {
-                    newProperties.addAll(BorderToProps(name, value, isImportant, order));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand outline property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    newDeclarations.addAll(BorderToProps(name, value, isImportant, order));
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand outline declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.equals("background") && !value.contains(",")) // do not support multiple backgrounds
                 {
-                    newProperties.addAll(BackgroundToProps(value, isImportant, order));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand background property into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    newDeclarations.addAll(BackgroundToProps(value, isImportant, order));
+                    LogHandler.debug("[CssNormalizer] Transformed shorthand background declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else
                 {
-                    newProperties.add(mProperty);
+                    newDeclarations.add(mDeclaration);
                 }
             }
             catch (CssSuiteException e)
             {
-                LogHandler.warn(e, "[CssNormalizer] CssSuiteException on selector '%s', in property '%s'", mSelector, mProperty);
-                newProperties.add(mProperty);
+                LogHandler.warn(e, "[CssNormalizer] CssSuiteException on selector '%s', in declaration '%s'", mSelector, mDeclaration);
+                newDeclarations.add(mDeclaration);
             }
             catch (Exception e)
             {
-                LogHandler.error("[CssNormalizer] Exception on selector '%s', in property '%s'", mSelector, mProperty);
-                newProperties.add(mProperty);
+                LogHandler.error("[CssNormalizer] Exception on selector '%s', in declaration '%s'", mSelector, mDeclaration);
+                newDeclarations.add(mDeclaration);
             }
         }
 
-        mSelector.SetNewProperties(newProperties);
+        mSelector.SetNewDeclarations(newDeclarations);
     }
 
 
@@ -354,7 +349,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @return
      * @throws CssSuiteException
      */
-    private static List<MProperty> BoxToProps(String value, boolean isImportant, int order, String formatter) throws CssSuiteException
+    private static List<MDeclaration> BoxToProps(String value, boolean isImportant, int order, String formatter) throws CssSuiteException
     {
         String[] parts = value.split("\\s");
 
@@ -388,12 +383,12 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 throw new CssSuiteException("Cannot normalize value '%s', because number of parts is larger than 4 or smaller than 1", value);
         }
 
-        List<MProperty> props = new ArrayList<>();
+        List<MDeclaration> props = new ArrayList<>();
 
-        props.add(new MProperty(String.format(formatter, "top"), top, isImportant, order));
-        props.add(new MProperty(String.format(formatter, "right"), right, isImportant, order));
-        props.add(new MProperty(String.format(formatter, "bottom"), bottom, isImportant, order));
-        props.add(new MProperty(String.format(formatter, "left"), left, isImportant, order));
+        props.add(new MDeclaration(String.format(formatter, "top"), top, isImportant, order));
+        props.add(new MDeclaration(String.format(formatter, "right"), right, isImportant, order));
+        props.add(new MDeclaration(String.format(formatter, "bottom"), bottom, isImportant, order));
+        props.add(new MDeclaration(String.format(formatter, "left"), left, isImportant, order));
 
         return props;
     }
@@ -406,9 +401,9 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param isImportant
      * @return
      */
-    private static List<MProperty> BorderToProps(String name, String value, boolean isImportant, int order)
+    private static List<MDeclaration> BorderToProps(String name, String value, boolean isImportant, int order)
     {
-        List<MProperty> props = new ArrayList<>();
+        List<MDeclaration> props = new ArrayList<>();
 
         // either 'outline' or 'border'
         String base = name.split("-")[0];
@@ -422,15 +417,15 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
             if(part.equals("none") || part.equals("solid") || part.equals("dotted")  || part.equals("dashed") ||  part.equals("double")
                     || part.equals("groove") || part.equals("ridge") || part.equals("inset") || part.equals("outset"))
             {
-                props.add(new MBorderProperty(String.format("%s-style", name), part, isImportant, order, String.format("%s-style", base)));
+                props.add(new MBorderDeclaration(String.format("%s-style", name), part, isImportant, order, String.format("%s-style", base)));
             }
             else if (ContainsUnitLength(part) || part.equals("0"))
             {
-                props.add(new MBorderProperty(String.format("%s-width", name), part, isImportant, order, String.format("%s-width", base)));
+                props.add(new MBorderDeclaration(String.format("%s-width", name), part, isImportant, order, String.format("%s-width", base)));
             }
             else
             {
-                props.add(new MBorderProperty(String.format("%s-color", name), part, isImportant, order, String.format("%s-color", base)));
+                props.add(new MBorderDeclaration(String.format("%s-color", name), part, isImportant, order, String.format("%s-color", base)));
             }
         }
 
@@ -444,7 +439,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param isImportant
      * @return
      */
-    private static List<MProperty> BorderRadiusToProps(String value, String vendor, boolean isImportant, int order) throws CssSuiteException
+    private static List<MDeclaration> BorderRadiusToProps(String value, String vendor, boolean isImportant, int order) throws CssSuiteException
     {
         String[] parts = value.split("/");
 
@@ -463,12 +458,12 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
             bottomLeft += " " + radii.get(3);
         }
 
-        List<MProperty> result = new ArrayList<>();
+        List<MDeclaration> result = new ArrayList<>();
 
-        result.add( new MBorderProperty(String.format("%sborder-top-left-radius", vendor), topLeft, isImportant, order, "border-radius"));
-        result.add( new MBorderProperty(String.format("%sborder-top-right-radius", vendor), topRight, isImportant, order, "border-radius"));
-        result.add( new MBorderProperty(String.format("%sborder-bottom-right-radius", vendor), bottomRight, isImportant, order, "border-radius"));
-        result.add( new MBorderProperty(String.format("%sborder-bottom-left-radius", vendor), bottomLeft, isImportant, order, "border-radius"));
+        result.add( new MBorderDeclaration(String.format("%sborder-top-left-radius", vendor), topLeft, isImportant, order, "border-radius"));
+        result.add( new MBorderDeclaration(String.format("%sborder-top-right-radius", vendor), topRight, isImportant, order, "border-radius"));
+        result.add( new MBorderDeclaration(String.format("%sborder-bottom-right-radius", vendor), bottomRight, isImportant, order, "border-radius"));
+        result.add( new MBorderDeclaration(String.format("%sborder-bottom-left-radius", vendor), bottomLeft, isImportant, order, "border-radius"));
 
         return result;
     }
@@ -516,15 +511,15 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     * Split a shorthand background property into separate declararations
+     * Split a shorthand background declaration into separate declararations
      * @param value
      * @param isImportant
      * @return
      * @throws CssSuiteException
      */
-    private static List<MProperty> BackgroundToProps(String value, boolean isImportant, int order) throws CssSuiteException
+    private static List<MDeclaration> BackgroundToProps(String value, boolean isImportant, int order) throws CssSuiteException
     {
-        List<MProperty> props = new ArrayList<>();
+        List<MDeclaration> props = new ArrayList<>();
 
         String[] parts = value.split("\\s");
 
@@ -541,27 +536,27 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
             if(part.contains("repeat"))
             {
-                props.add(new MProperty("background-repeat", part, isImportant, order));
+                props.add(new MDeclaration("background-repeat", part, isImportant, order));
             }
             else if (part.equals("scroll") || part.equals("fixed") || part.equals("local"))
             {
-                props.add(new MProperty("background-attachment", part, isImportant, order));
+                props.add(new MDeclaration("background-attachment", part, isImportant, order));
             }
             else if(part.equals("padding-box") || part.equals("border-box") || part.equals("content-box"))
             {
                 if(!originSet)
                 {
-                    props.add(new MProperty("background-origin", part, isImportant, order));
+                    props.add(new MDeclaration("background-origin", part, isImportant, order));
                     originSet = true;
                 }
                 else
                 {
-                    props.add(new MProperty("background-clip", part, isImportant, order));
+                    props.add(new MDeclaration("background-clip", part, isImportant, order));
                 }
             }
             else if (part.contains("url") || part.equals("none"))
             {
-                props.add(new MProperty("background-image", part, isImportant, order));
+                props.add(new MDeclaration("background-image", part, isImportant, order));
             }
             else if (part.equals("left") || part.equals("right") || part.equals("center") || part.equals("bottom") || part.equals("top") ||
                         ContainsUnitLength(part) || part.contains("%") || part.equals("0") || part.equals("auto") || !part.contains("url") && part.contains("/"))
@@ -620,16 +615,16 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
                 i--;
 
-                props.add(new MProperty("background-position", position, isImportant, order));
+                props.add(new MDeclaration("background-position", position, isImportant, order));
 
                 if(!size.isEmpty())
                 {
-                    props.add(new MProperty("background-size", size, isImportant, order));
+                    props.add(new MDeclaration("background-size", size, isImportant, order));
                 }
             }
             else
             {
-                props.add(new MProperty("background-color", part, isImportant, order));
+                props.add(new MDeclaration("background-color", part, isImportant, order));
             }
         }
 

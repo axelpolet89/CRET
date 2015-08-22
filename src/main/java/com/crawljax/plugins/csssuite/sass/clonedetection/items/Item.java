@@ -1,23 +1,23 @@
 package com.crawljax.plugins.csssuite.sass.clonedetection.items;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.sass.clonedetection.Declaration;
+import com.crawljax.plugins.csssuite.sass.clonedetection.ClonedDeclaration;
 
 import java.util.*;
 
 /**
  * Created by axel on 6/5/2015.
  */
-public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
+public class Item implements Set<ClonedDeclaration>, Cloneable, Comparable<Item>
 {
-    private final Set<Declaration> declarations;
+    private final Set<ClonedDeclaration> declarations;
     /*
      * When finding type III clones, we always create a new shorthand declaration
      * from some individual declarations inside a selector. Those declarations are
      * not exists in the real stylesheet, but they are used in the duplication
      * finding analysis. So we have to distinguish them with real declarations.
      */
-    private final Set<Declaration> virtualDeclarations = new HashSet<>();
+    private final Set<ClonedDeclaration> virtualDeclarations = new HashSet<>();
     private final Set<MSelector> support;
     private ItemSet paretnItemSet;
     private Set<Integer> duplicationTypes = new HashSet<>();
@@ -33,10 +33,10 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
 
 
     /**
-     * Creates new Item using the given {@link Declaration} object.
+     * Creates new Item using the given {@link com.crawljax.plugins.csssuite.sass.clonedetection.ClonedDeclaration} object.
      * @param declaration
      */
-    public Item(Declaration declaration) {
+    public Item(ClonedDeclaration declaration) {
         this();
         add(declaration);
     }
@@ -46,14 +46,14 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
      * declarations set to the given <code>Set<Declaration></code>
      * @param declarations
      */
-    public Item(Set<Declaration> declarations) {
+    public Item(Set<ClonedDeclaration> declarations) {
         this();
-        for (Declaration d : declarations)
+        for (ClonedDeclaration d : declarations)
             add(d);
     }
 
     @Override
-    public boolean add(Declaration e) {
+    public boolean add(ClonedDeclaration e) {
 //        if (e instanceof ShorthandDeclaration) {
 //            if (((ShorthandDeclaration)e).isVirtual())
 //                virtualDeclarations.add(e);
@@ -71,9 +71,9 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
 
 
     @Override
-    public boolean addAll(Collection<? extends Declaration> c) {
+    public boolean addAll(Collection<? extends ClonedDeclaration> c) {
         boolean changed = false;
-        for (Declaration d : declarations)
+        for (ClonedDeclaration d : declarations)
             if (add(d))
                 changed = true;
         return changed;
@@ -102,14 +102,14 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
     }
 
     @Override
-    public Iterator<Declaration> iterator() {
+    public Iterator<ClonedDeclaration> iterator() {
         return declarations.iterator();
     }
 
     @Override
     public boolean remove(Object o) {
-        if (o instanceof Declaration) {
-            Declaration d = (Declaration) o;
+        if (o instanceof ClonedDeclaration) {
+            ClonedDeclaration d = (ClonedDeclaration) o;
             support.remove(d.getSelector());
         }
 //        if (support.isEmpty())
@@ -131,7 +131,7 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
         boolean changed = retainAll(c);
         if (changed) {
             support.clear();
-            for (Declaration d : declarations) {
+            for (ClonedDeclaration d : declarations) {
                 support.add(d.getSelector());
             }
 //            if (support.isEmpty())
@@ -158,7 +158,7 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("{");
-        for (Declaration d : declarations)
+        for (ClonedDeclaration d : declarations)
             sb.append(d.toString() + ", ");
         if (sb.length() > 2)
             sb.delete(sb.length() - 2, sb.length());
@@ -196,10 +196,10 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
      * which is used as the representative of the set
      * @return
      */
-    public Declaration getFirstDeclaration() {
+    public ClonedDeclaration getFirstDeclaration() {
         if (size() > 0) {
-            Declaration nonVirtualDeclaration = null;
-            for (Declaration d : declarations) {
+            ClonedDeclaration nonVirtualDeclaration = null;
+            for (ClonedDeclaration d : declarations) {
                 nonVirtualDeclaration = d;
                 if (virtualDeclarations.contains(nonVirtualDeclaration))
                     nonVirtualDeclaration = null;
@@ -264,10 +264,10 @@ public class Item implements Set<Declaration>, Cloneable, Comparable<Item>
      * This method returns the declaration with minimum characters
      * @return
      */
-    public Declaration getDeclarationWithMinimumChars() {
+    public ClonedDeclaration getDeclarationWithMinimumChars() {
         if (declarations.size() > 0) {
-            Declaration min = null;
-            for (Declaration d : declarations) {
+            ClonedDeclaration min = null;
+            for (ClonedDeclaration d : declarations) {
 //                if (d instanceof ShorthandDeclaration && ((ShorthandDeclaration)d).isVirtual())
 //                    continue;
                 if (min == null)

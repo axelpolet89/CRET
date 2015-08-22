@@ -1,7 +1,7 @@
 package com.crawljax.plugins.csssuite.plugins.merge;
 
 import com.crawljax.plugins.csssuite.CssSuiteException;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ public abstract class MergerBase
     protected boolean _isImportant;
     protected int _order;
     protected boolean _isSet;
-    protected final List<MProperty> _otherProps;
+    protected final List<MDeclaration> _otherProps;
 
     /**
      *
@@ -39,7 +39,7 @@ public abstract class MergerBase
      *
      * @return
      */
-    protected abstract List<MProperty> MergeProperties();
+    protected abstract List<MDeclaration> MergeProperties();
 
 
     /**
@@ -86,12 +86,12 @@ public abstract class MergerBase
         _order = Math.min(order, _order);
         if(!ParseFromSingle(name, value))
         {
-            _otherProps.add(new MProperty(name, value, isImportant, order));
+            _otherProps.add(new MDeclaration(name, value, isImportant, order));
         }
         _isSet = true;
     }
 
-    public final List<MProperty> BuildMProperties()
+    public final List<MDeclaration> BuildMProperties()
     {
         _otherProps.addAll(MergeProperties());
         return _otherProps;

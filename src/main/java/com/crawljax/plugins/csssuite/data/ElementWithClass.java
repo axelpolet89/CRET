@@ -32,13 +32,4 @@ public class ElementWithClass extends ElementWrapper
 	{
 		return _classValues;
 	}
-
-	/**
-	 * Add a class that doesn't match with any CSS selector
-	 * @param unmatchedClass the classname that doesn't match
-	 */
-	public void AddUnmatchedClass(String unmatchedClass)
-	{
-		_unmatchedClasses.add(unmatchedClass);
-	}
 }

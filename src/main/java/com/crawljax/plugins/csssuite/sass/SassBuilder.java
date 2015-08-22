@@ -3,7 +3,7 @@ package com.crawljax.plugins.csssuite.sass;
 import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.*;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.csssuite.colors.ColorNameFinder;
 import com.crawljax.plugins.csssuite.sass.mixins.SassBoxMixin;
@@ -62,7 +62,7 @@ public class SassBuilder
         {
             for(MSelector mSelector : rule.GetSelectors())
             {
-                if(mSelector.GetProperties().size() > _propUpperLimit)
+                if(mSelector.GetDeclarations().size() > _propUpperLimit)
                 {
                     largeSelectors.add(new MSelector(mSelector));
                 }
@@ -104,15 +104,15 @@ public class SassBuilder
 
         for(MSelector mSelector : selectors)
         {
-            for(MProperty mProperty : mSelector.GetProperties())
+            for(MDeclaration mDeclaration : mSelector.GetDeclarations())
             {
-                if (mProperty.IsIgnored())
+                if (mDeclaration.IsIgnored())
                 {
                     continue;
                 }
 
-                String origName = mProperty.GetName();
-                String origValue = mProperty.GetValue();
+                String origName = mDeclaration.GetName();
+                String origValue = mDeclaration.GetValue();
 
                 try
                 {
@@ -122,7 +122,7 @@ public class SassBuilder
                         String varName = "font-stack";
                         String varValue = origValue;
 
-                        varName = GenerateVariable(varName, varValue, varType, mProperty);
+                        varName = GenerateVariable(varName, varValue, varType, mDeclaration);
                         String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
                         String escapedName = String.format("\\$%s", varName);
                         origValue = origValue.replaceFirst(escapedValue, escapedName);
@@ -186,14 +186,14 @@ public class SassBuilder
                             }
                             catch (CssSuiteException ex)
                             {
-                                LogHandler.error(ex, "[SassGenerator] Error occurred while creating SassVariable for property '%s' with value '%s' for selector '%s'",
+                                LogHandler.error(ex, "[SassGenerator] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
                                         origName, origValue, mSelector.GetSelectorText());
                                 continue;
                             }
 
                             if (!varName.isEmpty() && !varValue.isEmpty())
                             {
-                                varName = String.format("$%s", GenerateVariable(varName, varValue, varType, mProperty));
+                                varName = String.format("$%s", GenerateVariable(varName, varValue, varType, mDeclaration));
 
                                 String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
                                 String escapedName = String.format("\\%s", varName);
@@ -212,11 +212,11 @@ public class SassBuilder
                         }
                     }
 
-                    mProperty.SetNormalizedValue(origValue);
+                    mDeclaration.SetNormalizedValue(origValue);
                 }
                 catch (Exception e)
                 {
-                    LogHandler.error(e, "[SassGenerator] Error occurred while creating SassVariable for property '%s' with value '%s' for selector '%s'",
+                    LogHandler.error(e, "[SassGenerator] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
                             origName, origValue, mSelector.GetSelectorText());
                 }
             }
@@ -224,7 +224,7 @@ public class SassBuilder
     }
 
 
-    private String GenerateVariable(String varName, String varValue, SassVarType varType, MProperty originalProperty)
+    private String GenerateVariable(String varName, String varValue, SassVarType varType, MDeclaration originalProperty)
     {
         // if varName already used, extend varName with an id
         if (_alreadyDefinedVars.containsKey(varName) && !_alreadyDefinedVars.get(varName).equals(varValue))
@@ -244,7 +244,7 @@ public class SassBuilder
 
         if (!_alreadyDefinedVars.containsKey(varName))
         {
-            SassVariable sv = new SassVariable(varType, varName, varValue, originalProperty);
+            SassVariable sv = new SassVariable(varType, varName, varValue);
             _sassVariables.add(sv);
             _alreadyDefinedVars.put(varName, varValue);
         }
@@ -308,10 +308,10 @@ public class SassBuilder
         {
             SortMixinValues(mixin);
 
-            List<MProperty> templateProps = mixin.GetProperties();
+            List<MDeclaration> templateProps = mixin.GetDeclarations();
             int numberOfProps = templateProps.size();
 
-            // if the total number of properties exceeds minimum property threshold, continue
+            // if the total number of declarations exceeds minimum declaration threshold, continue
             if (numberOfProps >= _mixinMinPropCount)
             {
                 // number of lines that mixin will add to output file
@@ -330,7 +330,7 @@ public class SassBuilder
                     }
                 }
 
-                // if the total number of properties saved exceeds the number of properties added to the mixin, include the mixin
+                // if the total number of declarations saved exceeds the number of declarations added to the mixin, include the mixin
                 if(count >= mixinSize)
                 {
                     validMixins.add(mixin);
@@ -372,7 +372,7 @@ public class SassBuilder
 
             return Integer.compare(s1.GetLineNumber(), s2.GetLineNumber());
         });
-        mixin.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+        mixin.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
     }
 
 
@@ -382,13 +382,13 @@ public class SassBuilder
      */
     private void RestoreCloneMixin(SassCloneMixin mixin)
     {
-        List<MProperty> mixinProps = mixin.GetProperties();
+        List<MDeclaration> mixinProps = mixin.GetDeclarations();
 
         for (MSelector mSelector : mixin.GetRelatedSelectors())
         {
-            mixinProps.forEach(mixinProp -> mSelector.RestoreProperty(new MProperty(mixinProp.GetName(), mixinProp.GetValue(),
+            mixinProps.forEach(mixinProp -> mSelector.RestoreDevlaration(new MDeclaration(mixinProp.GetName(), mixinProp.GetValue(),
                     mixinProp.IsImportant(), mixinProp.IsEffective(),
-                    mixin.getPropertyOrderForSelector(mSelector, mixinProp))));
+                    mixin.getDeclarationOrderForSelector(mSelector, mixinProp))));
         }
     }
 
@@ -410,13 +410,13 @@ public class SassBuilder
 
         for(SassSelector sassSelector : sassSelectors)
         {
-            List<MProperty> paddings = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("padding-")).collect(Collectors.toList());
-            List<MProperty> margins = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("margin-")).collect(Collectors.toList());
+            List<MDeclaration> paddings = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("padding-")).collect(Collectors.toList());
+            List<MDeclaration> margins = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("margin-")).collect(Collectors.toList());
 
             if(paddings.size() > 1)
             {
                 sassSelector.AddInclude(padding.CreateMixinCall(paddings));
-                sassSelector.RemoveProperties(paddings);
+                sassSelector.RemoveDeclarations(paddings);
 
                 pUsed = true;
                 _statistics.mergeMixinCount++;
@@ -426,7 +426,7 @@ public class SassBuilder
             if(margins.size() > 1)
             {
                 sassSelector.AddInclude(margin.CreateMixinCall(margins));
-                sassSelector.RemoveProperties(margins);
+                sassSelector.RemoveDeclarations(margins);
 
                 mUsed = true;
                 _statistics.mergeMixinCount++;
@@ -460,7 +460,7 @@ public class SassBuilder
 
         for(MSelector mSelector : selectors)
         {
-            mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+            mSelector.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
             SassSelector ss = new SassSelector(mSelector);
 
             for(SassCloneMixin st : extensions)
@@ -516,8 +516,8 @@ public class SassBuilder
 
         List<SassRuleBase> sassRules = new ArrayList<>();
 
-        // final merge, verify that properties previously contained in the same rule (e.g. equal line number)
-        // do not have the same declarations (e.g. all sass declarations and regular properties
+        // final merge, verify that declarations previously contained in the same rule (e.g. equal line number)
+        // do not have the same declarations (e.g. all sass declarations and regular declarations
         // if they do, merge them into 1 SassRule
         for(int lineNumber : lineNoSelectorMap.keySet())
         {

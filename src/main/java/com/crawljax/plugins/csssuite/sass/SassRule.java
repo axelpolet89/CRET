@@ -38,11 +38,6 @@ public class SassRule extends SassRuleBase
         }
     }
 
-    public List<MediaQuery> getMediaQueries()
-    {
-        return _mediaQueries;
-    }
-
     public List<SassSelector> getSassSelectors()
     {
         return _sassSelectors;

@@ -1,7 +1,7 @@
 package analysis;
 
 import com.crawljax.plugins.csssuite.data.*;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.plugins.*;
 
 import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
@@ -57,11 +57,11 @@ public class DescendantToChildTest
         for(String s : matchedElements.GetMatchedElements())
                 matches.add(s);
 
-        List<MProperty> matchedProperties = new ArrayList<>();
+        List<MDeclaration> matchedProperties = new ArrayList<>();
         for(String s : matches)
         {
             for(MSelector m : matchedElements.SortSelectorsForMatchedElem(s))
-                matchedProperties.addAll(m.GetProperties());
+                matchedProperties.addAll(m.GetDeclarations());
         }
 
         // post crawling
@@ -87,11 +87,11 @@ public class DescendantToChildTest
         Set<String> matches2 = matchedElements2.GetMatchedElements();
         Assert.assertArrayEquals(matches.toArray(), matches2.toArray());
 
-        List<MProperty> matchedProperties2 = new ArrayList<>();
+        List<MDeclaration> matchedProperties2 = new ArrayList<>();
         for(String s : matches2)
         {
             for(MSelector m : matchedElements2.SortSelectorsForMatchedElem(s))
-                matchedProperties2.addAll(m.GetProperties());
+                matchedProperties2.addAll(m.GetDeclarations());
         }
         Assert.assertArrayEquals(matchedProperties.toArray(), matchedProperties2.toArray());
     }

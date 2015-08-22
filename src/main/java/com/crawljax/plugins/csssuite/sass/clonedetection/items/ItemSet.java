@@ -1,7 +1,7 @@
 package com.crawljax.plugins.csssuite.sass.clonedetection.items;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.sass.clonedetection.Declaration;
+import com.crawljax.plugins.csssuite.sass.clonedetection.ClonedDeclaration;
 
 import java.util.*;
 
@@ -245,7 +245,7 @@ public class ItemSet implements Set<Item>, Cloneable
 
         int realDeclarationsLength = 0;
         for (Item item : this.itemset) {
-            for (Declaration declaration : item){
+            for (ClonedDeclaration declaration : item){
                 // The declaration must be in the involving selectors in this refactoring opportunity
                 if (this.support.contains(declaration.getSelector()))
                 {
@@ -274,8 +274,8 @@ public class ItemSet implements Set<Item>, Cloneable
      * Uses {@link Item#getFirstDeclaration()} for getting the representative declaration from ItemSet
      * @return
      */
-    public List<Declaration> getRepresentativeDeclarations() {
-        List<Declaration> declarations = new ArrayList<>();
+    public List<ClonedDeclaration> getRepresentativeDeclarations() {
+        List<ClonedDeclaration> declarations = new ArrayList<>();
         for (Item item : itemset) {
             declarations.add(item.getFirstDeclaration());
         }

@@ -1,11 +1,11 @@
-package com.crawljax.plugins.csssuite.data.properties;
+package com.crawljax.plugins.csssuite.data.declarations;
 
 /**
  * Represents a style declaration or CSS property that is contained inside a CSS rule
  * A property has a name, value and may be important
  * After analysis, a property may be overridden, thereby rendered ineffective
  */
-public class MProperty
+public class MDeclaration
 {
 	protected final String _name;
 	private final String _originalValue;
@@ -31,7 +31,7 @@ public class MProperty
 	 * @param isImportant
 	 * @param w3cError
 	 */
-	public MProperty(String name, String value, boolean isImportant, String w3cError, int order)
+	public MDeclaration(String name, String value, boolean isImportant, String w3cError, int order)
 	{
 		_name = name;
 		_originalValue = value.trim();
@@ -84,11 +84,11 @@ public class MProperty
 
 	/**
 	 * Constructor for property without error (used in normalizer plug-in and tests)
-	 * @param name\
+	 * @param name
 	 * @param value
 	 * @param isImportant
 	 */
-	public MProperty(String name, String value, boolean isImportant, int order)
+	public MDeclaration(String name, String value, boolean isImportant, int order)
 	{
 		this(name, value, isImportant, "", order);
 	}
@@ -100,7 +100,7 @@ public class MProperty
 	 * @param value
 	 * @param isImportant
 	 */
-	public MProperty(String name, String value, boolean isImportant, boolean isEffective, int order)
+	public MDeclaration(String name, String value, boolean isImportant, boolean isEffective, int order)
 	{
 		this(name, value, isImportant, "", order);
 		_isEffective = isEffective;
@@ -111,7 +111,7 @@ public class MProperty
 	 * Full copy constructor
 	 * @param property
 	 */
-	public MProperty(MProperty property)
+	public MDeclaration(MDeclaration property)
 	{
 		_name = property.GetName();
 		_originalValue = property.GetOriginalValue();
@@ -239,7 +239,7 @@ public class MProperty
 	 * @param otherProperty the other property besides which this one may co-exist
 	 * @return false, this MProperty may never coexist with another MProperty in the same MSelector
 	 */
-	public boolean AllowCoexistence(MProperty otherProperty)
+	public boolean AllowCoexistence(MDeclaration otherProperty)
 	{
 		return false;
 	}

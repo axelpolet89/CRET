@@ -59,14 +59,4 @@ public class MCssRuleBase
     {
         return _rule.toString() + "\n\n";
     }
-
-    public boolean IsCompatibleWithMediaRule()
-    {
-        return false;
-    }
-
-    public boolean IsCompatibleWithRule()
-    {
-        return false;
-    }
 }

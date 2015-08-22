@@ -3,7 +3,7 @@ package com.crawljax.plugins.csssuite.plugins;
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
@@ -46,7 +46,7 @@ public class DetectUndoingPlugin implements ICssTransformer
         for (String keyElement : matchedElements.GetMatchedElements())
         {
             List<MSelector> matchedSelectors = matchedElements.SortSelectorsForMatchedElem(keyElement);
-            List<MSelector> effectiveSelectors = matchedSelectors.stream().filter(s -> s.HasEffectiveProperties()).collect(Collectors.toList());
+            List<MSelector> effectiveSelectors = matchedSelectors.stream().filter(s -> s.HasEffectiveDeclarations()).collect(Collectors.toList());
 
             // performance
             if(processedSets.contains(new HashSet<>(effectiveSelectors)))
@@ -58,9 +58,9 @@ public class DetectUndoingPlugin implements ICssTransformer
             for (int i = 0; i < effectiveSelectors.size(); i++)
             {
                 MSelector selector = effectiveSelectors.get(i);
-                List<MProperty> properties = selector.GetProperties();
+                List<MDeclaration> properties = selector.GetDeclarations();
 
-                for (MProperty property : properties)
+                for (MDeclaration property : properties)
                 {
                     final String name = property.GetName();
                     final String value = property.GetValue();
@@ -87,7 +87,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                         {
                             // if this property is allowed to coexist besides another property in the same selector,
                             // even with a 0 value, then it is a valid undo (f.e. border-top-width: 0; besides border-width: 4px;)
-                            for (MProperty property2 : properties)
+                            for (MDeclaration property2 : properties)
                             {
                                 if (property != property2)
                                 {
@@ -138,7 +138,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                                     }
                                 }
 
-                                for (MProperty otherProperty : nextSelector.GetProperties())
+                                for (MDeclaration otherProperty : nextSelector.GetDeclarations())
                                 {
                                     final String otherName = otherProperty.GetName();
                                     final String otherValue = otherProperty.GetValue();
@@ -194,18 +194,18 @@ public class DetectUndoingPlugin implements ICssTransformer
 
             for(MSelector mSelector : mRule.GetSelectors())
             {
-                for(MProperty mProperty : mSelector.GetProperties())
+                for(MDeclaration mDeclaration : mSelector.GetDeclarations())
                 {
-                    if(mProperty.IsInvalidUndo())
+                    if(mDeclaration.IsInvalidUndo())
                     {
-                        LogHandler.debug("[CssUndoDetector] Property %s with value %s in selector %s is an INVALID undo style", mProperty.GetName(), mProperty.GetValue(), mSelector);
+                        LogHandler.debug("[CssUndoDetector] Property %s with value %s in selector %s is an INVALID undo style", mDeclaration.GetName(), mDeclaration.GetValue(), mSelector);
                         _defaultDeclarationsRemoved++;
                     }
                 }
 
-                mSelector.RemoveInvalidUndoProperties();
+                mSelector.RemoveInvalidUndoDeclarations();
 
-                if(!mSelector.HasEffectiveProperties())
+                if(!mSelector.HasEffectiveDeclarations())
                 {
                     emptySelectors.add(mSelector);
                     _emptySelectorsRemoved++;

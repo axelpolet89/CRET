@@ -1,6 +1,6 @@
 package com.crawljax.plugins.csssuite.data;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 import com.jcabi.w3c.Defect;
 import com.steadystate.css.dom.Property;
@@ -48,39 +48,32 @@ public class MCssRule extends MCssRuleBase
 		this(rule, w3cErrors, new ArrayList<>(), null);
 	}
 
-
-	@Override
-	public boolean IsCompatibleWithRule()
-	{
-		return true;
-	}
-
 	/**
-	 * Parse all selectors from this _rule and add them to the _selectors, parse properties once and try to find W3C errors for selectors in this rule
+	 * Parse all selectors from this _rule and add them to the _selectors, parse declarations once and try to find W3C errors for selectors in this rule
 	 */
 	private void SetSelectors(Set<Defect> w3cErrors, List<MediaQuery> mediaQueries)
 	{
 		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
-							.getSelectors().stream()
-							.map(selector -> new MSelector(selector, ParseProperties(_styleRule, w3cErrors), GetLineNumber(), GetColumnNumber(),
-																mediaQueries, this, TryFindW3cErrorForSelector(selector, w3cErrors)))
-							.collect(Collectors.toList()));
+				.getSelectors().stream()
+				.map(selector -> new MSelector(selector, ParseDeclarations(_styleRule, w3cErrors), GetLineNumber(), GetColumnNumber(),
+						mediaQueries, this, TryFindW3cErrorForSelector(selector, w3cErrors)))
+				.collect(Collectors.toList()));
 	}
 
 
 	/**
-	 * Parse all properties contained in this rule once, and pass them to each selector that this rule is composed of
+	 * Parse all declarations contained in this rule once, and pass them to each selector that this rule is composed of
 	 * @param styleRule
 	 * @param w3cErrors
 	 * @return
 	 */
-	private static List<MProperty> ParseProperties(CSSStyleRuleImpl styleRule, Set<Defect> w3cErrors)
+	private static List<MDeclaration> ParseDeclarations(CSSStyleRuleImpl styleRule, Set<Defect> w3cErrors)
 	{
 		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
-		List<Property> properties = styleDeclaration.getProperties();
-		return properties.stream()
-				.map(property -> new MProperty(property.getName(), property.getValue().getCssText(), property.isImportant(),
-												TryFindW3cErrorForProperty(property, w3cErrors), properties.indexOf(property) + 1))
+		List<Property> declarations = styleDeclaration.getProperties();
+		return declarations.stream()
+				.map(declaration -> new MDeclaration(declaration.getName(), declaration.getValue().getCssText(), declaration.isImportant(),
+						TryFindW3cErrorForProperty(declaration, w3cErrors), declarations.indexOf(declaration) + 1))
 				.collect(Collectors.toList());
 	}
 
@@ -254,8 +247,8 @@ public class MCssRule extends MCssRuleBase
 
 	/**
 	 * Transform the current rule into valid CSS syntax
-	 * It is possible that the selectors in this rule have varying properties, due to previous analyses and filters
-	 * So we need to find selectors for this rule that have properties in common and output them as a group
+	 * It is possible that the selectors in this rule have varying declarations, due to previous analyses and filters
+	 * So we need to find selectors for this rule that have declarations in common and output them as a group
 	 * @return
 	 */
 	@Override
@@ -264,7 +257,7 @@ public class MCssRule extends MCssRuleBase
 		Map<String, MTuple> combinations = new HashMap<>();
 		for(MSelector mSelector : _selectors)
 		{
-			List<MProperty> mProps = mSelector.GetProperties();
+			List<MDeclaration> mProps = mSelector.GetDeclarations();
 
 			final String[] key = {""};
 			mProps.forEach(mProp -> key[0] += "|" + mProp.AsKey());
@@ -294,7 +287,7 @@ public class MCssRule extends MCssRuleBase
 			}
 
 			builder.append(" {");
-			for(MProperty mProp : mTuple.GetProperties())
+			for(MDeclaration mProp : mTuple.GetProperties())
 			{
 				builder.appendLine("\t" + mProp.toString());
 			}
@@ -308,12 +301,12 @@ public class MCssRule extends MCssRuleBase
 	private class MTuple
 	{
 		private final List<MSelector> _selectors;
-		private final List<MProperty> _properties;
+		private final List<MDeclaration> _properties;
 
-		public MTuple(MSelector mSelector, List<MProperty> properties)
+		public MTuple(MSelector mSelector, List<MDeclaration> declarations)
 		{
 			_selectors = new ArrayList<>(Arrays.asList(mSelector));
-			_properties = properties;
+			_properties = declarations;
 		}
 
 		public void AddSelector(MSelector selector)
@@ -326,7 +319,7 @@ public class MCssRule extends MCssRuleBase
 			return _selectors;
 		}
 
-		public List<MProperty> GetProperties()
+		public List<MDeclaration> GetProperties()
 		{
 			return _properties;
 		}

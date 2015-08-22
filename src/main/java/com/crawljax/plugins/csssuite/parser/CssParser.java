@@ -19,9 +19,7 @@ import com.jcabi.w3c.ValidationResponse;
 import com.steadystate.css.dom.*;
 
 import com.steadystate.css.parser.media.MediaQuery;
-import com.sun.webkit.dom.CSSRuleImpl;
 import org.w3c.css.sac.InputSource;
-import org.w3c.dom.css.CSSRule;
 import org.w3c.dom.css.CSSRuleList;
 import org.w3c.dom.css.CSSStyleSheet;
 
@@ -32,7 +30,6 @@ public class CssParser
 {
 	private final ParserErrorHandler _errorHandler;
 	private final boolean _doW3cValidation;
-	private int _ruleOrder;
 
 	/**
 	 * Test constructor
@@ -50,7 +47,6 @@ public class CssParser
 	{
 		_errorHandler = new ParserErrorHandler();
 		_doW3cValidation = doW3cValidation;
-		_ruleOrder = 1;
 	}
 
 
@@ -146,8 +142,6 @@ public class CssParser
 			{
 				LogHandler.error(ex, "Error occurred while parsing CSSRules into MCssRules on rule '%s'", ruleList.item(i).getCssText());
 			}
-
-			_ruleOrder++;
 		}
 
 		return new MCssFile(url, styleAndMediaRules, mediaRules, ignoredRules);
@@ -182,7 +176,6 @@ public class CssParser
 		}
 
 		MCssMediaRule result = new MCssMediaRule(mediaRule, queries, parent);
-		_ruleOrder++;
 
 		List<MCssRuleBase> innerRules = new ArrayList<>();
 
@@ -211,8 +204,6 @@ public class CssParser
 			{
 				LogHandler.error(ex, "Error occurred while parsing CSSRules into MCssRules on rule '%s'", ruleList.item(i).getCssText());
 			}
-
-			_ruleOrder++;
 		}
 
 		result.SetInnerRules(innerRules);

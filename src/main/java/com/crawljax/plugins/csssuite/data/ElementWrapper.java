@@ -29,12 +29,6 @@ public class ElementWrapper
 	}
 
 	/** Getter */
-	public String GetStateName()
-	{
-		return _stateName;
-	}
-
-	/** Getter */
 	public Element GetElement()
 	{
 		return _element;

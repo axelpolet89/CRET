@@ -132,7 +132,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * We try to match each part in this selector by the node the 'end' of the selector matched to (by CssAnalyzer)
      *
      * In some cases (Descendant and GeneralAdjacent), we will not match a direct parent or direct previous sibling
-     * of the given node, with the ancestor or sibling property of the given selector.
+     * of the given node, with the ancestor or sibling declaration of the given selector.
      * We then need to find the right node (either parent or previous sibling), before proceeding with further analysis of the remaining selector parts
      * @param selector
      * @param node
@@ -515,7 +515,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
         return selector;
     }
 
-    
+
     /**
      * @param node
      * @return Simple print of a node in HTML format, including attributes

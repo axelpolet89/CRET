@@ -1,6 +1,6 @@
 package com.crawljax.plugins.csssuite.plugins.merge;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -71,7 +71,7 @@ public class BorderRadiusMerger extends MergerBase
 
 
     @Override
-    protected List<MProperty> MergeProperties()
+    protected List<MDeclaration> MergeProperties()
     {
         String value;
 
@@ -109,7 +109,7 @@ public class BorderRadiusMerger extends MergerBase
         else
             value = part1;
 
-        return Arrays.asList(new MProperty("border-radius", value, _isImportant, true, _order));
+        return Arrays.asList(new MDeclaration("border-radius", value, _isImportant, true, _order));
     }
 
     private static String BuildPart(String tl, String tr, String br, String bl)

@@ -1,7 +1,7 @@
 package com.crawljax.plugins.csssuite.plugins.analysis;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 
 import java.util.List;
 
@@ -17,14 +17,14 @@ public class EffectivenessAnalysis
         for (int i = 0; i < selectors.size(); i++)
         {
             MSelector selector = selectors.get(i);
-            for (MProperty property : selector.GetProperties())
+            for (MDeclaration declaration : selector.GetDeclarations())
             {
-                // find out if property was already deemed effective previously
-                boolean alreadyEffective = property.IsEffective();
+                // find out if declaration was already deemed effective previously
+                boolean alreadyEffective = declaration.IsEffective();
 
-                if (!property.GetStatus().equals(overridden))
+                if (!declaration.GetStatus().equals(overridden))
                 {
-                    property.SetEffective(true);
+                    declaration.SetEffective(true);
 
                     for (int j = i + 1; j < selectors.size(); j++)
                     {
@@ -73,17 +73,17 @@ public class EffectivenessAnalysis
 
                         if (pseudoCompare)
                         {
-                            CompareDeclarationsPs(property, nextSelector, overridden, alreadyEffective);
+                            CompareDeclarationsPs(declaration, nextSelector, overridden, alreadyEffective);
                         }
                         else if (mediaCompare)
                         {
-                            CompareDeclarationsMq(property, nextSelector, overridden);
+                            CompareDeclarationsMq(declaration, nextSelector, overridden);
                         }
                         else
                         {
-                            // by default: if both selectors apply under the same condition, simply check matching property names
-                            // otherwise, the only way for next selector to be ineffective is too have same property name AND value
-                            CompareDeclarations(property, nextSelector, overridden, alreadyEffective);
+                            // by default: if both selectors apply under the same condition, simply check matching declaration names
+                            // otherwise, the only way for next selector to be ineffective is too have same declaration name AND value
+                            CompareDeclarations(declaration, nextSelector, overridden, alreadyEffective);
                         }
                     }
                 }
@@ -93,29 +93,29 @@ public class EffectivenessAnalysis
 
 
     /**
-     * Compare properties of a (less specific) selector with a given property on ONLY their name
-     * set the other (less specific) properties overridden or set 'this' property overridden due to !important
-     * @param property
+     * Compare declarations of a (less specific) selector with a given declaration on ONLY their name
+     * set the other (less specific) declarations overridden or set 'this' declaration overridden due to !important
+     * @param declaration
      * @param otherSelector
      * @param overridden
      */
-    private static Void CompareDeclarations(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+    private static Void CompareDeclarations(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
-        for (MProperty nextProperty : otherSelector.GetProperties())
+        for (MDeclaration nextDeclaration : otherSelector.GetDeclarations())
         {
-            if (property.GetName().equalsIgnoreCase(nextProperty.GetName()))
+            if (declaration.GetName().equalsIgnoreCase(nextDeclaration.GetName()))
             {
-                // it is possible, due to specificity ordering, that 'this' property was already deemed effective,
+                // it is possible, due to specificity ordering, that 'this' declaration was already deemed effective,
                 // but a less specific ('next') selector contained an !important declaration
-                // this property should not be !important or not previously deemed effective
-                if(!alreadyEffective && nextProperty.IsImportant() && !property.IsImportant())
+                // this declaration should not be !important or not previously deemed effective
+                if(!alreadyEffective && nextDeclaration.IsImportant() && !declaration.IsImportant())
                 {
-                    property.SetStatus(overridden);
-                    property.SetEffective(false);
+                    declaration.SetStatus(overridden);
+                    declaration.SetEffective(false);
                 }
                 else
                 {
-                    nextProperty.SetStatus(overridden);
+                    nextDeclaration.SetStatus(overridden);
                 }
             }
         }
@@ -124,30 +124,30 @@ public class EffectivenessAnalysis
 
 
     /**
-     * Compare properties of a (less specific) selector with a given property on their name AND value
-     * set the other (less specific) properties overridden or set 'this' property overridden due to !important
-     * @param property
+     * Compare declarations of a (less specific) selector with a given declaration on their name AND value
+     * set the other (less specific) declarations overridden or set 'this' declaration overridden due to !important
+     * @param declaration
      * @param otherSelector
      * @param overridden
      */
-    private static void CompareDeclarationsPs(MProperty property, MSelector otherSelector, String overridden, boolean alreadyEffective)
+    private static void CompareDeclarationsPs(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
-        for (MProperty nextProperty : otherSelector.GetProperties())
+        for (MDeclaration nextDeclaration : otherSelector.GetDeclarations())
         {
-            if (property.GetName().equalsIgnoreCase(nextProperty.GetName())
-                    && property.GetValue().equalsIgnoreCase(nextProperty.GetValue()))
+            if (declaration.GetName().equalsIgnoreCase(nextDeclaration.GetName())
+                    && declaration.GetValue().equalsIgnoreCase(nextDeclaration.GetValue()))
             {
-                // it is possible, due to specificity ordering, that 'this' property was already deemed effective,
+                // it is possible, due to specificity ordering, that 'this' declaration was already deemed effective,
                 // but a less specific ('next') selector contained an !important declaration
-                // this property should not be !important or not previously deemed effective
-                if(!alreadyEffective && nextProperty.IsImportant() && !property.IsImportant())
+                // this declaration should not be !important or not previously deemed effective
+                if(!alreadyEffective && nextDeclaration.IsImportant() && !declaration.IsImportant())
                 {
-                    property.SetStatus(overridden);
-                    property.SetEffective(false);
+                    declaration.SetStatus(overridden);
+                    declaration.SetEffective(false);
                 }
                 else
                 {
-                    nextProperty.SetStatus(overridden);
+                    nextDeclaration.SetStatus(overridden);
                 }
             }
         }
@@ -155,21 +155,21 @@ public class EffectivenessAnalysis
 
 
     /**
-     * Compare properties of a (less specific) selector with a given property on their name
-     * and the absence of the !important statement in the less-specific property OR presence in the more-specific property
-     * @param property
+     * Compare declarations of a (less specific) selector with a given declaration on their name
+     * and the absence of the !important statement in the less-specific declaration OR presence in the more-specific declaration
+     * @param declaration
      * @param otherSelector
      * @param overridden
      */
-    private static void CompareDeclarationsMq(MProperty property, MSelector otherSelector, String overridden)
+    private static void CompareDeclarationsMq(MDeclaration declaration, MSelector otherSelector, String overridden)
     {
-        for (MProperty nextProperty : otherSelector.GetProperties())
+        for (MDeclaration nextDeclaration : otherSelector.GetDeclarations())
         {
-            if (property.GetName().equalsIgnoreCase(nextProperty.GetName()))
+            if (declaration.GetName().equalsIgnoreCase(nextDeclaration.GetName()))
             {
-                if(!nextProperty.IsImportant() || property.IsImportant())
+                if(!nextDeclaration.IsImportant() || declaration.IsImportant())
                 {
-                    nextProperty.SetStatus(overridden);
+                    nextDeclaration.SetStatus(overridden);
                 }
             }
         }

@@ -1,6 +1,5 @@
 package com.crawljax.plugins.csssuite.sass.variables;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 /**
@@ -11,14 +10,12 @@ public class SassVariable
     private final SassVarType _type;
     private final String _name;
     private final String _value;
-    private final MProperty _relatedProperty;
 
-    public SassVariable(SassVarType type, String name, String value, MProperty property)
+    public SassVariable(SassVarType type, String name, String value)
     {
         _type = type;
         _name = name;
         _value = value;
-        _relatedProperty = property;
     }
 
     public void Print(SuiteStringBuilder builder)

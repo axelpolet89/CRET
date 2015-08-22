@@ -2,7 +2,6 @@ package com.crawljax.plugins.csssuite;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import sun.rmi.runtime.Log;
 
 /**
  * Created by axel on 5/21/2015.

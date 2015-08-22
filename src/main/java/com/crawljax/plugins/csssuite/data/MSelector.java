@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.crawljax.plugins.csssuite.LogHandler;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.util.PseudoHelper;
 import com.crawljax.plugins.csssuite.util.specificity.Specificity;
 import com.crawljax.plugins.csssuite.util.specificity.SpecificityCalculator;
@@ -20,7 +20,7 @@ import org.w3c.dom.Node;
 public class MSelector
 {
 	private final Selector _selector;
-	private final List<MProperty> _properties;
+	private final List<MDeclaration> _declarations;
 	private final List<MediaQuery> _mediaQueries;
 	private final MCssRuleBase _parent;
 	private final String _w3cError;
@@ -49,13 +49,13 @@ public class MSelector
 	 * Constructor
 	 *
 	 * @param w3cSelector:   the selector text (CSS).
-	 * @param properties: the properties that are contained in this selector
+	 * @param declarations: the declarations that are contained in this selector
 	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
 	 */
-	public MSelector(Selector w3cSelector, List<MProperty> properties, int ruleNumber, int order, List<MediaQuery> queries, MCssRuleBase parent, String w3cError)
+	public MSelector(Selector w3cSelector, List<MDeclaration> declarations, int ruleNumber, int order, List<MediaQuery> queries, MCssRuleBase parent, String w3cError)
 	{
 		_selector = w3cSelector;
-		_properties = properties;
+		_declarations = declarations;
 		_lineNumber = ruleNumber;
 		_order = order;
 		_selectorText = w3cSelector.toString().trim();
@@ -68,15 +68,15 @@ public class MSelector
 
 
 	/**
-	 * Partial copy constructor, generate from new w3cSelector, with properties from old MSelector
+	 * Partial copy constructor, generate from new w3cSelector, with declarations from old MSelector
 	 * @param w3cSelector
 	 * @param mSel
 	 */
 	public MSelector(Selector w3cSelector, MSelector mSel)
 	{
-		this(w3cSelector, mSel.GetProperties(), mSel.GetLineNumber(), mSel.GetOrder(), mSel.GetMediaQueries(), mSel.GetParent(), "");
+		this(w3cSelector, mSel.GetDeclarations(), mSel.GetLineNumber(), mSel.GetOrder(), mSel.GetMediaQueries(), mSel.GetParent(), "");
 
-		// set additional properties, left empty by default constructor
+		// set additional declarations, left empty by default constructor
 		_isMatched = mSel.IsMatched();
 		_matchedElements.addAll(mSel.GetMatchedElements());
 	}
@@ -96,19 +96,19 @@ public class MSelector
 		_parent = mSel.GetParent();
 		_w3cError = mSel.GetW3cError();
 
-		//copy construct properties
-		_properties = mSel.GetProperties().stream().map(MProperty::new).collect(Collectors.toList());
+		//copy construct declarations
+		_declarations = mSel.GetDeclarations().stream().map(MDeclaration::new).collect(Collectors.toList());
 
 		Init();
 
-		// set additional properties, left empty by default constructor
+		// set additional declarations, left empty by default constructor
 		_isMatched = mSel.IsMatched();
 		_matchedElements.addAll(mSel.GetMatchedElements());
 	}
 
 
 	/**
-	 * Initialize other properties, by recursively parsing w3c selector object
+	 * Initialize other declarations, by recursively parsing w3c selector object
 	 */
 	private void Init()
 	{
@@ -122,7 +122,7 @@ public class MSelector
 		if(_isIgnored)
 		{
 			_isMatched = true;
-			_properties.forEach(p -> p.SetEffective(true));
+			_declarations.forEach(p -> p.SetEffective(true));
 			_selectorText = _selectorText.replace("*","");
 		}
 		else
@@ -308,7 +308,7 @@ public class MSelector
 	public String GetSelectorText() { return _selectorText;	}
 
 	/** Getter */
-	public List<MProperty> GetProperties() { return _properties; }
+	public List<MDeclaration> GetDeclarations() { return _declarations; }
 
 	/** Getter */
 	public int GetLineNumber() { return _lineNumber; }
@@ -506,7 +506,7 @@ public class MSelector
 
 		for(MediaQuery query : _mediaQueries)
 		{
-			List<Property> properties = query.getProperties();
+			List<Property> declarations = query.getProperties();
 
 			for(MediaQuery otherQuery : otherQueries)
 			{
@@ -515,13 +515,13 @@ public class MSelector
 				{
 					List<Property> otherProperties = otherQuery.getProperties();
 
-					if(properties.size() == otherProperties.size())
+					if(declarations.size() == otherProperties.size())
 					{
 						boolean matched = true;
 
 						HashMap<String, String> propertiesToMatch = new HashMap<>();
 
-						for(Property prop : properties)
+						for(Property prop : declarations)
 						{
 							propertiesToMatch.put(prop.getName(), prop.getValue().getCssText());
 						}
@@ -556,21 +556,21 @@ public class MSelector
 
 
 	/**
-	 * @return true if any property contained in this selector is effective
+	 * @return true if any declaration contained in this selector is effective
 	 */
-	public boolean HasEffectiveProperties()
+	public boolean HasEffectiveDeclarations()
 	{
-		return _properties.stream().anyMatch((property) -> property.IsEffective());
+		return _declarations.stream().anyMatch((declaration) -> declaration.IsEffective());
 	}
 
 
 	/**
 	 *
-	 * @param mProperty
+	 * @param mDeclaration
 	 */
-	public void RestoreProperty(MProperty mProperty)
+	public void RestoreDevlaration(MDeclaration mDeclaration)
 	{
-		_properties.add(mProperty);
+		_declarations.add(mDeclaration);
 	}
 
 
@@ -578,74 +578,60 @@ public class MSelector
 	 *
 	 * @param newProps
 	 */
-	public void SetNewProperties(List<MProperty> newProps)
+	public void SetNewDeclarations(List<MDeclaration> newProps)
 	{
-		_properties.clear();
-		_properties.addAll(newProps);
+		_declarations.clear();
+		_declarations.addAll(newProps);
 	}
 
 
 	/**
-	 * Remove any property that has not been deemed effective
+	 * Remove any declaration that has not been deemed effective
 	 */
-	public void RemoveIneffectiveProperties()
+	public void RemoveIneffectiveDeclarations()
 	{
-		_properties.removeIf((p) -> !p.IsIgnored() && !p.IsEffective());
+		_declarations.removeIf((p) -> !p.IsIgnored() && !p.IsEffective());
 	}
 
 
 	/**
-	 * Remove any property that performs an invalid undo
+	 * Remove any declaration that performs an invalid undo
 	 */
-	public void RemoveInvalidUndoProperties()
+	public void RemoveInvalidUndoDeclarations()
 	{
-		_properties.removeIf((p) -> !p.IsIgnored() && p.IsInvalidUndo());
-	}
-
-
-	/**
-	 *
-	 * @param properties
-	 */
-	public void RemoveProperties(List<MProperty> properties)
-	{
-		_properties.removeAll(properties);
+		_declarations.removeIf((p) -> !p.IsIgnored() && p.IsInvalidUndo());
 	}
 
 
 	/**
 	 *
-	 * @param properties
+	 * @param declarations
 	 */
-	public void RemovePropertiesByText(List<MProperty> properties)
+	public void RemoveDeclarations(List<MDeclaration> declarations)
 	{
-		List<MProperty> toRemove = new ArrayList<>();
-		for(MProperty mProperty : properties)
+		_declarations.removeAll(declarations);
+	}
+
+
+	/**
+	 *
+	 * @param declarations
+	 */
+	public void RemoveDeclarationsByText(List<MDeclaration> declarations)
+	{
+		List<MDeclaration> toRemove = new ArrayList<>();
+		for(MDeclaration mDeclaration : declarations)
 		{
-			for(MProperty thisProperty : _properties)
+			for(MDeclaration thisProperty : _declarations)
 			{
-				if(mProperty.toString().equals(thisProperty.toString()))
+				if(mDeclaration.toString().equals(thisProperty.toString()))
 				{
 					toRemove.add(thisProperty);
 				}
 			}
 		}
 
-		_properties.removeAll(toRemove);
-	}
-
-
-	/**
-	 * @return size of the css code without whitespace + property size
-	 */
-	public int ComputeSizeBytes()
-	{
-		int propsSize = 0;
-		for (MProperty prop : _properties)
-		{
-			propsSize += prop.ComputeSizeBytes();
-		}
-		return (propsSize + _selectorText.trim().replace(" ", "").getBytes().length);
+		_declarations.removeAll(toRemove);
 	}
 
 

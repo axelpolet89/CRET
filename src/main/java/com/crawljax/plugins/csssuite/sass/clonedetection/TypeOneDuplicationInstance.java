@@ -23,7 +23,7 @@ public class TypeOneDuplicationInstance
      * which happen for the <same selectors> in one object,
      * we have used List<List<Declaration>>
      */
-    protected final List<List<Declaration>> forDeclarations;
+    protected final List<List<ClonedDeclaration>> forDeclarations;
 
     /*
      * Although in the Declaration class we have a reference
@@ -84,7 +84,7 @@ public class TypeOneDuplicationInstance
         }
         s = s.substring(0, s.length() - 2); // Remove the last comma and space
         String string = "For selectors " + s + ", the following declarations are the same: \n";
-        for (List<Declaration> list : forDeclarations) {
+        for (List<ClonedDeclaration> list : forDeclarations) {
             if (list == null || list.get(0) == null)
                 continue;
             string += "\t[" + list.get(0) + "] in the following places: \n";
@@ -114,12 +114,12 @@ public class TypeOneDuplicationInstance
         if (forDeclarations.size() != otherDuplication.forDeclarations.size())
             return false;
 
-        for (List<Declaration> list : forDeclarations) {
+        for (List<ClonedDeclaration> list : forDeclarations) {
             if (list == null || list.get(0) == null)
                 continue;
-            Declaration representative = list.get(0);
+            ClonedDeclaration representative = list.get(0);
             boolean notFound = true;
-            for (List<Declaration> list2 : otherDuplication.forDeclarations) {
+            for (List<ClonedDeclaration> list2 : otherDuplication.forDeclarations) {
                 if (list2 == null)
                     continue;
                 int i = list2.indexOf(representative);
@@ -146,8 +146,8 @@ public class TypeOneDuplicationInstance
         int result = super.hashCode();
         for (MSelector selector : forSelectors)
             result += selector.hashCode();
-        for (List<Declaration> list : forDeclarations) {
-            for (Declaration declaration : list)
+        for (List<ClonedDeclaration> list : forDeclarations) {
+            for (ClonedDeclaration declaration : list)
                 result = 31 * result + declaration.hashCode();
         }
         return result;
@@ -158,8 +158,8 @@ public class TypeOneDuplicationInstance
      * @param declaration Declaration to find
      * @return True if the declaration exists in a list
      */
-    public boolean hasDeclaration(Declaration declaration) {
-        for (List<Declaration> list : forDeclarations)
+    public boolean hasDeclaration(ClonedDeclaration declaration) {
+        for (List<ClonedDeclaration> list : forDeclarations)
             if (list.contains(declaration))
                 return true;
         return false;
@@ -169,8 +169,8 @@ public class TypeOneDuplicationInstance
      * Adds a list of declarations
      * @param declarations
      */
-    public void addAllDeclarations(List<Declaration> declarations) {
-        for (Declaration declaration : declarations)
+    public void addAllDeclarations(List<ClonedDeclaration> declarations) {
+        for (ClonedDeclaration declaration : declarations)
             forSelectors.add(declaration.getSelector());
         forDeclarations.add(declarations);
     }
@@ -181,9 +181,9 @@ public class TypeOneDuplicationInstance
      * @param declarations
      * @return
      */
-    public boolean hasAllSelectorsForADuplication(List<Declaration> declarations) {
+    public boolean hasAllSelectorsForADuplication(List<ClonedDeclaration> declarations) {
         List<MSelector> parentSelectors = new ArrayList<>();
-        for (Declaration declaration : declarations)
+        for (ClonedDeclaration declaration : declarations)
             parentSelectors.add(declaration.getSelector());
         return (parentSelectors.size() == forSelectors.size() &&
                 forSelectors.containsAll(parentSelectors));

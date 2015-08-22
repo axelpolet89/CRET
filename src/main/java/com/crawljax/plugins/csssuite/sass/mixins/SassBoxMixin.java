@@ -1,6 +1,6 @@
 package com.crawljax.plugins.csssuite.sass.mixins;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.Arrays;
@@ -18,17 +18,17 @@ public class SassBoxMixin extends SassMixinBase
                 Arrays.asList(String.format("%s-top: $top;", name), String.format("%s-bottom: $bottom;", name), String.format("%s-right: $right;", name), String.format("%s-left: $left;", name)));
     }
 
-    public String CreateMixinCall(List<MProperty> properties)
+    public String CreateMixinCall(List<MDeclaration> declarations)
     {
         SuiteStringBuilder builder = new SuiteStringBuilder();
         builder.append("%s(", _name);
 
         boolean prev = false;
 
-        for(MProperty mProperty : properties)
+        for(MDeclaration mDeclaration : declarations)
         {
-            String name = mProperty.GetName();
-            String value = mProperty.GetFullValue();
+            String name = mDeclaration.GetName();
+            String value = mDeclaration.GetFullValue();
 
             if(name.contains("top"))
             {

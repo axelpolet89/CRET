@@ -270,28 +270,6 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 
 		LogHandler.info("\n\n");
 
-//		for(String fileName : _cssFiles.keySet())
-//		{
-//			for(MCssRule mCssRule : _cssFiles.get(fileName).GetRules())
-//			{
-//				for(MSelector mSelector : mCssRule.GetSelectors())
-//				{
-//					if(!mSelector.GetW3cError().isEmpty())
-//					{
-//						LogHandler.warn("W3C warning on selector %s >> %s", mSelector, mSelector.GetW3cError());
-//					}
-//
-//					for(MProperty mProperty : mSelector.GetProperties())
-//					{
-//						if(mProperty.IsIgnored())
-//						{
-//							LogHandler.warn("W3C warning on property %s >> %s", mProperty, mProperty.GetW3cError());
-//						}
-//					}
-//				}
-//			}
-//		}
-
 		for(String fileName : _parserErrors.keySet())
 		{
 			List<String> parseErrors = _parserErrors.get(fileName);

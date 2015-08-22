@@ -235,7 +235,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 				List<MSelector> matched = rule.GetSelectors();
 				if (matched.size() > 0) {
 					for (MSelector sel : matched) {
-						if (!sel.HasEffectiveProperties() && !sel.IsIgnored()) {
+						if (!sel.HasEffectiveDeclarations() && !sel.IsIgnored()) {
 							ineffectiveBuffer.append("CSS rule: " + rule.GetStyleRule().getCssText()
 							        + "<br>");
 
@@ -246,7 +246,7 @@ public class VisualizerServlet extends VelocityViewServlet {
 
 							updateUnsortedMap(filename, rule.GetLocator().getLineNumber(), rule
 							        .GetStyleRule().getCssText(), HighlightColor.INEFFECTIVE);
-						} else if (sel.HasEffectiveProperties()) {
+						} else if (sel.HasEffectiveDeclarations()) {
 							effectiveBuffer.append("CSS rule: " + rule.GetStyleRule().getCssText()
 							        + "<br>");
 							effectiveBuffer.append("at line: "

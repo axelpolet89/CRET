@@ -1,6 +1,6 @@
 package com.crawljax.plugins.csssuite.plugins.merge;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 
 import java.util.List;
 
@@ -40,13 +40,13 @@ public class OutlineMerger extends BorderMerger
 
 
     @Override
-    protected List<MProperty> MergeProperties()
+    protected List<MDeclaration> MergeProperties()
     {
-        List<MProperty> result = super.MergeProperties();
+        List<MDeclaration> result = super.MergeProperties();
 
         if(!_offset.isEmpty())
         {
-            result.add(new MProperty("outline-offset", _offset, _isImportant, true, _order));
+            result.add(new MDeclaration("outline-offset", _offset, _isImportant, true, _order));
         }
 
         return result;

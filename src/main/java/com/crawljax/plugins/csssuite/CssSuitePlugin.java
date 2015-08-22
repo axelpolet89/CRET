@@ -101,7 +101,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_postPlugins = new ArrayList<>();
 		_postPlugins.add(new NormalizeAndSplitPlugin());
-		_postPlugins.add(new DetectClonedPropertiesPlugin());
+		_postPlugins.add(new DetectClonedDeclarationsPlugin());
 		_postPlugins.add(new EffectivenessPlugin());
 		_postPlugins.add(new DetectUndoingPlugin());
 		_postPlugins.add(new ChildCombinatorPlugin());
@@ -693,7 +693,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			if(!mSelector.IsIgnored())
 			{
-				count += mSelector.GetProperties().stream().filter(p -> !p.IsIgnored()).count();
+				count += mSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored()).count();
 			}
 		}
 		return count;

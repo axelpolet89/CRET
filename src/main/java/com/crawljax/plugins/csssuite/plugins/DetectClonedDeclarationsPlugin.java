@@ -4,7 +4,7 @@ import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by axel on 6/12/2015.
  */
-public class DetectClonedPropertiesPlugin implements ICssTransformer
+public class DetectClonedDeclarationsPlugin implements ICssTransformer
 {
     private int _clonedDeclarationsRemoved = 0;
 
@@ -35,16 +35,16 @@ public class DetectClonedPropertiesPlugin implements ICssTransformer
             {
                 for(MSelector mSelector : mCssRule.GetSelectors())
                 {
-                    List<MProperty> mProperties = mSelector.GetProperties();
-                    List<MProperty> clonedProps = new ArrayList<>();
+                    List<MDeclaration> mProperties = mSelector.GetDeclarations();
+                    List<MDeclaration> clonedProps = new ArrayList<>();
 
                     for(int i = 0; i < mProperties.size(); i++)
                     {
-                        final MProperty current = mProperties.get(i);
+                        final MDeclaration current = mProperties.get(i);
 
                         for(int j = i+1; j < mProperties.size(); j++)
                         {
-                            final MProperty other = mProperties.get(j);
+                            final MDeclaration other = mProperties.get(j);
 
                             if(current.GetName().equals(other.GetName()))
                             {
@@ -64,7 +64,7 @@ public class DetectClonedPropertiesPlugin implements ICssTransformer
                         }
                     }
 
-                    mSelector.RemoveProperties(clonedProps);
+                    mSelector.RemoveDeclarations(clonedProps);
                 }
             }
         }

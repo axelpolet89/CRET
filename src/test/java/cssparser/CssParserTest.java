@@ -3,7 +3,7 @@ package cssparser;
 import java.util.List;
 
 import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.data.MSelector;
 
 import org.apache.log4j.xml.DOMConfigurator;
@@ -55,7 +55,7 @@ public class CssParserTest
 		Assert.assertEquals(3, mRules.size());
 
 		// only 1 property parsed for third rule (first rule in list)
-		Assert.assertEquals(1, mRules.get(0).GetSelectors().get(0).GetProperties().size());
+		Assert.assertEquals(1, mRules.get(0).GetSelectors().get(0).GetDeclarations().size());
 
 		List<String> parseErrors = parser.GetParseErrors();
 		Assert.assertEquals(parseErrors.size(), 3);
@@ -254,7 +254,7 @@ public class CssParserTest
 
 		MSelector mSelector = mRule.GetSelectors().get(0);
 
-		List<MProperty> mProperties = mSelector.GetProperties();
+		List<MDeclaration> mProperties = mSelector.GetDeclarations();
 		Assert.assertEquals(3, mProperties.size());
 
 		Assert.assertEquals("color", mProperties.get(0).GetName());
@@ -268,7 +268,7 @@ public class CssParserTest
 		Assert.assertEquals("font-size", mProperties.get(2).GetName());
 		Assert.assertTrue(mProperties.get(2).IsImportant());
 
-		for(MProperty mProp : mProperties)
+		for(MDeclaration mProp : mProperties)
 			Assert.assertFalse(mProp.IsEffective());
 
 
@@ -276,10 +276,10 @@ public class CssParserTest
 		mRule = mRules.get(1);
 
 		for(MSelector mSel : mRule.GetSelectors())
-			Assert.assertEquals(2, mSel.GetProperties().size());
+			Assert.assertEquals(2, mSel.GetDeclarations().size());
 
 		mSelector = mRule.GetSelectors().get(0);
-		mProperties = mSelector.GetProperties();
+		mProperties = mSelector.GetDeclarations();
 
 		Assert.assertEquals("font-size", mProperties.get(0).GetName());
 		Assert.assertEquals("20px", mProperties.get(0).GetValue());
@@ -289,7 +289,7 @@ public class CssParserTest
 		//third rule
 		mRule = mRules.get(2);
 		mSelector = mRule.GetSelectors().get(0);
-		mProperties = mSelector.GetProperties();
+		mProperties = mSelector.GetDeclarations();
 
 		Assert.assertEquals("color", mProperties.get(0).GetName());
 		Assert.assertEquals("rgb(0, 0, 0)", mProperties.get(0).GetValue());
@@ -315,7 +315,7 @@ public class CssParserTest
 		//first rule
 		MCssRule mRule = mRules.get(0);
 		MSelector mSelector = mRule.GetSelectors().get(0);
-		List<MProperty> mProperties = mSelector.GetProperties();
+		List<MDeclaration> mProperties = mSelector.GetDeclarations();
 
 		Assert.assertEquals("background", mProperties.get(0).GetName());
 		Assert.assertTrue(mProperties.get(0).IsIgnored());
@@ -326,7 +326,7 @@ public class CssParserTest
 		//second rule
 		mRule = mRules.get(1);
 		mSelector = mRule.GetSelectors().get(0);
-		mProperties = mSelector.GetProperties();
+		mProperties = mSelector.GetDeclarations();
 
 		Assert.assertEquals("-moz-box-shadow", mProperties.get(0).GetName());
 		Assert.assertFalse(mProperties.get(0).IsIgnored()); 					// not ignored, because vendor prefix is warning

@@ -1,7 +1,7 @@
 package com.crawljax.plugins.csssuite.sass.mixins;
 
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.util.ArrayList;
@@ -14,31 +14,31 @@ import java.util.Map;
  */
 public class SassCloneMixin
 {
-    private final List<MProperty> _properties;
+    private final List<MDeclaration> _declarations;
     private final List<MSelector> _extractedFrom;
-    private final Map<MSelector, Map<String, Integer>> _propertyOrdering;
+    private final Map<MSelector, Map<String, Integer>> _declarationOrdering;
     private int _number;
 
     public SassCloneMixin()
     {
-        _properties = new ArrayList<>();
+        _declarations = new ArrayList<>();
         _extractedFrom = new ArrayList<>();
-        _propertyOrdering = new HashMap<>();
+        _declarationOrdering = new HashMap<>();
     }
 
-    public void addProperty(MProperty mProperty)
+    public void addProperty(MDeclaration mDeclaration)
     {
-        _properties.add(mProperty);
+        _declarations.add(mDeclaration);
     }
 
     public void addSelector(MSelector mSelector)
     {
         _extractedFrom.add(mSelector);
 
-        // retain original property-ordering, to maintain intra-selector semantics
-        Map<String, Integer> propertyOrdering = new HashMap<>();
-        mSelector.GetProperties().forEach(p -> propertyOrdering.put(p.GetName(), p.GetOrder()));
-        _propertyOrdering.put(mSelector, propertyOrdering);
+        // retain original declaration-ordering, to maintain intra-selector semantics
+        Map<String, Integer> declarationOrdering = new HashMap<>();
+        mSelector.GetDeclarations().forEach(p -> declarationOrdering.put(p.GetName(), p.GetOrder()));
+        _declarationOrdering.put(mSelector, declarationOrdering);
     }
 
     public void SetNumber(int number)
@@ -51,9 +51,9 @@ public class SassCloneMixin
         return _extractedFrom.size() == selectors.size() && selectors.containsAll(_extractedFrom);
     }
 
-    public List<MProperty> GetProperties()
+    public List<MDeclaration> GetDeclarations()
     {
-        return _properties;
+        return _declarations;
     }
 
     public List<MSelector> GetRelatedSelectors()
@@ -61,9 +61,9 @@ public class SassCloneMixin
         return _extractedFrom;
     }
 
-    public int getPropertyOrderForSelector(MSelector mSelector, MProperty mProperty)
+    public int getDeclarationOrderForSelector(MSelector mSelector, MDeclaration mDeclaration)
     {
-        return _propertyOrdering.get(mSelector).get(mProperty.GetName());
+        return _declarationOrdering.get(mSelector).get(mDeclaration.GetName());
     }
 
     public int GetNumber()
@@ -74,9 +74,9 @@ public class SassCloneMixin
     public void Print(SuiteStringBuilder builder)
     {
         builder.append("@mixin mixin_%d{", _number);
-        for(MProperty property : _properties)
+        for(MDeclaration declaration : _declarations)
         {
-            builder.appendLine("\t%s", property);
+            builder.appendLine("\t%s", declaration);
         }
         builder.appendLine("}");
     }

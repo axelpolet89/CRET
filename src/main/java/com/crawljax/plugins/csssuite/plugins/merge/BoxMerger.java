@@ -1,6 +1,6 @@
 package com.crawljax.plugins.csssuite.plugins.merge;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,7 +61,7 @@ public class BoxMerger extends MergerBase
      * @return
      */
     @Override
-    protected List<MProperty> MergeProperties()
+    protected List<MDeclaration> MergeProperties()
     {
         String value;
 
@@ -82,6 +82,6 @@ public class BoxMerger extends MergerBase
             value =  String.format("%s %s %s %s", _top, _right, _bottom, _left);
         }
 
-        return Arrays.asList(new MProperty(_name, value, _isImportant, true, _order));
+        return Arrays.asList(new MDeclaration(_name, value, _isImportant, true, _order));
     }
 }

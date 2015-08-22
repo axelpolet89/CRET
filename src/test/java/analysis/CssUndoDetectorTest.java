@@ -3,7 +3,7 @@ package analysis;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.data.MSelector;
 import com.crawljax.plugins.csssuite.plugins.EffectivenessPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
@@ -76,12 +76,12 @@ public class CssUndoDetectorTest
 
             if (i == 2)
             {
-                Assert.assertEquals(1, sel.GetProperties().size());
-                Assert.assertEquals("color", sel.GetProperties().get(0).GetName());
+                Assert.assertEquals(1, sel.GetDeclarations().size());
+                Assert.assertEquals("color", sel.GetDeclarations().get(0).GetName());
             }
             else
             {
-                for (MProperty prop : sel.GetProperties())
+                for (MDeclaration prop : sel.GetDeclarations())
                 {
                     Assert.assertTrue(prop.IsEffective());
                     Assert.assertFalse(prop.IsInvalidUndo());

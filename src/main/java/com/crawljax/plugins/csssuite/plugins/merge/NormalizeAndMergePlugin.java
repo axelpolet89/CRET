@@ -4,7 +4,7 @@ import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
 import com.crawljax.plugins.csssuite.interfaces.ICssTransformer;
 import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
@@ -19,7 +19,7 @@ import java.util.*;
  */
 public class NormalizeAndMergePlugin implements ICssTransformer
 {
-    private Map<MProperty, MSelector> _propSelMap = new HashMap<>();
+    private Map<MDeclaration, MSelector> _propSelMap = new HashMap<>();
 
     @Override
     public void getStatistics(SuiteStringBuilder builder, String prefix)
@@ -38,15 +38,15 @@ public class NormalizeAndMergePlugin implements ICssTransformer
                 for(MSelector mSelector : mRule.GetSelectors())
                 {
                     _propSelMap.clear();
-                    for(MProperty mProperty : mSelector.GetProperties())
+                    for(MDeclaration mDeclaration : mSelector.GetDeclarations())
                     {
-                        _propSelMap.put(mProperty, mSelector);
+                        _propSelMap.put(mDeclaration, mSelector);
                     }
 
                     MergePropertiesToShorthand(mSelector);
 
                     //sort properties again
-                    mSelector.GetProperties().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+                    mSelector.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
                 }
             }
         }
@@ -61,110 +61,110 @@ public class NormalizeAndMergePlugin implements ICssTransformer
      */
     private void MergePropertiesToShorthand(MSelector mSelector)
     {
-        List<MProperty> newProperties = new ArrayList<>();
-        List<MProperty> properties = mSelector.GetProperties();
+        List<MDeclaration> newProperties = new ArrayList<>();
+        List<MDeclaration> properties = mSelector.GetDeclarations();
 
-        List<MProperty> margins = new ArrayList<>();
-        List<MProperty> paddings = new ArrayList<>();
-        List<MProperty> borderRadii = new ArrayList<>();
-        List<MProperty> border = new ArrayList<>();
-        List<MProperty> borderTop = new ArrayList<>();
-        List<MProperty> borderRight = new ArrayList<>();
-        List<MProperty> borderBottom = new ArrayList<>();
-        List<MProperty> borderLeft = new ArrayList<>();
-        List<MProperty> outline = new ArrayList<>();
-        List<MProperty> background = new ArrayList<>();
+        List<MDeclaration> margins = new ArrayList<>();
+        List<MDeclaration> paddings = new ArrayList<>();
+        List<MDeclaration> borderRadii = new ArrayList<>();
+        List<MDeclaration> border = new ArrayList<>();
+        List<MDeclaration> borderTop = new ArrayList<>();
+        List<MDeclaration> borderRight = new ArrayList<>();
+        List<MDeclaration> borderBottom = new ArrayList<>();
+        List<MDeclaration> borderLeft = new ArrayList<>();
+        List<MDeclaration> outline = new ArrayList<>();
+        List<MDeclaration> background = new ArrayList<>();
 
-        Set<MProperty> borderStyles = new HashSet<>();
-        Set<MProperty> borderColors = new HashSet<>();
-        Set<MProperty> borderWidths = new HashSet<>();
+        Set<MDeclaration> borderStyles = new HashSet<>();
+        Set<MDeclaration> borderColors = new HashSet<>();
+        Set<MDeclaration> borderWidths = new HashSet<>();
 
         for(int i = 0; i < properties.size(); i++)
         {
-            MProperty mProperty = properties.get(i);
+            MDeclaration mDeclaration = properties.get(i);
 
-            if(mProperty.IsIgnored())
+            if(mDeclaration.IsIgnored())
             {
-                newProperties.add(mProperty);
+                newProperties.add(mDeclaration);
                 continue;
             }
 
-            final String name = mProperty.GetName();
+            final String name = mDeclaration.GetName();
 
             if(name.contains("margin"))
             {
-                margins.add(mProperty);
+                margins.add(mDeclaration);
             }
             else if (name.contains("padding"))
             {
-                paddings.add(mProperty);
+                paddings.add(mDeclaration);
             }
             else if(name.contains("border"))
             {
                 if(name.contains("radius"))
                 {
-                    borderRadii.add(mProperty);
+                    borderRadii.add(mDeclaration);
                 }
                 else if(name.contains("top"))
                 {
                     if(name.contains("style"))
-                        borderStyles.add(mProperty);
+                        borderStyles.add(mDeclaration);
                     else if(name.contains("width"))
-                        borderWidths.add(mProperty);
+                        borderWidths.add(mDeclaration);
                     else
-                        borderColors.add(mProperty);
+                        borderColors.add(mDeclaration);
 
-                    borderTop.add(mProperty);
+                    borderTop.add(mDeclaration);
                 }
                 else if (name.contains("right"))
                 {
                     if(name.contains("style"))
-                        borderStyles.add(mProperty);
+                        borderStyles.add(mDeclaration);
                     else if(name.contains("width"))
-                        borderWidths.add(mProperty);
+                        borderWidths.add(mDeclaration);
                     else
-                        borderColors.add(mProperty);
+                        borderColors.add(mDeclaration);
 
-                    borderRight.add(mProperty);
+                    borderRight.add(mDeclaration);
                 }
                 else if (name.contains("bottom"))
                 {
                     if(name.contains("style"))
-                        borderStyles.add(mProperty);
+                        borderStyles.add(mDeclaration);
                     else if(name.contains("width"))
-                        borderWidths.add(mProperty);
+                        borderWidths.add(mDeclaration);
                     else
-                        borderColors.add(mProperty);
+                        borderColors.add(mDeclaration);
 
-                    borderBottom.add(mProperty);
+                    borderBottom.add(mDeclaration);
                 }
                 else if (name.contains("left"))
                 {
                     if(name.contains("style"))
-                        borderStyles.add(mProperty);
+                        borderStyles.add(mDeclaration);
                     else if(name.contains("width"))
-                        borderWidths.add(mProperty);
+                        borderWidths.add(mDeclaration);
                     else
-                        borderColors.add(mProperty);
+                        borderColors.add(mDeclaration);
 
-                    borderLeft.add(mProperty);
+                    borderLeft.add(mDeclaration);
                 }
                 else
                 {
-                    border.add(mProperty);
+                    border.add(mDeclaration);
                 }
             }
             else if(name.contains("outline"))
             {
-                outline.add(mProperty);
+                outline.add(mDeclaration);
             }
             else if(name.contains("background"))
             {
-                background.add(mProperty);
+                background.add(mDeclaration);
             }
             else
             {
-                newProperties.add(mProperty);
+                newProperties.add(mDeclaration);
             }
         }
 
@@ -196,7 +196,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         newProperties.addAll(MergeBorderProperties(outline, new OutlineMerger("outline")));
         newProperties.addAll(MergeBorderProperties(background, new BackgroundMerger("background")));
 
-        mSelector.SetNewProperties(newProperties);
+        mSelector.SetNewDeclarations(newProperties);
     }
 
 
@@ -206,7 +206,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
      * @param merger
      * @return
      */
-    private List<MProperty> MergeBoxProperties(List<MProperty> properties, MergerBase merger)
+    private List<MDeclaration> MergeBoxProperties(List<MDeclaration> properties, MergerBase merger)
     {
         if(properties.size() == 0)
         {
@@ -215,17 +215,17 @@ public class NormalizeAndMergePlugin implements ICssTransformer
 
         if(properties.size() == 4)
         {
-            List<MProperty> result = new ArrayList<>();
-            for (MProperty mProperty : properties)
+            List<MDeclaration> result = new ArrayList<>();
+            for (MDeclaration mDeclaration : properties)
             {
                 try
                 {
-                    merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant(), mProperty.GetOrder());
+                    merger.Parse(mDeclaration.GetName(), mDeclaration.GetValue(), mDeclaration.IsImportant(), mDeclaration.GetOrder());
                 }
                 catch (Exception e)
                 {
-                    result.add(mProperty);
-                    LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s in selector %s into shorthand equivalent, just add it to result", mProperty, _propSelMap.get(mProperty));
+                    result.add(mDeclaration);
+                    LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s in selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
                 }
             }
 
@@ -243,25 +243,25 @@ public class NormalizeAndMergePlugin implements ICssTransformer
      * @param merger
      * @return
      */
-    private List<MProperty> MergeBorderProperties(List<MProperty> properties, MergerBase merger)
+    private List<MDeclaration> MergeBorderProperties(List<MDeclaration> properties, MergerBase merger)
     {
         if (properties.size() == 0)
         {
             return new ArrayList<>();
         }
 
-        List<MProperty> result = new ArrayList<>();
+        List<MDeclaration> result = new ArrayList<>();
 
-        for (MProperty mProperty : properties)
+        for (MDeclaration mDeclaration : properties)
         {
             try
             {
-                merger.Parse(mProperty.GetName(), mProperty.GetValue(), mProperty.IsImportant(), mProperty.GetOrder());
+                merger.Parse(mDeclaration.GetName(), mDeclaration.GetValue(), mDeclaration.IsImportant(), mDeclaration.GetOrder());
             }
             catch (Exception e)
             {
-                result.add(mProperty);
-                LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s for selector %s into shorthand equivalent, just add it to result", mProperty, _propSelMap.get(mProperty));
+                result.add(mDeclaration);
+                LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s for selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
             }
         }
 

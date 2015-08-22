@@ -6,8 +6,8 @@ import com.crawljax.plugins.csssuite.colors.BrowserColorParser;
 import com.crawljax.plugins.csssuite.data.MCssFile;
 import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.properties.MProperty;
-import com.crawljax.plugins.csssuite.plugins.DetectClonedPropertiesPlugin;
+import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
+import com.crawljax.plugins.csssuite.plugins.DetectClonedDeclarationsPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.EffectivenessAnalysis;
 import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
 import com.crawljax.plugins.csssuite.plugins.analysis.ElementSelectorMatcher;
@@ -27,8 +27,8 @@ public class CssOnDomVerifier
 {
     private Map<MSelector, String> _selFileMapOrig = new HashMap<>();
     private Map<MSelector, String> _selFileMapGnr = new HashMap<>();
-    private Map<MProperty, MSelector> _propSelMapOrig = new HashMap<>();
-    private Map<MProperty, MSelector> _propSelMapGnr = new HashMap<>();
+    private Map<MDeclaration, MSelector> _declSelMapOrig = new HashMap<>();
+    private Map<MDeclaration, MSelector> _declSelMapGnr = new HashMap<>();
 
     private Set<String> _matchedElementsOrig = new HashSet<>();
     private Set<String> _matchedAndEffectiveOrig = new HashSet<>();
@@ -38,12 +38,12 @@ public class CssOnDomVerifier
     private Set<String> _additionalMatchedElems = new HashSet<>();
     private Set<String> _missedMatchedElements = new HashSet<>();
 
-    private Set<MProperty> _totalEffectivePropsOrig = new HashSet<>();
-    private Set<MProperty> _totalEquallyEffectiveProps = new HashSet<>();
-    private Map<MProperty, MProperty> _totalEffectiveByName = new HashMap<>();
-    private Set<MProperty> _totalDefaultPropsOrig = new HashSet<>();
-    private Set<MProperty> _totalMissingProps = new HashSet<>();
-    private Set<MProperty> _totalAdditionalProps = new HashSet<>();
+    private Set<MDeclaration> _totalEffectiveDeclsOrig = new HashSet<>();
+    private Set<MDeclaration> _totalEquallyEffectiveDecls = new HashSet<>();
+    private Map<MDeclaration, MDeclaration> _totalEffectiveByName = new HashMap<>();
+    private Set<MDeclaration> _totalDefaultDeclsOrig = new HashSet<>();
+    private Set<MDeclaration> _totalMissingDecls = new HashSet<>();
+    private Set<MDeclaration> _totalAdditionalDecls = new HashSet<>();
 
     private final Map<String, String> _defaultStyles = DefaultStylesHelper.CreateDefaultStyles();
 
@@ -66,30 +66,30 @@ public class CssOnDomVerifier
     }
 
 
-    private Map<MProperty, MSelector> GeneratePropertySelectorMap(List<MSelector> selectors)
+    private Map<MDeclaration, MSelector> GenerateDeclarationSelectorMap(List<MSelector> selectors)
     {
-        Map<MProperty, MSelector> result = new HashMap<>();
+        Map<MDeclaration, MSelector> result = new HashMap<>();
 
         selectors.forEach((s) -> {
-            List<MProperty> mProperties = s.GetProperties().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList());
-            mProperties.forEach(p -> result.put(p, s));
+            List<MDeclaration> mDeclarations = s.GetDeclarations().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList());
+            mDeclarations.forEach(p -> result.put(p, s));
         });
 
         return result;
     }
 
 
-    private List<MProperty> FindEffectivePropertiesForElement(List<MSelector> selectors)
+    private List<MDeclaration> FindEffectiveDeclarationsForElement(List<MSelector> selectors)
     {
-        // first reset all previously deemed effective properties to non-effective
-        selectors.forEach(s -> s.GetProperties().forEach(p -> p.SetEffective(false)));
+        // first reset all previously deemed effective declarations to non-effective
+        selectors.forEach(s -> s.GetDeclarations().forEach(p -> p.SetEffective(false)));
 
         String overridden = "overridden-" + new Random().nextInt();
 
         EffectivenessAnalysis.ComputeEffectiveness(selectors, overridden);
 
-        List<MProperty> effectiveProps = new ArrayList<>();
-        selectors.forEach(s -> effectiveProps.addAll(s.GetProperties().stream().filter(p -> p.IsEffective() || p.IsIgnored()).collect(Collectors.toList())));
+        List<MDeclaration> effectiveProps = new ArrayList<>();
+        selectors.forEach(s -> effectiveProps.addAll(s.GetDeclarations().stream().filter(p -> p.IsEffective() || p.IsIgnored()).collect(Collectors.toList())));
         return effectiveProps;
     }
 
@@ -105,7 +105,7 @@ public class CssOnDomVerifier
         originalStyles = normalizer.transform(originalStyles, matchedElementsOrig);
         generatedStyles = normalizer.transform(generatedStyles, matchedElementsGnr);
 
-        DetectClonedPropertiesPlugin clonedProps = new DetectClonedPropertiesPlugin();
+        DetectClonedDeclarationsPlugin clonedProps = new DetectClonedDeclarationsPlugin();
         originalStyles = clonedProps.transform(originalStyles, matchedElementsOrig);
         generatedStyles = clonedProps.transform(generatedStyles, matchedElementsGnr);
 
@@ -132,14 +132,14 @@ public class CssOnDomVerifier
         for(String matchedElement : _matchedElementsOrig)
         {
             count++;
-            LogHandler.debug("[VERIFICATION] Find out if original matches are effective (i.e. at least 1 effective property) for element %d of %d...", count, total);
+            LogHandler.debug("[VERIFICATION] Find out if original matches are effective (i.e. at least 1 effective declaration) for element %d of %d...", count, total);
 
             List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
-            List<MProperty> effectivePropsOrig = FindEffectivePropertiesForElement(selectorsOrig);
+            List<MDeclaration> effectivePropsOrig = FindEffectiveDeclarationsForElement(selectorsOrig);
 
-            if(ContainsEffectiveProps(effectivePropsOrig))
+            if(ContainsEffectiveDecls(effectivePropsOrig))
             {
-                _totalEffectivePropsOrig.addAll(effectivePropsOrig);
+                _totalEffectiveDeclsOrig.addAll(effectivePropsOrig);
                 _matchedAndEffectiveOrig.add(matchedElement);
             }
         }
@@ -158,9 +158,9 @@ public class CssOnDomVerifier
             LogHandler.debug("[VERIFICATION] Start effectiveness analysis and comparison for element %d of %d...", count, total);
 
             List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
-            _propSelMapOrig.putAll(GeneratePropertySelectorMap(selectorsOrig));
+            _declSelMapOrig.putAll(GenerateDeclarationSelectorMap(selectorsOrig));
 
-            List<MProperty> effectivePropsOrig = FindEffectivePropertiesForElement(selectorsOrig);
+            List<MDeclaration> effectivePropsOrig = FindEffectiveDeclarationsForElement(selectorsOrig);
 
             // only continue when both styles matched the same element
             if(!_equallyMatchedElems.contains(matchedElement))
@@ -169,37 +169,37 @@ public class CssOnDomVerifier
             }
 
             List<MSelector> selectorsGnr = matchedElementsGnr.SortSelectorsForMatchedElem(matchedElement);
-            _propSelMapGnr.putAll(GeneratePropertySelectorMap(selectorsGnr));
+            _declSelMapGnr.putAll(GenerateDeclarationSelectorMap(selectorsGnr));
 
-            List<MProperty> effectivePropsGnr = FindEffectivePropertiesForElement(selectorsGnr);
+            List<MDeclaration> effectivePropsGnr = FindEffectiveDeclarationsForElement(selectorsGnr);
 
             effectivePropsOrig.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
             effectivePropsGnr.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
 
-            Set<MProperty> matchedPropsOnValueOrig = new HashSet<>();
-            Set<MProperty> matchedPropsOnValueGnr = new HashSet<>();
+            Set<MDeclaration> matchedPropsOnValueOrig = new HashSet<>();
+            Set<MDeclaration> matchedPropsOnValueGnr = new HashSet<>();
 
-            // find all property matches by name, value and !important
-            for(MProperty origProperty : effectivePropsOrig)
+            // find all declaration matches by name, value and !important
+            for(MDeclaration origDeclaration : effectivePropsOrig)
             {
-                final String name = origProperty.GetName();
-                final String value = bcp.TryParseColorToHex(origProperty.GetValue());
+                final String name = origDeclaration.GetName();
+                final String value = bcp.TryParseColorToHex(origDeclaration.GetValue());
 
-                for(MProperty gnrProperty : effectivePropsGnr)
+                for(MDeclaration gnrDeclaration : effectivePropsGnr)
                 {
-                    if(matchedPropsOnValueGnr.contains(gnrProperty))
+                    if(matchedPropsOnValueGnr.contains(gnrDeclaration))
                     {
                         continue;
                     }
 
-                    if(gnrProperty.GetName().equals(name))
+                    if(gnrDeclaration.GetName().equals(name))
                     {
-                        String gnrValue = bcp.TryParseColorToHex(gnrProperty.GetValue());
+                        String gnrValue = bcp.TryParseColorToHex(gnrDeclaration.GetValue());
 
-                        if(gnrValue.equals(value) && gnrProperty.IsImportant() == origProperty.IsImportant())
+                        if(gnrValue.equals(value) && gnrDeclaration.IsImportant() == origDeclaration.IsImportant())
                         {
-                            matchedPropsOnValueOrig.add(origProperty);
-                            matchedPropsOnValueGnr.add(gnrProperty);
+                            matchedPropsOnValueOrig.add(origDeclaration);
+                            matchedPropsOnValueGnr.add(gnrDeclaration);
                             break;
                         }
                     }
@@ -208,30 +208,30 @@ public class CssOnDomVerifier
 
 
 
-            List<MProperty> remainderOrig = effectivePropsOrig.stream().filter((p) -> !matchedPropsOnValueOrig.contains(p)).collect(Collectors.toList());
-            List<MProperty> remainderGnr = effectivePropsGnr.stream().filter((p) -> !matchedPropsOnValueGnr.contains(p)).collect(Collectors.toList());
-            Map<MProperty, MProperty> matchedOnName = new HashMap<>();
-            Set<MProperty> alreadyNameMatchedGnr = new HashSet<>();
+            List<MDeclaration> remainderOrig = effectivePropsOrig.stream().filter((p) -> !matchedPropsOnValueOrig.contains(p)).collect(Collectors.toList());
+            List<MDeclaration> remainderGnr = effectivePropsGnr.stream().filter((p) -> !matchedPropsOnValueGnr.contains(p)).collect(Collectors.toList());
+            Map<MDeclaration, MDeclaration> matchedOnName = new HashMap<>();
+            Set<MDeclaration> alreadyNameMatchedGnr = new HashSet<>();
 
-            // find all property matches by name from remainders
-            for(MProperty origProperty : remainderOrig)
+            // find all declaration matches by name from remainders
+            for(MDeclaration origDeclaration : remainderOrig)
             {
-                if(matchedOnName.containsKey(origProperty))
+                if(matchedOnName.containsKey(origDeclaration))
                 {
                     continue;
                 }
 
-                for(MProperty gnrProperty : remainderGnr)
+                for(MDeclaration gnrDeclaration : remainderGnr)
                 {
-                    if(alreadyNameMatchedGnr.contains(gnrProperty))
+                    if(alreadyNameMatchedGnr.contains(gnrDeclaration))
                     {
                         continue;
                     }
 
-                    if(gnrProperty.GetName().equals(origProperty.GetName()))
+                    if(gnrDeclaration.GetName().equals(origDeclaration.GetName()))
                     {
-                        matchedOnName.put(origProperty, gnrProperty);
-                        alreadyNameMatchedGnr.add(gnrProperty);
+                        matchedOnName.put(origDeclaration, gnrDeclaration);
+                        alreadyNameMatchedGnr.add(gnrDeclaration);
                         break;
                     }
                 }
@@ -242,39 +242,39 @@ public class CssOnDomVerifier
             remainderOrig =  remainderOrig.stream().filter((p) -> !matchedOnName.containsKey(p)).collect(Collectors.toList());
             remainderGnr =  remainderGnr.stream().filter((p) -> !alreadyNameMatchedGnr.contains(p)).collect(Collectors.toList());
 
-            for(MProperty origProperty : matchedOnName.keySet())
+            for(MDeclaration origDeclaration : matchedOnName.keySet())
             {
-                MProperty gnrProperty = matchedOnName.get(origProperty);
+                MDeclaration gnrDeclaration = matchedOnName.get(origDeclaration);
                 LogHandler.debug("[VERIFICATION] Match by name only: new:'%s', old:'%s'\nnew:'%s', old:'%s'\nnew:'%s', old:'%s'",
-                        gnrProperty, origProperty, _propSelMapGnr.get(gnrProperty), _propSelMapOrig.get(origProperty),
-                        _selFileMapGnr.get(_propSelMapGnr.get(gnrProperty)), _selFileMapOrig.get(_propSelMapOrig.get(origProperty)));
+                        gnrDeclaration, origDeclaration, _declSelMapGnr.get(gnrDeclaration), _declSelMapOrig.get(origDeclaration),
+                        _selFileMapGnr.get(_declSelMapGnr.get(gnrDeclaration)), _selFileMapOrig.get(_declSelMapOrig.get(origDeclaration)));
             }
 
-            for(MProperty remainingProperty : remainderOrig)
+            for(MDeclaration remainingDeclaration : remainderOrig)
             {
-                // verify that remaing property from original styles is not a default style, then it is a valid mismatch
-                if(_defaultStyles.containsKey(remainingProperty.GetName()))
+                // verify that remaing declaration from original styles is not a default style, then it is a valid mismatch
+                if(_defaultStyles.containsKey(remainingDeclaration.GetName()))
                 {
-                    if(remainingProperty.GetValue().equals(_defaultStyles.get(remainingProperty.GetName())))
+                    if(remainingDeclaration.GetValue().equals(_defaultStyles.get(remainingDeclaration.GetName())))
                     {
-                        _totalDefaultPropsOrig.add(remainingProperty);
+                        _totalDefaultDeclsOrig.add(remainingDeclaration);
                         continue;
                     }
                 }
 
-                _totalMissingProps.add(remainingProperty);
-                LogHandler.debug("[VERIFICATION] Missing property '%s' in selector '%s' in file '%s'",
-                        remainingProperty, _propSelMapOrig.get(remainingProperty), _selFileMapOrig.get(_propSelMapOrig.get(remainingProperty)));
+                _totalMissingDecls.add(remainingDeclaration);
+                LogHandler.debug("[VERIFICATION] Missing declaration '%s' in selector '%s' in file '%s'",
+                        remainingDeclaration, _declSelMapOrig.get(remainingDeclaration), _selFileMapOrig.get(_declSelMapOrig.get(remainingDeclaration)));
             }
 
-            for(MProperty remainingProperty : remainderGnr)
+            for(MDeclaration remainingDeclaration : remainderGnr)
             {
-                _totalAdditionalProps.add(remainingProperty);
-                LogHandler.debug("[VERIFICATION] Additional property '%s' in selector '%s' in file '%s'",
-                        remainingProperty, _propSelMapGnr.get(remainingProperty), _selFileMapGnr.get(_propSelMapGnr.get(remainingProperty)));
+                _totalAdditionalDecls.add(remainingDeclaration);
+                LogHandler.debug("[VERIFICATION] Additional declaration '%s' in selector '%s' in file '%s'",
+                        remainingDeclaration, _declSelMapGnr.get(remainingDeclaration), _selFileMapGnr.get(_declSelMapGnr.get(remainingDeclaration)));
             }
 
-            _totalEquallyEffectiveProps.addAll(matchedPropsOnValueGnr);
+            _totalEquallyEffectiveDecls.addAll(matchedPropsOnValueGnr);
             _totalEffectiveByName.putAll(matchedOnName);
         }
 
@@ -313,18 +313,18 @@ public class CssOnDomVerifier
 
         // filter effective props by name with missing props
         // missing props have higher precedence than effective by name
-        for(MProperty mProperty : _totalMissingProps)
+        for(MDeclaration mDeclaration : _totalMissingDecls)
         {
-            if(_totalEffectiveByName.containsKey(mProperty))
+            if(_totalEffectiveByName.containsKey(mDeclaration))
             {
-                _totalEffectiveByName.remove(mProperty);
+                _totalEffectiveByName.remove(mDeclaration);
             }
         }
 
         // filter missing props and effective by name props from effective by value props
         // they have higher precedence
-        _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalEffectiveByName.keySet());
-        _totalEquallyEffectiveProps = Sets.difference(_totalEquallyEffectiveProps, _totalMissingProps);
+        _totalEquallyEffectiveDecls = Sets.difference(_totalEquallyEffectiveDecls, _totalEffectiveByName.keySet());
+        _totalEquallyEffectiveDecls = Sets.difference(_totalEquallyEffectiveDecls, _totalMissingDecls);
 
         LogResults();
     }
@@ -334,31 +334,31 @@ public class CssOnDomVerifier
         LogHandler.info("[VERIFICATION] %d elements matched originally, %d elements matches effective originally, %d elements equally matched by new,  %d elements unmatched, %d additional elements matched",
                 _equallyMatchedElems.size(), _matchedAndEffectiveOrig.size(), _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
         LogHandler.info("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
-                _totalEffectivePropsOrig.size(), _totalEquallyEffectiveProps.size(), _totalEffectiveByName.size(), _totalDefaultPropsOrig.size(), _totalMissingProps.size(), _totalAdditionalProps.size());
+                _totalEffectiveDeclsOrig.size(), _totalEquallyEffectiveDecls.size(), _totalEffectiveByName.size(), _totalDefaultDeclsOrig.size(), _totalMissingDecls.size(), _totalAdditionalDecls.size());
 
-        for(MProperty orig : _totalEffectiveByName.keySet())
+        for(MDeclaration orig : _totalEffectiveByName.keySet())
         {
-            MProperty gnr = _totalEffectiveByName.get(orig);
-            LogHandler.info("[VERIFICATION] Matched by name: '%s'\nwith '%s'", PrintOrigProperty(orig), PrintGnrProperty(gnr));
+            MDeclaration gnr = _totalEffectiveByName.get(orig);
+            LogHandler.info("[VERIFICATION] Matched by name: '%s'\nwith '%s'", PrintOrigDeclaration(orig), PrintGnrDeclaration(gnr));
         }
-        for(MProperty orig : _totalMissingProps)
+        for(MDeclaration orig : _totalMissingDecls)
         {
-            LogHandler.info("[VERIFICATION] Missing property: '%s'", PrintOrigProperty(orig));
+            LogHandler.info("[VERIFICATION] Missing declaration: '%s'", PrintOrigDeclaration(orig));
         }
-        for(MProperty gnr : _totalAdditionalProps)
+        for(MDeclaration gnr : _totalAdditionalDecls)
         {
-            LogHandler.info("[VERIFICATION] Additional property: '%s'", PrintGnrProperty(gnr));
+            LogHandler.info("[VERIFICATION] Additional declaration: '%s'", PrintGnrDeclaration(gnr));
         }
     }
 
-    private String PrintOrigProperty(MProperty property)
+    private String PrintOrigDeclaration(MDeclaration declaration)
     {
-        return String.format("%s %s %s", property, _propSelMapOrig.get(property), _selFileMapOrig.get(_propSelMapOrig.get(property)));
+        return String.format("%s %s %s", declaration, _declSelMapOrig.get(declaration), _selFileMapOrig.get(_declSelMapOrig.get(declaration)));
     }
 
-    private String PrintGnrProperty(MProperty property)
+    private String PrintGnrDeclaration(MDeclaration declaration)
     {
-        return String.format("%s %s %s", property, _propSelMapGnr.get(property), _selFileMapGnr.get(_propSelMapGnr.get(property)));
+        return String.format("%s %s %s", declaration, _declSelMapGnr.get(declaration), _selFileMapGnr.get(_declSelMapGnr.get(declaration)));
     }
 
     public void GenerateXml(SuiteStringBuilder builder, String prefix)
@@ -369,21 +369,21 @@ public class CssOnDomVerifier
         builder.appendLine("%s<missed_matched_elements>%d</missed_matched_elements>", prefix, _missedMatchedElements.size());
         builder.appendLine("%s<additional_matched_elements>%d</additional_matched_elements>", prefix, _additionalMatchedElems.size());
 
-        builder.appendLine("%s<effective_props_orig>%d</effective_props_orig>", prefix, _totalEffectivePropsOrig.size());
-        builder.appendLine("%s<equally_effective_props>%d</equally_effective_props>", prefix, _totalEquallyEffectiveProps.size());
+        builder.appendLine("%s<effective_props_orig>%d</effective_props_orig>", prefix, _totalEffectiveDeclsOrig.size());
+        builder.appendLine("%s<equally_effective_props>%d</equally_effective_props>", prefix, _totalEquallyEffectiveDecls.size());
         builder.appendLine("%s<effective_by_name_props>%d</effective_by_name_props>", prefix, _totalEffectiveByName.size());
-        builder.appendLine("%s<missing_but_default_props>%d</missing_but_default_props>", prefix, _totalDefaultPropsOrig.size());
-        builder.appendLine("%s<missing_props>%d</missing_props>", prefix, _totalMissingProps.size());
-        builder.appendLine("%s<additional_props>%d</additional_props>", prefix,_totalAdditionalProps.size());
+        builder.appendLine("%s<missing_but_default_props>%d</missing_but_default_props>", prefix, _totalDefaultDeclsOrig.size());
+        builder.appendLine("%s<missing_props>%d</missing_props>", prefix, _totalMissingDecls.size());
+        builder.appendLine("%s<additional_props>%d</additional_props>", prefix, _totalAdditionalDecls.size());
     }
 
-    public boolean ContainsEffectiveProps(List<MProperty> properties)
+    public boolean ContainsEffectiveDecls(List<MDeclaration> declarations)
     {
-        if(properties.isEmpty())
+        if(declarations.isEmpty())
         {
             return false;
         }
 
-        return !properties.stream().allMatch(p -> _defaultStyles.containsKey(p.GetName()) && _defaultStyles.get(p.GetName()).equals(p.GetValue()));
+        return !declarations.stream().allMatch(p -> _defaultStyles.containsKey(p.GetName()) && _defaultStyles.get(p.GetName()).equals(p.GetValue()));
     }
 }

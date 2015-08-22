@@ -21,7 +21,7 @@ public class SassMediaRule extends SassRuleBase
         _sassRules = rules;
     }
 
-    public void Print(SuiteStringBuilder builder, String prefix)
+    public void print(SuiteStringBuilder builder, String prefix)
     {
         builder.append("@media");
         boolean mediaSet = false;
@@ -48,7 +48,7 @@ public class SassMediaRule extends SassRuleBase
         for(int i = 0; i < _sassRules.size(); i++)
         {
             SassRuleBase sr = _sassRules.get(i);
-            sr.Print(builder, "\t");
+            sr.print(builder, "\t");
 
             if(i < _sassRules.size() -1)
                 builder.append("\n\n");

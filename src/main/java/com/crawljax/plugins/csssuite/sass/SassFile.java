@@ -25,7 +25,7 @@ public class SassFile
 
         _rules = new ArrayList<>();
         _rules.addAll(rules);
-        _rules.sort((r1, r2 ) -> Integer.compare(r1.GetLineNumber(), r2.GetLineNumber()));
+        _rules.sort((r1, r2 ) -> Integer.compare(r1.getLineNumber(), r2.getLineNumber()));
     }
 
     public List<SassVariable> getVariables() { return _variables; }

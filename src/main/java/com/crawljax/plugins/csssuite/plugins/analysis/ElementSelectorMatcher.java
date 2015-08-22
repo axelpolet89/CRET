@@ -15,7 +15,7 @@ import se.fishtank.css.selectors.parser.ParserException;
 
 public class ElementSelectorMatcher
 {
-	public static void MatchElementsToDocument(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder, MatchedElements matchedElements)
+	public static void matchElementsToDocument(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder, MatchedElements matchedElements)
 	{
 			for (String fileName : stateFileOrder.keySet())
 			{
@@ -75,7 +75,7 @@ public class ElementSelectorMatcher
 							{
 								ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
 								mSelector.addMatchedElement(ew);
-								matchedElements.SetMatchedElement(ew, mSelector, order);
+								matchedElements.setMatchedElement(ew, mSelector, order);
 								matchCount++;
 							}
 						}

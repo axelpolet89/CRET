@@ -74,21 +74,21 @@ public class SassBuilder
         }
 
         LogHandler.debug("[SassGenerator] Generate SASS variables...");
-        GenerateVariables(validSelectors);
-        GenerateVariables(largeSelectors);
+        generateVariables(validSelectors);
+        generateVariables(largeSelectors);
 
         LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
-        List<SassCloneMixin> validMixins = ProcessAndFilterClones(cd.GenerateMixins(validSelectors));
+        List<SassCloneMixin> validMixins = processAndFilterClones(cd.generateMixins(validSelectors));
 
         LogHandler.debug("[SassGenerator] Generate SASS selectors...");
-        List<SassSelector> sassSelectors = GenerateSassSelectors(validSelectors, validMixins);
-        sassSelectors.addAll(GenerateSassSelectors(largeSelectors, validMixins));
+        List<SassSelector> sassSelectors = generateSassSelectors(validSelectors, validMixins);
+        sassSelectors.addAll(generateSassSelectors(largeSelectors, validMixins));
 
         LogHandler.debug("[SassGenerator] Generate SASS convenience mixins...");
-        List<SassMixinBase> sassMixins = GenerateConvenienceMixins(sassSelectors);
+        List<SassMixinBase> sassMixins = generateConvenienceMixins(sassSelectors);
 
         LogHandler.debug("[SassGenerator] Generate SASS rules...");
-        List<SassRuleBase> sassRules = GenerateSassRules(sassSelectors, _mcssFile.getMediaRules(), _mcssFile.getIgnoredRules());
+        List<SassRuleBase> sassRules = generateSassRules(sassSelectors, _mcssFile.getMediaRules(), _mcssFile.getIgnoredRules());
 
         return new SassFile(_sassVariables, validMixins, sassMixins, sassRules);
     }
@@ -98,7 +98,7 @@ public class SassBuilder
      *
      * @param selectors
      */
-    private void GenerateVariables(List<MSelector> selectors)
+    private void generateVariables(List<MSelector> selectors)
     {
         ColorNameFinder ctn = new ColorNameFinder();
 
@@ -122,7 +122,7 @@ public class SassBuilder
                         String varName = "font-stack";
                         String varValue = origValue;
 
-                        varName = GenerateVariable(varName, varValue, varType, mDeclaration);
+                        varName = generateVariable(varName, varValue, varType, mDeclaration);
                         String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
                         String escapedName = String.format("\\$%s", varName);
                         origValue = origValue.replaceFirst(escapedValue, escapedName);
@@ -164,11 +164,11 @@ public class SassBuilder
 
                                     varType = SassVarType.URL;
                                     varName = "url";
-                                    varValue = TryFindUrl(part);
+                                    varValue = tryFindUrl(part);
                                 }
                                 else if (part.contains("rgba"))
                                 {
-                                    String rgbaValue = TryFindRgba(part);
+                                    String rgbaValue = tryFindRgba(part);
                                     String[] rgbaParts = rgbaValue.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
 
                                     varType = SassVarType.ALPHA_COLOR;
@@ -177,7 +177,7 @@ public class SassBuilder
                                 }
                                 else if (part.contains("#"))
                                 {
-                                    String hexValue = TryFindHex(part);
+                                    String hexValue = tryFindHex(part);
 
                                     varType = SassVarType.COLOR;
                                     varName = String.format("%s_%s", "color", ctn.tryGetNameForHex(hexValue));
@@ -193,7 +193,7 @@ public class SassBuilder
 
                             if (!varName.isEmpty() && !varValue.isEmpty())
                             {
-                                varName = String.format("$%s", GenerateVariable(varName, varValue, varType, mDeclaration));
+                                varName = String.format("$%s", generateVariable(varName, varValue, varType, mDeclaration));
 
                                 String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
                                 String escapedName = String.format("\\%s", varName);
@@ -224,7 +224,7 @@ public class SassBuilder
     }
 
 
-    private String GenerateVariable(String varName, String varValue, SassVarType varType, MDeclaration originalProperty)
+    private String generateVariable(String varName, String varValue, SassVarType varType, MDeclaration originalProperty)
     {
         // if varName already used, extend varName with an id
         if (_alreadyDefinedVars.containsKey(varName) && !_alreadyDefinedVars.get(varName).equals(varValue))
@@ -253,7 +253,7 @@ public class SassBuilder
     }
 
 
-    private String TryFindUrl(String value)
+    private String tryFindUrl(String value)
     {
         int s =  value.indexOf("url(");
         //int e = value.indexOf(")", s);
@@ -261,7 +261,7 @@ public class SassBuilder
     }
 
 
-    private String TryFindHex(String value)
+    private String tryFindHex(String value)
     {
         if(value.contains("#"))
         {
@@ -282,7 +282,7 @@ public class SassBuilder
     }
 
 
-    private String TryFindRgba(String value)
+    private String tryFindRgba(String value)
     {
         if(value.contains("rgba("))
         {
@@ -300,15 +300,15 @@ public class SassBuilder
      * @param mixins
      * @return
      */
-    private List<SassCloneMixin> ProcessAndFilterClones(List<SassCloneMixin> mixins)
+    private List<SassCloneMixin> processAndFilterClones(List<SassCloneMixin> mixins)
     {
         List<SassCloneMixin> validMixins = new ArrayList<>();
 
         for (SassCloneMixin mixin : mixins)
         {
-            SortMixinValues(mixin);
+            sortMixinValues(mixin);
 
-            List<MDeclaration> templateProps = mixin.GetDeclarations();
+            List<MDeclaration> templateProps = mixin.getDeclarations();
             int numberOfProps = templateProps.size();
 
             // if the total number of declarations exceeds minimum declaration threshold, continue
@@ -320,7 +320,7 @@ public class SassBuilder
                 int count = 0;
                 int lineNumber = 0;
                 int order = 0;
-                for(MSelector mSelector : mixin.GetRelatedSelectors())
+                for(MSelector mSelector : mixin.getRelatedSelectors())
                 {
                     if(mSelector.getLineNumber() != lineNumber || mSelector.getOrder() != order)
                     {
@@ -335,22 +335,22 @@ public class SassBuilder
                 {
                     validMixins.add(mixin);
                     _statistics.cloneSetCount++;
-                    _statistics.declarationsTouchedByClones += mixinSize * mixin.GetRelatedSelectors().size();
+                    _statistics.declarationsTouchedByClones += mixinSize * mixin.getRelatedSelectors().size();
                 }
                 else
                 {
-                    RestoreCloneMixin(mixin);
+                    restoreCloneMixin(mixin);
                 }
             }
             else
             {
-                RestoreCloneMixin(mixin);
+                restoreCloneMixin(mixin);
             }
         }
 
         for (int i = 0; i < validMixins.size(); i++)
         {
-            validMixins.get(i).SetNumber(i + 1);
+            validMixins.get(i).setNumber(i + 1);
         }
 
         return validMixins;
@@ -361,9 +361,9 @@ public class SassBuilder
      *
      * @param mixin
      */
-    private void SortMixinValues(SassCloneMixin mixin)
+    private void sortMixinValues(SassCloneMixin mixin)
     {
-        mixin.GetRelatedSelectors().sort((s1, s2) ->
+        mixin.getRelatedSelectors().sort((s1, s2) ->
         {
             if(s1.getLineNumber() == s2.getLineNumber())
             {
@@ -372,7 +372,7 @@ public class SassBuilder
 
             return Integer.compare(s1.getLineNumber(), s2.getLineNumber());
         });
-        mixin.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
+        mixin.getDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
     }
 
 
@@ -380,11 +380,11 @@ public class SassBuilder
      *
      * @param mixin
      */
-    private void RestoreCloneMixin(SassCloneMixin mixin)
+    private void restoreCloneMixin(SassCloneMixin mixin)
     {
-        List<MDeclaration> mixinProps = mixin.GetDeclarations();
+        List<MDeclaration> mixinProps = mixin.getDeclarations();
 
-        for (MSelector mSelector : mixin.GetRelatedSelectors())
+        for (MSelector mSelector : mixin.getRelatedSelectors())
         {
             mixinProps.forEach(mixinProp -> mSelector.restoreDeclaration(new MDeclaration(mixinProp.getName(), mixinProp.getValue(),
                     mixinProp.isImportant(), mixinProp.isEffective(),
@@ -398,7 +398,7 @@ public class SassBuilder
      * @param sassSelectors
      * @return
      */
-    private List<SassMixinBase> GenerateConvenienceMixins(List<SassSelector> sassSelectors)
+    private List<SassMixinBase> generateConvenienceMixins(List<SassSelector> sassSelectors)
     {
         List<SassMixinBase> mixins = new ArrayList<>();
 
@@ -410,13 +410,13 @@ public class SassBuilder
 
         for(SassSelector sassSelector : sassSelectors)
         {
-            List<MDeclaration> paddings = sassSelector.GetDeclarations().stream().filter(p -> !p.isIgnored() && p.getName().contains("padding-")).collect(Collectors.toList());
-            List<MDeclaration> margins = sassSelector.GetDeclarations().stream().filter(p -> !p.isIgnored() && p.getName().contains("margin-")).collect(Collectors.toList());
+            List<MDeclaration> paddings = sassSelector.getDeclarations().stream().filter(p -> !p.isIgnored() && p.getName().contains("padding-")).collect(Collectors.toList());
+            List<MDeclaration> margins = sassSelector.getDeclarations().stream().filter(p -> !p.isIgnored() && p.getName().contains("margin-")).collect(Collectors.toList());
 
             if(paddings.size() > 1)
             {
-                sassSelector.AddInclude(padding.CreateMixinCall(paddings));
-                sassSelector.RemoveDeclarations(paddings);
+                sassSelector.addInclude(padding.createMixinCall(paddings));
+                sassSelector.removeDeclarations(paddings);
 
                 pUsed = true;
                 _statistics.mergeMixinCount++;
@@ -425,8 +425,8 @@ public class SassBuilder
 
             if(margins.size() > 1)
             {
-                sassSelector.AddInclude(margin.CreateMixinCall(margins));
-                sassSelector.RemoveDeclarations(margins);
+                sassSelector.addInclude(margin.createMixinCall(margins));
+                sassSelector.removeDeclarations(margins);
 
                 mUsed = true;
                 _statistics.mergeMixinCount++;
@@ -454,7 +454,7 @@ public class SassBuilder
      * @param extensions
      * @return
      */
-    private List<SassSelector> GenerateSassSelectors(List<MSelector> selectors, List<SassCloneMixin> extensions)
+    private List<SassSelector> generateSassSelectors(List<MSelector> selectors, List<SassCloneMixin> extensions)
     {
         List<SassSelector> results = new ArrayList<>();
 
@@ -465,11 +465,11 @@ public class SassBuilder
 
             for(SassCloneMixin st : extensions)
             {
-                for(MSelector related : st.GetRelatedSelectors())
+                for(MSelector related : st.getRelatedSelectors())
                 {
                     if(related == mSelector)
                     {
-                        ss.AddCloneInclude(st);
+                        ss.addCloneInclude(st);
                         break;
                     }
                 }
@@ -489,23 +489,23 @@ public class SassBuilder
      * @param ignoredRules
      * @return
      */
-    private List<SassRuleBase> GenerateSassRules(List<SassSelector> sassSelectors, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignoredRules)
+    private List<SassRuleBase> generateSassRules(List<SassSelector> sassSelectors, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignoredRules)
     {
         // group selectors by their line number, maintain order by using LinkedHashMap
         Map<Integer, List<SassSelector>> lineNoSelectorMap = new LinkedHashMap<>();
-        sassSelectors.stream().filter(s -> s.GetMediaQueries().isEmpty())
+        sassSelectors.stream().filter(s -> s.getMediaQueries().isEmpty())
                 .sorted((s1, s2) ->
                 {
-                    if(s1.GetLineNumber() == s2.GetLineNumber())
+                    if(s1.getLineNumber() == s2.getLineNumber())
                     {
-                        return Integer.compare(s1.GetOrder(), s2.GetOrder());
+                        return Integer.compare(s1.getOrder(), s2.getOrder());
                     }
 
-                    return Integer.compare(s1.GetLineNumber(), s2.GetLineNumber());
+                    return Integer.compare(s1.getLineNumber(), s2.getLineNumber());
                 })
                 .forEach((s) ->
                 {
-                    int lineNumber = s.GetLineNumber();
+                    int lineNumber = s.getLineNumber();
                     if (!lineNoSelectorMap.containsKey(lineNumber))
                     {
                         lineNoSelectorMap.put(lineNumber, new ArrayList<>());
@@ -543,7 +543,7 @@ public class SassBuilder
                     }
 
                     SassSelector other = innerSelectors.get(j);
-                    if(current.HasEqualDeclarationsByText(other))
+                    if(current.hasEqualDeclarationsByText(other))
                     {
                         selectorsForRule.add(other);
                         processedIdx.add(j);
@@ -560,11 +560,11 @@ public class SassBuilder
         }
 
         // now process selectors held in media-queries
-        List<SassSelector> mediaSelectors = sassSelectors.stream().filter(s -> s.GetMediaQueries().size() > 0).collect(Collectors.toList());
+        List<SassSelector> mediaSelectors = sassSelectors.stream().filter(s -> s.getMediaQueries().size() > 0).collect(Collectors.toList());
 
         for(MCssMediaRule mediaRule : mediaRules)
         {
-            SassMediaRule sassMediaRule = RecursiveGenerateMediaRules(mediaRule, mediaSelectors, ignoredRules);
+            SassMediaRule sassMediaRule = recursiveGenerateMediaRules(mediaRule, mediaSelectors, ignoredRules);
             if(sassMediaRule != null)
             {
                 sassRules.add(sassMediaRule);
@@ -582,7 +582,7 @@ public class SassBuilder
      * @param ignoredRules
      * @return
      */
-    private SassMediaRule RecursiveGenerateMediaRules(MCssMediaRule mediaRule, List<SassSelector> selectors, List<MCssRuleBase> ignoredRules)
+    private SassMediaRule recursiveGenerateMediaRules(MCssMediaRule mediaRule, List<SassSelector> selectors, List<MCssRuleBase> ignoredRules)
     {
         List<SassRuleBase> innerRules = new ArrayList<>();
 
@@ -590,11 +590,11 @@ public class SassBuilder
         {
             if(mRule instanceof MCssMediaRule)
             {
-                innerRules.add(RecursiveGenerateMediaRules((MCssMediaRule)mRule, selectors, ignoredRules));
+                innerRules.add(recursiveGenerateMediaRules((MCssMediaRule) mRule, selectors, ignoredRules));
             }
             else if (mRule instanceof MCssRule)
             {
-                List<SassSelector> relatedSelectors = selectors.stream().filter(s -> s.GetParent().equals(mRule)).collect(Collectors.toList());
+                List<SassSelector> relatedSelectors = selectors.stream().filter(s -> s.getParent().equals(mRule)).collect(Collectors.toList());
                 if(!relatedSelectors.isEmpty())
                 {
                     innerRules.add(new SassRule(mRule.getLineNumber(), relatedSelectors));

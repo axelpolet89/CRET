@@ -54,7 +54,7 @@ public class CssUndoDetectorTest
 
         // crawl dom
         MatchedElements matchedElements = new MatchedElements();
-        ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
+        ElementSelectorMatcher.matchElementsToDocument("", dom, files, order, matchedElements);
 
         // post crawling
         Map<String, MCssFile> postResult =  undoDetector.transform(effectivenessPlugin.transform(normalizer.transform(files, matchedElements), matchedElements), matchedElements);

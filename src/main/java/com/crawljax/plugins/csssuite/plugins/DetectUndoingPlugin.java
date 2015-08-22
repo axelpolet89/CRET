@@ -43,9 +43,9 @@ public class DetectUndoingPlugin implements ICssTransformer
         // performance
         Set<Set<MSelector>> processedSets = new HashSet<>();
 
-        for (String keyElement : matchedElements.GetMatchedElements())
+        for (String keyElement : matchedElements.getMatchedElements())
         {
-            List<MSelector> matchedSelectors = matchedElements.SortSelectorsForMatchedElem(keyElement);
+            List<MSelector> matchedSelectors = matchedElements.sortSelectorsForMatchedElem(keyElement);
             List<MSelector> effectiveSelectors = matchedSelectors.stream().filter(s -> s.hasEffectiveDeclarations()).collect(Collectors.toList());
 
             // performance
@@ -174,7 +174,7 @@ public class DetectUndoingPlugin implements ICssTransformer
 
         for(MCssFile file : cssRules.values())
         {
-            FilterUndoRules(file);
+            filterUndoRules(file);
         }
 
         return cssRules;
@@ -186,7 +186,7 @@ public class DetectUndoingPlugin implements ICssTransformer
      * @param file
      * @return
      */
-    private MCssFile FilterUndoRules(MCssFile file)
+    private MCssFile filterUndoRules(MCssFile file)
     {
         for(MCssRule mRule : file.getRules())
         {

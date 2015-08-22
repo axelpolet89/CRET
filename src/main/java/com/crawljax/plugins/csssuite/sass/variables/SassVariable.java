@@ -18,7 +18,7 @@ public class SassVariable
         _value = value;
     }
 
-    public void Print(SuiteStringBuilder builder)
+    public void print(SuiteStringBuilder builder)
     {
         builder.append("$%s: %s;", _name, _value);
     }

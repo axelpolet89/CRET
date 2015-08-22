@@ -20,7 +20,7 @@ public abstract class SassMixinBase
         _contents = contents;
     }
 
-    public void Print(SuiteStringBuilder builder)
+    public void print(SuiteStringBuilder builder)
     {
         builder.append("@mixin %s(", _name);
 

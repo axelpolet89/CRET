@@ -32,7 +32,7 @@ public abstract class MergerBase
      * @param name
      * @param value
      */
-    protected abstract boolean ParseFromSingle(String name, String value);
+    protected abstract boolean parseFromSingle(String name, String value);
 
 
     /**
@@ -46,17 +46,7 @@ public abstract class MergerBase
      *
      * @return
      */
-    public final Boolean IsSet()
-    {
-        return _isSet;
-    }
-
-
-    /**
-     *
-     * @return
-     */
-    public final Boolean IsImportant()
+    public final Boolean isImportant()
     {
         return _isImportant;
     }
@@ -69,7 +59,7 @@ public abstract class MergerBase
      * @param isImportant
      * @throws CssSuiteException
      */
-    public final void Parse(String name, String value, boolean isImportant, int order) throws CssSuiteException
+    public final void parse(String name, String value, boolean isImportant, int order) throws CssSuiteException
     {
         if(!_isSet)
         {
@@ -84,7 +74,7 @@ public abstract class MergerBase
         }
 
         _order = Math.min(order, _order);
-        if(!ParseFromSingle(name, value))
+        if(!parseFromSingle(name, value))
         {
             _otherDeclarations.add(new MDeclaration(name, value, isImportant, order));
         }

@@ -29,7 +29,7 @@ public class BorderMerger extends MergerBase
      * @param name
      * @param value
      */
-    protected boolean ParseFromSingle(String name, String value)
+    protected boolean parseFromSingle(String name, String value)
     {
         switch (name.split("-")[1])
         {

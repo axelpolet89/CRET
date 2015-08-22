@@ -145,7 +145,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 		try
 		{
-			ElementSelectorMatcher.MatchElementsToDocument(newState.getName(), newState.getDocument(), _newMcssFiles, stateFileOrder, _matchedElements);
+			ElementSelectorMatcher.matchElementsToDocument(newState.getName(), newState.getDocument(), _newMcssFiles, stateFileOrder, _matchedElements);
 			_stateCssFiles.put(newState, stateFileOrder);
 		}
 		catch (Exception ex)

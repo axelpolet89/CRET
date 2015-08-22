@@ -18,7 +18,7 @@ public class SassBoxMixin extends SassMixinBase
                 Arrays.asList(String.format("%s-top: $top;", name), String.format("%s-bottom: $bottom;", name), String.format("%s-right: $right;", name), String.format("%s-left: $left;", name)));
     }
 
-    public String CreateMixinCall(List<MDeclaration> declarations)
+    public String createMixinCall(List<MDeclaration> declarations)
     {
         SuiteStringBuilder builder = new SuiteStringBuilder();
         builder.append("%s(", _name);

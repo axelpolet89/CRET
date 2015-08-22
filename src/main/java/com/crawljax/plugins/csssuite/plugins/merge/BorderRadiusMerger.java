@@ -32,7 +32,7 @@ public class BorderRadiusMerger extends MergerBase
      * @param value
      */
     @Override
-    protected boolean ParseFromSingle(String name, String value)
+    protected boolean parseFromSingle(String name, String value)
     {
         String[] parts = name.split("-");
         String vert = parts[1];
@@ -99,10 +99,10 @@ public class BorderRadiusMerger extends MergerBase
 
         if(!tl2.isEmpty() && !tr2.isEmpty() && !br2.isEmpty() && !bl2.isEmpty())
         {
-            part2 = BuildPart(tl2, tr2, br2, bl2);
+            part2 = buildPart(tl2, tr2, br2, bl2);
         }
 
-        part1 = BuildPart(tl[0], tr[0], br[0], bl[0]);
+        part1 = buildPart(tl[0], tr[0], br[0], bl[0]);
 
         if(!part2.isEmpty())
             value = String.format("%s / %s", part1, part2);
@@ -112,7 +112,7 @@ public class BorderRadiusMerger extends MergerBase
         return Arrays.asList(new MDeclaration("border-radius", value, _isImportant, true, _order));
     }
 
-    private static String BuildPart(String tl, String tr, String br, String bl)
+    private static String buildPart(String tl, String tr, String br, String bl)
     {
         String value;
 

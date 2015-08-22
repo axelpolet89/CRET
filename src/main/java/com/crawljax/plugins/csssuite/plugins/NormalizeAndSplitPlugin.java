@@ -48,10 +48,10 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 LogHandler.debug("Rule: %s", mRule);
                 for(MSelector mSelector : mRule.getSelectors())
                 {
-                    NormalizeColors(mSelector);
-                    SplitShortHandDeclarations(mSelector);
-                    NormalizeZeroes(mSelector);
-                    NormalizeUrls(mSelector);
+                    normalizeColors(mSelector);
+                    splitShortHandDeclarations(mSelector);
+                    normalizeZeroes(mSelector);
+                    normalizeUrls(mSelector);
 
                     //sort declarations again
                     mSelector.getDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
@@ -68,7 +68,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * Normalize any rbga color by filtering whitespace between it's color parts
      * @param mSelector
      */
-    private void NormalizeColors(MSelector mSelector)
+    private void normalizeColors(MSelector mSelector)
     {
         for(MDeclaration mDeclaration : mSelector.getDeclarations())
         {
@@ -87,11 +87,11 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 {
                     _normalizedColors++;
 
-                    String rgbValue = TryFindRgb(newValue);
+                    String rgbValue = tryFindRgb(newValue);
                     String rgbReplace = rgbValue.replace("(", "\\(").replace(")", "\\)");
 
                     String[] rgbParts = rgbValue.replaceFirst("rgb\\(", "").replaceFirst("\\)", "").split(",");
-                    String hexValue = RgbToHex(Integer.parseInt(rgbParts[0].trim()), Integer.parseInt(rgbParts[1].trim()), Integer.parseInt(rgbParts[2].trim()));
+                    String hexValue = rgbToHex(Integer.parseInt(rgbParts[0].trim()), Integer.parseInt(rgbParts[1].trim()), Integer.parseInt(rgbParts[2].trim()));
                     newValue = newValue.replaceFirst(rgbReplace, hexValue);
                 }
 
@@ -104,14 +104,14 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                     {
                         _normalizedColors++;
 
-                        String rgbaOrig = TryFindRgba(text);
+                        String rgbaOrig = tryFindRgba(text);
                         String rgbaReplace = rgbaOrig.replace("(", "\\(").replace(")", "\\)");
                         text = text.replaceFirst(rgbaReplace, "");
 
                         String[] rgbaParts = rgbaOrig.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
                         if(rgbaParts.length == 3 || (rgbaParts.length == 4 && (rgbaParts[3].trim().equals("1") || rgbaParts[3].trim().equals("100"))))
                         {
-                            String hexValue = RgbToHex(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim()));
+                            String hexValue = rgbToHex(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim()));
                             newValue = newValue.replaceFirst(rgbaReplace, hexValue);
                         }
                         else
@@ -148,7 +148,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * Normalize zero values and url values
      * @param mSelector
      */
-    private void NormalizeZeroes(MSelector mSelector)
+    private void normalizeZeroes(MSelector mSelector)
     {
         for(MDeclaration mDeclaration : mSelector.getDeclarations())
         {
@@ -178,7 +178,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * Normalize zero values and url values
      * @param mSelector
      */
-    private void NormalizeUrls(MSelector mSelector)
+    private void normalizeUrls(MSelector mSelector)
     {
         for(MDeclaration mDeclaration : mSelector.getDeclarations())
         {
@@ -208,7 +208,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param b
      * @return
      */
-    private static String RgbToHex(int r, int g, int b)
+    private static String rgbToHex(int r, int g, int b)
     {
         return String.format("#%02x%02x%02x", r, g, b);
     }
@@ -219,7 +219,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param value
      * @return
      */
-    private static String TryFindRgb(String value)
+    private static String tryFindRgb(String value)
     {
         if (value.contains("rgb("))
         {
@@ -237,7 +237,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param value
      * @return
      */
-    private static String TryFindRgba(String value)
+    private static String tryFindRgba(String value)
     {
         if(value.contains("rgba("))
         {
@@ -254,7 +254,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * Split any shorthand margin, padding, border, border-radius, outline and background declaration into parts
      * @param mSelector
      */
-    private static void SplitShortHandDeclarations(MSelector mSelector)
+    private static void splitShortHandDeclarations(MSelector mSelector)
     {
         List<MDeclaration> newDeclarations = new ArrayList<>();
 
@@ -276,20 +276,20 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
             {
                 if (name.equals("margin") || name.equals("padding"))
                 {
-                    newDeclarations.addAll(BoxToProps(value, isImportant, order, name + "-%s"));
+                    newDeclarations.addAll(boxToDeclarations(value, isImportant, order, name + "-%s"));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
                     String spec = name.replace("border-","");
-                    newDeclarations.addAll(BoxToProps(value, isImportant, order, "border-%s-" + spec));
+                    newDeclarations.addAll(boxToDeclarations(value, isImportant, order, "border-%s-" + spec));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
                     if(name.equals("border-radius"))
                     {
-                        newDeclarations.addAll(BorderRadiusToProps(value, mDeclaration.getNameVendor(), isImportant, order));
+                        newDeclarations.addAll(borderRadiusToDeclarations(value, mDeclaration.getNameVendor(), isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else if(name.equals("border"))
@@ -297,12 +297,12 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                         //todo: transform border parts into box parts, however difficult to implement significant impact in merger...
                         //especially because of ordering...
 
-                        newDeclarations.addAll(BorderToProps(name, value, isImportant, order));
+                        newDeclarations.addAll(borderToDeclarations(name, value, isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else if(name.equals("border-top") || name.equals("border-right") || name.equals("border-bottom") || name.equals("border-left"))
                     {
-                        newDeclarations.addAll(BorderToProps(name, value, isImportant, order));
+                        newDeclarations.addAll(borderToDeclarations(name, value, isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else
@@ -312,12 +312,12 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 }
                 else if(name.equals("outline"))
                 {
-                    newDeclarations.addAll(BorderToProps(name, value, isImportant, order));
+                    newDeclarations.addAll(borderToDeclarations(name, value, isImportant, order));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand outline declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.equals("background") && !value.contains(",")) // do not support multiple backgrounds
                 {
-                    newDeclarations.addAll(BackgroundToProps(value, isImportant, order));
+                    newDeclarations.addAll(backgroundToDeclarations(value, isImportant, order));
                     LogHandler.debug("[CssNormalizer] Transformed shorthand background declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else
@@ -349,7 +349,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @return
      * @throws CssSuiteException
      */
-    private static List<MDeclaration> BoxToProps(String value, boolean isImportant, int order, String formatter) throws CssSuiteException
+    private static List<MDeclaration> boxToDeclarations(String value, boolean isImportant, int order, String formatter) throws CssSuiteException
     {
         String[] parts = value.split("\\s");
 
@@ -401,7 +401,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param isImportant
      * @return
      */
-    private static List<MDeclaration> BorderToProps(String name, String value, boolean isImportant, int order)
+    private static List<MDeclaration> borderToDeclarations(String name, String value, boolean isImportant, int order)
     {
         List<MDeclaration> props = new ArrayList<>();
 
@@ -419,7 +419,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
             {
                 props.add(new MBorderDeclaration(String.format("%s-style", name), part, isImportant, order, String.format("%s-style", base)));
             }
-            else if (ContainsUnitLength(part) || part.equals("0"))
+            else if (containsUnitLength(part) || part.equals("0"))
             {
                 props.add(new MBorderDeclaration(String.format("%s-width", name), part, isImportant, order, String.format("%s-width", base)));
             }
@@ -439,11 +439,11 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param isImportant
      * @return
      */
-    private static List<MDeclaration> BorderRadiusToProps(String value, String vendor, boolean isImportant, int order) throws CssSuiteException
+    private static List<MDeclaration> borderRadiusToDeclarations(String value, String vendor, boolean isImportant, int order) throws CssSuiteException
     {
         String[] parts = value.split("/");
 
-        List<String> radii = ParseRadiiParts(parts[0]);
+        List<String> radii = parseRadiiParts(parts[0]);
         String topLeft = radii.get(0);
         String topRight = radii.get(1);
         String bottomRight = radii.get(2);
@@ -451,7 +451,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
         if(parts.length == 2)
         {
-            radii = ParseRadiiParts(parts[1]);
+            radii = parseRadiiParts(parts[1]);
             topLeft += " " + radii.get(0);
             topRight += " " + radii.get(1);
             bottomRight += " " + radii.get(2);
@@ -475,7 +475,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @return
      * @throws CssSuiteException
      */
-    private static List<String> ParseRadiiParts(String value) throws CssSuiteException
+    private static List<String> parseRadiiParts(String value) throws CssSuiteException
     {
         String topLeft, topRight, bottomRight, bottomLeft;
         String[] parts = value.split("\\s");
@@ -517,7 +517,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @return
      * @throws CssSuiteException
      */
-    private static List<MDeclaration> BackgroundToProps(String value, boolean isImportant, int order) throws CssSuiteException
+    private static List<MDeclaration> backgroundToDeclarations(String value, boolean isImportant, int order) throws CssSuiteException
     {
         List<MDeclaration> props = new ArrayList<>();
 
@@ -559,7 +559,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 props.add(new MDeclaration("background-image", part, isImportant, order));
             }
             else if (part.equals("left") || part.equals("right") || part.equals("center") || part.equals("bottom") || part.equals("top") ||
-                        ContainsUnitLength(part) || part.contains("%") || part.equals("0") || part.equals("auto") || !part.contains("url") && part.contains("/"))
+                        containsUnitLength(part) || part.contains("%") || part.equals("0") || part.equals("auto") || !part.contains("url") && part.contains("/"))
             {
                 String position = "";
                 String size = "";
@@ -582,7 +582,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                     }
                     else if(sizeProp)
                     {
-                        if(ContainsUnitLength(part2) || part2.contains("%") || part2.equals("0") || part2.equals("auto"))
+                        if(containsUnitLength(part2) || part2.contains("%") || part2.equals("0") || part2.equals("auto"))
                         {
                             size += " " + part2;
                         }
@@ -593,7 +593,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                         }
                     }
                     else if (part2.equals("left") || part2.equals("right") || part2.equals("center") || part2.equals("bottom") || part2.equals("top") ||
-                            ContainsUnitLength(part2) || part2.contains("%") || part2.equals("0"))
+                            containsUnitLength(part2) || part2.contains("%") || part2.equals("0"))
                     {
                         if(!position.isEmpty())
                         {
@@ -637,7 +637,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      * @param value
      * @return
      */
-    private static boolean ContainsUnitLength(String value)
+    private static boolean containsUnitLength(String value)
     {
         return value.contains("px") || value.contains("pt") || value.contains("pc") || value.contains("in") || value.contains("mm") || value.contains("cm") || //absolute
                 value.contains("em") || value.contains("rem") || value.contains("ex") || value.contains("ch") || value.contains("vw") || value.contains("vh") || value.contains("vmin") || value.contains("vmax"); //relative

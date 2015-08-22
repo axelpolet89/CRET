@@ -49,7 +49,7 @@ public class CssAnalyzerTest
 		order.put("internal", 1);
 
 		MatchedElements matchedElements = new MatchedElements();
-		ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
+		ElementSelectorMatcher.matchElementsToDocument("", dom, files, order, matchedElements);
 
 		List<MSelector> matchedExternal = new ArrayList<>();
 		List<MSelector> matchedInternal = new ArrayList<>();
@@ -183,7 +183,7 @@ public class CssAnalyzerTest
 		order.put("external", 0);
 
 		MatchedElements matchedElements = new MatchedElements();
-		ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
+		ElementSelectorMatcher.matchElementsToDocument("", dom, files, order, matchedElements);
 
 		List<MSelector> matchedExternal = new ArrayList<>();
 

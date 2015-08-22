@@ -50,17 +50,17 @@ public class DescendantToChildTest
 
         // crawl dom
         MatchedElements matchedElements = new MatchedElements();
-        ElementSelectorMatcher.MatchElementsToDocument("", dom, files, order, matchedElements);
+        ElementSelectorMatcher.matchElementsToDocument("", dom, files, order, matchedElements);
 
         // for later verification
         Set<String> matches = new HashSet<>();
-        for(String s : matchedElements.GetMatchedElements())
+        for(String s : matchedElements.getMatchedElements())
                 matches.add(s);
 
         List<MDeclaration> matchedDeclarations = new ArrayList<>();
         for(String s : matches)
         {
-            for(MSelector m : matchedElements.SortSelectorsForMatchedElem(s))
+            for(MSelector m : matchedElements.sortSelectorsForMatchedElem(s))
                 matchedDeclarations.addAll(m.getDeclarations());
         }
 
@@ -82,15 +82,15 @@ public class DescendantToChildTest
 
         // verify re-match of selectors by performing run-time analysis again
         MatchedElements matchedElements2 = new MatchedElements();
-        ElementSelectorMatcher.MatchElementsToDocument("", dom, postResult, order, matchedElements2);
+        ElementSelectorMatcher.matchElementsToDocument("", dom, postResult, order, matchedElements2);
 
-        Set<String> matches2 = matchedElements2.GetMatchedElements();
+        Set<String> matches2 = matchedElements2.getMatchedElements();
         Assert.assertArrayEquals(matches.toArray(), matches2.toArray());
 
         List<MDeclaration> matchedDeclarations2 = new ArrayList<>();
         for(String s : matches2)
         {
-            for(MSelector m : matchedElements2.SortSelectorsForMatchedElem(s))
+            for(MSelector m : matchedElements2.sortSelectorsForMatchedElem(s))
                 matchedDeclarations2.addAll(m.getDeclarations());
         }
         Assert.assertArrayEquals(matchedDeclarations.toArray(), matchedDeclarations2.toArray());

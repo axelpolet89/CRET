@@ -19,7 +19,7 @@ public class MatchedElements
 		_elementSelectors = new HashMap<>();
 	}
 
-	public void SetMatchedElement(ElementWrapper element, MSelector selector, int order)
+	public void setMatchedElement(ElementWrapper element, MSelector selector, int order)
 	{
 		String key = element.getKey();
 
@@ -34,7 +34,7 @@ public class MatchedElements
 	/**
 	 * @return all matched elements stored in this instance, by their string representations
 	 */
-	public Set<String> GetMatchedElements()
+	public Set<String> getMatchedElements()
 	{
 		return _elementSelectors.keySet();
 	}
@@ -47,7 +47,7 @@ public class MatchedElements
 	 * @param orderSelectorMap
 	 * @return all selectors that were matched to the given element, sorted by their specificity and cascading rules
 	 */
-	public List<MSelector> SortSelectorsForMatchedElem(List<Integer> cssFilesOrder, ListMultimap orderSelectorMap)
+	public List<MSelector> sortSelectorsForMatchedElem(List<Integer> cssFilesOrder, ListMultimap orderSelectorMap)
 	{
 		// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations),
 		// just need to reverse it (so we get highest order first)
@@ -62,7 +62,7 @@ public class MatchedElements
 			selectorsToSort.addAll(selectorsForFile.stream().map(selector -> new SpecificitySelector(selector, order)).collect(Collectors.toList()));
 		}
 
-		SortBySpecificity(selectorsToSort);
+		sortBySpecificity(selectorsToSort);
 
 		// extract the MSelectors from the list of sorted SpecificitySelectors and return
 		return selectorsToSort.stream().map((ss) -> ss.getSelector()).collect(Collectors.toList());
@@ -75,16 +75,16 @@ public class MatchedElements
 	 * @param element
 	 * @return
 	 */
-	public List<MSelector> SortSelectorsForMatchedElem(String element)
+	public List<MSelector> sortSelectorsForMatchedElem(String element)
 	{
-		return SortSelectorsForMatchedElem(new ArrayList<>(_elementSelectors.get(element).keySet()), _elementSelectors.get(element));
+		return sortSelectorsForMatchedElem(new ArrayList<>(_elementSelectors.get(element).keySet()), _elementSelectors.get(element));
 	}
 
 
 	/**
 	 * @param selectors
 	 */
-	public static void SortBySpecificity(List<SpecificitySelector> selectors)
+	public static void sortBySpecificity(List<SpecificitySelector> selectors)
 	{
 		Collections.sort(selectors, (s1, s2) ->
 		{

@@ -23,12 +23,12 @@ public class CloneDetector
      * @param selectors
      * @return
      */
-    public List<SassCloneMixin> GenerateMixins(List<MSelector> selectors)
+    public List<SassCloneMixin> generateMixins(List<MSelector> selectors)
     {
         List<SassCloneMixin> templates = new ArrayList<>();
         List<MSelector> allSelectors = new ArrayList<>(selectors);
 
-        List<ItemSetList> results = FindDuplicationsAndFpGrowth(allSelectors);
+        List<ItemSetList> results = findDuplicationsAndFpGrowth(allSelectors);
 
         while(true)
         {
@@ -109,13 +109,13 @@ public class CloneDetector
 
                 for(SassCloneMixin template : innerTemplates)
                 {
-                    for(MSelector mSel : allSelectors.stream().filter(s -> template.GetRelatedSelectors().contains(s)).collect(Collectors.toList()))
+                    for(MSelector mSel : allSelectors.stream().filter(s -> template.getRelatedSelectors().contains(s)).collect(Collectors.toList()))
                     {
-                        mSel.removeDeclarationsByText(template.GetDeclarations());
+                        mSel.removeDeclarationsByText(template.getDeclarations());
                     }
                 }
 
-                results = FindDuplicationsAndFpGrowth(allSelectors);
+                results = findDuplicationsAndFpGrowth(allSelectors);
             }
             else
             {
@@ -133,7 +133,7 @@ public class CloneDetector
      * @param selectors
      * @return
      */
-    private List<ItemSetList> FindDuplicationsAndFpGrowth(List<MSelector> selectors)
+    private List<ItemSetList> findDuplicationsAndFpGrowth(List<MSelector> selectors)
     {
         Map<ClonedDeclaration, Item> declarationItemMap = new HashMap<>();
 

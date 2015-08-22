@@ -17,7 +17,7 @@ public class SassIgnoredRule extends SassRuleBase
         _rule = rule;
     }
 
-    public void Print(SuiteStringBuilder builder, String prefix)
+    public void print(SuiteStringBuilder builder, String prefix)
     {
         builder.append("%s%s", prefix, _rule.toString()
                 .replace(": ;",": '';").replace(":;", ": '';")                              //paypal

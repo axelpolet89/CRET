@@ -36,9 +36,9 @@ public class EffectivenessPlugin implements ICssTransformer
 		// performance
 		Set<Set<MSelector>> processedSets = new HashSet<>();
 
-		for (String keyElement : matchedElements.GetMatchedElements())
+		for (String keyElement : matchedElements.getMatchedElements())
 		{
-			List<MSelector> matchedSelectors = matchedElements.SortSelectorsForMatchedElem(keyElement);
+			List<MSelector> matchedSelectors = matchedElements.sortSelectorsForMatchedElem(keyElement);
 
 			// performance
 			if(processedSets.contains(new HashSet<>(matchedSelectors)))
@@ -49,7 +49,7 @@ public class EffectivenessPlugin implements ICssTransformer
 
 			String overridden = "overridden-" + random.nextInt();
 
-			EffectivenessAnalysis.ComputeEffectiveness(matchedSelectors, overridden);
+			EffectivenessAnalysis.computeEffectiveness(matchedSelectors, overridden);
 
 			// performance
 			processedSets.add(new HashSet<>(matchedSelectors));

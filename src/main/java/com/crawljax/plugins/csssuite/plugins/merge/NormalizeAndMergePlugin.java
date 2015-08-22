@@ -43,7 +43,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
                         _propSelMap.put(mDeclaration, mSelector);
                     }
 
-                    MergeDeclarationsToShorthand(mSelector);
+                    mergeDeclarationsToShorthand(mSelector);
 
                     //sort properties again
                     mSelector.getDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
@@ -59,7 +59,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
      * Split any shorthand margin, padding, border, border-radius, outline and background declaration into parts
      * @param mSelector
      */
-    private void MergeDeclarationsToShorthand(MSelector mSelector)
+    private void mergeDeclarationsToShorthand(MSelector mSelector)
     {
         List<MDeclaration> newDeclarations = new ArrayList<>();
         List<MDeclaration> declarations = mSelector.getDeclarations();
@@ -170,7 +170,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
 
         newDeclarations.addAll(mergeBoxDeclarations(margins, new BoxMerger("margin")));
         newDeclarations.addAll(mergeBoxDeclarations(paddings, new BoxMerger("padding")));
-        newDeclarations.addAll(MergeBorderDeclarations(border, new BorderMerger("border")));
+        newDeclarations.addAll(mergeBorderDeclarations(border, new BorderMerger("border")));
 
         if(borderWidths.size() == (borderTop.size() + borderBottom.size() + borderLeft.size() + borderRight.size()))
         {
@@ -186,15 +186,15 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         }
         else
         {
-            newDeclarations.addAll(MergeBorderDeclarations(borderTop, new BorderSideMerger("border-top")));
-            newDeclarations.addAll(MergeBorderDeclarations(borderRight, new BorderSideMerger("border-right")));
-            newDeclarations.addAll(MergeBorderDeclarations(borderBottom, new BorderSideMerger("border-bottom")));
-            newDeclarations.addAll(MergeBorderDeclarations(borderLeft, new BorderSideMerger("border-left")));
+            newDeclarations.addAll(mergeBorderDeclarations(borderTop, new BorderSideMerger("border-top")));
+            newDeclarations.addAll(mergeBorderDeclarations(borderRight, new BorderSideMerger("border-right")));
+            newDeclarations.addAll(mergeBorderDeclarations(borderBottom, new BorderSideMerger("border-bottom")));
+            newDeclarations.addAll(mergeBorderDeclarations(borderLeft, new BorderSideMerger("border-left")));
         }
 
         newDeclarations.addAll(mergeBoxDeclarations(borderRadii, new BorderRadiusMerger("border-radius")));
-        newDeclarations.addAll(MergeBorderDeclarations(outline, new OutlineMerger("outline")));
-        newDeclarations.addAll(MergeBorderDeclarations(background, new BackgroundMerger("background")));
+        newDeclarations.addAll(mergeBorderDeclarations(outline, new OutlineMerger("outline")));
+        newDeclarations.addAll(mergeBorderDeclarations(background, new BackgroundMerger("background")));
 
         mSelector.setNewDeclarations(newDeclarations);
     }
@@ -220,7 +220,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
             {
                 try
                 {
-                    merger.Parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
+                    merger.parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
                 }
                 catch (Exception e)
                 {
@@ -243,7 +243,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
      * @param merger
      * @return
      */
-    private List<MDeclaration> MergeBorderDeclarations(List<MDeclaration> declarations, MergerBase merger)
+    private List<MDeclaration> mergeBorderDeclarations(List<MDeclaration> declarations, MergerBase merger)
     {
         if (declarations.size() == 0)
         {
@@ -256,7 +256,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         {
             try
             {
-                merger.Parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
+                merger.parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
             }
             catch (Exception e)
             {

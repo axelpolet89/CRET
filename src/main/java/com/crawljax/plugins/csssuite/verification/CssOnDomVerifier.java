@@ -86,7 +86,7 @@ public class CssOnDomVerifier
 
         String overridden = "overridden-" + new Random().nextInt();
 
-        EffectivenessAnalysis.ComputeEffectiveness(selectors, overridden);
+        EffectivenessAnalysis.computeEffectiveness(selectors, overridden);
 
         List<MDeclaration> effectiveProps = new ArrayList<>();
         selectors.forEach(s -> effectiveProps.addAll(s.getDeclarations().stream().filter(p -> p.isEffective() || p.isIgnored()).collect(Collectors.toList())));
@@ -115,12 +115,12 @@ public class CssOnDomVerifier
             LogHandler.info("[VERIFICATION] Match selectors from original and generated styles to DOM for state %s...", state.getUrl());
             LinkedHashMap<String, Integer> stateFileOrder = states.get(state);
 
-            ElementSelectorMatcher.MatchElementsToDocument(state.getName(), state.getDocument(), originalStyles, stateFileOrder, matchedElementsOrig);
-            ElementSelectorMatcher.MatchElementsToDocument(state.getName(), state.getDocument(), generatedStyles, stateFileOrder, matchedElementsGnr);
+            ElementSelectorMatcher.matchElementsToDocument(state.getName(), state.getDocument(), originalStyles, stateFileOrder, matchedElementsOrig);
+            ElementSelectorMatcher.matchElementsToDocument(state.getName(), state.getDocument(), generatedStyles, stateFileOrder, matchedElementsGnr);
         }
 
-        _matchedElementsOrig = matchedElementsOrig.GetMatchedElements();
-        _matchedElementsGnr = matchedElementsGnr.GetMatchedElements();
+        _matchedElementsOrig = matchedElementsOrig.getMatchedElements();
+        _matchedElementsGnr = matchedElementsGnr.getMatchedElements();
 
         // effectiveness analysis
         LogHandler.info("[VERIFICATION] Start effectiveness analysis for matched elements of original and generated styles...");
@@ -134,7 +134,7 @@ public class CssOnDomVerifier
             count++;
             LogHandler.debug("[VERIFICATION] Find out if original matches are effective (i.e. at least 1 effective declaration) for element %d of %d...", count, total);
 
-            List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
+            List<MSelector> selectorsOrig = matchedElementsOrig.sortSelectorsForMatchedElem(matchedElement);
             List<MDeclaration> effectivePropsOrig = FindEffectiveDeclarationsForElement(selectorsOrig);
 
             if(containsEffectiveDeclarations(effectivePropsOrig))
@@ -157,7 +157,7 @@ public class CssOnDomVerifier
             count++;
             LogHandler.debug("[VERIFICATION] Start effectiveness analysis and comparison for element %d of %d...", count, total);
 
-            List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
+            List<MSelector> selectorsOrig = matchedElementsOrig.sortSelectorsForMatchedElem(matchedElement);
             _declSelMapOrig.putAll(generateDeclarationSelectorMap(selectorsOrig));
 
             List<MDeclaration> effectivePropsOrig = FindEffectiveDeclarationsForElement(selectorsOrig);
@@ -168,7 +168,7 @@ public class CssOnDomVerifier
                 continue;
             }
 
-            List<MSelector> selectorsGnr = matchedElementsGnr.SortSelectorsForMatchedElem(matchedElement);
+            List<MSelector> selectorsGnr = matchedElementsGnr.sortSelectorsForMatchedElem(matchedElement);
             _declSelMapGnr.putAll(generateDeclarationSelectorMap(selectorsGnr));
 
             List<MDeclaration> effectivePropsGnr = FindEffectiveDeclarationsForElement(selectorsGnr);
@@ -282,7 +282,7 @@ public class CssOnDomVerifier
         // all unmatched elements
         for(String unmatchedElement : _missedMatchedElements)
         {
-            List<MSelector> selectors = matchedElementsOrig.SortSelectorsForMatchedElem(unmatchedElement);
+            List<MSelector> selectors = matchedElementsOrig.sortSelectorsForMatchedElem(unmatchedElement);
 
             String selectorsText = "";
             for(MSelector mSelector : selectors)
@@ -297,7 +297,7 @@ public class CssOnDomVerifier
         // all additionally matched elements
         for(String extraElement : _additionalMatchedElems)
         {
-            List<MSelector> selectors = matchedElementsGnr.SortSelectorsForMatchedElem(extraElement);
+            List<MSelector> selectors = matchedElementsGnr.sortSelectorsForMatchedElem(extraElement);
 
             String selectorsText = "";
             for(MSelector mSelector : selectors)

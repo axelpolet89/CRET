@@ -27,13 +27,13 @@ public class SassRule extends SassRuleBase
         {
             if(isSet)
             {
-                if(ss.GetMediaQueries().containsAll(_mediaQueries) && _mediaQueries.containsAll(ss.GetMediaQueries()))
+                if(ss.getMediaQueries().containsAll(_mediaQueries) && _mediaQueries.containsAll(ss.getMediaQueries()))
                     continue;
 
-                LogHandler.error("Critical: found a SassRule that holds selectors with different media-queries. Original line: %d, mismatch on selector %s", lineNumber, ss.GetSelectorText());
+                LogHandler.error("Critical: found a SassRule that holds selectors with different media-queries. Original line: %d, mismatch on selector %s", lineNumber, ss.getSelectorText());
             }
 
-            _mediaQueries.addAll(ss.GetMediaQueries());
+            _mediaQueries.addAll(ss.getMediaQueries());
             isSet = true;
         }
     }
@@ -43,21 +43,21 @@ public class SassRule extends SassRuleBase
         return _sassSelectors;
     }
 
-    public void Print(SuiteStringBuilder builder, String prefix)
+    public void print(SuiteStringBuilder builder, String prefix)
     {
         String selectorGroup = "";
 
         for(int i = 0; i < _sassSelectors.size(); i++)
         {
             SassSelector sassSelector = _sassSelectors.get(i);
-            selectorGroup += sassSelector.GetSelectorText();
+            selectorGroup += sassSelector.getSelectorText();
             if(i < _sassSelectors.size() - 1)
                 selectorGroup += ", ";
         }
 
         builder.append("%s%s", prefix, selectorGroup);
         builder.append("{", prefix);
-        _sassSelectors.get(0).PrintContents(builder, prefix);
+        _sassSelectors.get(0).printContents(builder, prefix);
         builder.appendLine("%s}", prefix);
     }
 }

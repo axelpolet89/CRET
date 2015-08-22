@@ -5,17 +5,14 @@ import com.crawljax.plugins.csssuite.sass.*;
 import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.csssuite.sass.mixins.SassMixinBase;
 import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
-import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -63,7 +60,7 @@ public class SassWriter
 
             for(SassVariable sv : colors)
             {
-                sv.Print(builder);
+                sv.print(builder);
                 builder.append("\n");
             }
         }
@@ -80,7 +77,7 @@ public class SassWriter
             builder.append("//alpha colors\n");
             for(SassVariable sv : alphaColors)
             {
-                sv.Print(builder);
+                sv.print(builder);
                 builder.append("\n");
             }
         }
@@ -97,7 +94,7 @@ public class SassWriter
             builder.append("//urls\n");
             for(SassVariable sv : urls)
             {
-                sv.Print(builder);
+                sv.print(builder);
                 builder.append("\n");
             }
         }
@@ -112,7 +109,7 @@ public class SassWriter
             builder.append("//fonts\n");
             for(SassVariable sv : fonts)
             {
-                sv.Print(builder);
+                sv.print(builder);
                 builder.append("\n");
             }
         }
@@ -124,22 +121,22 @@ public class SassWriter
 
         for (SassCloneMixin cloneMixin : sassFile.getCloneMixins())
         {
-            cloneMixin.Print(builder);
+            cloneMixin.print(builder);
             builder.append("\n\n");
         }
 
         for (SassMixinBase mixin : sassFile.getMixins())
         {
-            mixin.Print(builder);
+            mixin.print(builder);
             builder.append("\n\n");
         }
 
 
-        List<SassRuleBase> sassRules = sassFile.getRules().stream().sorted((r1, r2) -> Integer.compare(r1.GetLineNumber(), r2.GetLineNumber())).collect(Collectors.toList());
+        List<SassRuleBase> sassRules = sassFile.getRules().stream().sorted((r1, r2) -> Integer.compare(r1.getLineNumber(), r2.getLineNumber())).collect(Collectors.toList());
         for (int i = 0; i < sassRules.size(); i++)
         {
             SassRuleBase sr = sassRules.get(i);
-            sr.Print(builder, "");
+            sr.print(builder, "");
 
             if(i < sassRules.size() - 1)
                 builder.append("\n\n");

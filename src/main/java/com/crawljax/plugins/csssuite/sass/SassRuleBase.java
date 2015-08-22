@@ -14,10 +14,10 @@ public abstract class SassRuleBase
         _lineNumber = lineNumber;
     }
 
-    public int GetLineNumber()
+    public int getLineNumber()
     {
         return _lineNumber;
     }
 
-    public abstract void Print(SuiteStringBuilder builder, String prefix);
+    public abstract void print(SuiteStringBuilder builder, String prefix);
 }

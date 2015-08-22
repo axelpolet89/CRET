@@ -41,7 +41,7 @@ public class SassCloneMixin
         _declarationOrdering.put(mSelector, declarationOrdering);
     }
 
-    public void SetNumber(int number)
+    public void setNumber(int number)
     {
         _number = number;
     }
@@ -51,12 +51,12 @@ public class SassCloneMixin
         return _extractedFrom.size() == selectors.size() && selectors.containsAll(_extractedFrom);
     }
 
-    public List<MDeclaration> GetDeclarations()
+    public List<MDeclaration> getDeclarations()
     {
         return _declarations;
     }
 
-    public List<MSelector> GetRelatedSelectors()
+    public List<MSelector> getRelatedSelectors()
     {
         return _extractedFrom;
     }
@@ -66,12 +66,12 @@ public class SassCloneMixin
         return _declarationOrdering.get(mSelector).get(mDeclaration.getName());
     }
 
-    public int GetNumber()
+    public int getNumber()
     {
         return _number;
     }
 
-    public void Print(SuiteStringBuilder builder)
+    public void print(SuiteStringBuilder builder)
     {
         builder.append("@mixin mixin_%d{", _number);
         for(MDeclaration declaration : _declarations)

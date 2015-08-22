@@ -39,7 +39,7 @@ public class BackgroundMerger extends MergerBase
      * @param name
      * @param value
      */
-    protected boolean ParseFromSingle(String name, String value)
+    protected boolean parseFromSingle(String name, String value)
     {
         switch (name.split("-")[1])
         {
@@ -100,7 +100,7 @@ public class BackgroundMerger extends MergerBase
         }
         else if (!_size.isEmpty())
         {
-            result.add(new MDeclaration("background-size", _size, IsImportant(), true, _order));
+            result.add(new MDeclaration("background-size", _size, isImportant(), true, _order));
         }
 
         if(!_origin.isEmpty())

@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class EffectivenessAnalysis
 {
-    public static void ComputeEffectiveness(List<MSelector> selectors, String randomString)
+    public static void computeEffectiveness(List<MSelector> selectors, String randomString)
     {
         String overridden = randomString;
 
@@ -73,17 +73,17 @@ public class EffectivenessAnalysis
 
                         if (pseudoCompare)
                         {
-                            CompareDeclarationsPs(declaration, nextSelector, overridden, alreadyEffective);
+                            compareDeclarationsPs(declaration, nextSelector, overridden, alreadyEffective);
                         }
                         else if (mediaCompare)
                         {
-                            CompareDeclarationsMq(declaration, nextSelector, overridden);
+                            compareDeclarationsMq(declaration, nextSelector, overridden);
                         }
                         else
                         {
                             // by default: if both selectors apply under the same condition, simply check matching declaration names
                             // otherwise, the only way for next selector to be ineffective is too have same declaration name AND value
-                            CompareDeclarations(declaration, nextSelector, overridden, alreadyEffective);
+                            compareDeclarations(declaration, nextSelector, overridden, alreadyEffective);
                         }
                     }
                 }
@@ -99,7 +99,7 @@ public class EffectivenessAnalysis
      * @param otherSelector
      * @param overridden
      */
-    private static Void CompareDeclarations(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
+    private static void compareDeclarations(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
         for (MDeclaration nextDeclaration : otherSelector.getDeclarations())
         {
@@ -119,7 +119,6 @@ public class EffectivenessAnalysis
                 }
             }
         }
-        return null;
     }
 
 
@@ -130,7 +129,7 @@ public class EffectivenessAnalysis
      * @param otherSelector
      * @param overridden
      */
-    private static void CompareDeclarationsPs(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
+    private static void compareDeclarationsPs(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
         for (MDeclaration nextDeclaration : otherSelector.getDeclarations())
         {
@@ -161,7 +160,7 @@ public class EffectivenessAnalysis
      * @param otherSelector
      * @param overridden
      */
-    private static void CompareDeclarationsMq(MDeclaration declaration, MSelector otherSelector, String overridden)
+    private static void compareDeclarationsMq(MDeclaration declaration, MSelector otherSelector, String overridden)
     {
         for (MDeclaration nextDeclaration : otherSelector.getDeclarations())
         {

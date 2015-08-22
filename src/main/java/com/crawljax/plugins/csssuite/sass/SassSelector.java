@@ -33,17 +33,17 @@ public class SassSelector
         _otherIncludes = new ArrayList<>();
     }
 
-    public void AddCloneInclude(SassCloneMixin sassTemplate)
+    public void addCloneInclude(SassCloneMixin sassTemplate)
     {
         _cloneIncludes.add(sassTemplate);
     }
 
-    public void AddInclude(String include)
+    public void addInclude(String include)
     {
         _otherIncludes.add(include);
     }
 
-    public void PrintContents(SuiteStringBuilder builder, String prefix)
+    public void printContents(SuiteStringBuilder builder, String prefix)
     {
         _declarations.sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
 
@@ -76,29 +76,29 @@ public class SassSelector
         return _otherIncludes;
     }
 
-    public String GetSelectorText()
+    public String getSelectorText()
     {
         return _selectorText;
     }
 
-    public int GetLineNumber()
+    public int getLineNumber()
     {
         return _original.getLineNumber();
     }
 
-    public int GetOrder()
+    public int getOrder()
     {
         return _original.getOrder();
     }
 
-    public List<MediaQuery> GetMediaQueries() { return _original.getMediaQueries();}
+    public List<MediaQuery> getMediaQueries() { return _original.getMediaQueries();}
 
-    public MCssRuleBase GetParent() { return _original.getParent(); }
+    public MCssRuleBase getParent() { return _original.getParent(); }
 
-    public boolean HasEqualDeclarationsByText(SassSelector other)
+    public boolean hasEqualDeclarationsByText(SassSelector other)
     {
-        List<String> sorted = GetSortedDeclarationsText();
-        List<String> otherSorted = other.GetSortedDeclarationsText();
+        List<String> sorted = getSortedDeclarationsText();
+        List<String> otherSorted = other.getSortedDeclarationsText();
 
         if(sorted.size() != otherSorted.size())
         {
@@ -116,20 +116,20 @@ public class SassSelector
         return true;
     }
 
-    public List<String> GetSortedDeclarationsText()
+    public List<String> getSortedDeclarationsText()
     {
-        List<String> result = _cloneIncludes.stream().sorted((e1, e2) -> Integer.compare(e1.GetNumber(), e2.GetNumber())).map(e -> e.toString()).collect(Collectors.toList());
+        List<String> result = _cloneIncludes.stream().sorted((e1, e2) -> Integer.compare(e1.getNumber(), e2.getNumber())).map(e -> e.toString()).collect(Collectors.toList());
         result.addAll(_otherIncludes);
         result.addAll(_declarations.stream().sorted((p1, p2) -> p1.toString().compareTo(p2.toString())).map(p -> p.toString()).collect(Collectors.toList()));
         return result;
     }
 
-    public List<MDeclaration> GetDeclarations()
+    public List<MDeclaration> getDeclarations()
     {
         return _declarations;
     }
 
-    public void RemoveDeclarations(List<MDeclaration> declarations)
+    public void removeDeclarations(List<MDeclaration> declarations)
     {
         _declarations.removeAll(declarations);
     }

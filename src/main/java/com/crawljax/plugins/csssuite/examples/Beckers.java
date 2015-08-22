@@ -7,7 +7,7 @@ import com.crawljax.core.CrawljaxRunner;
 import com.crawljax.core.configuration.BrowserConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration.CrawljaxConfigurationBuilder;
-import com.crawljax.plugins.csssuite.CssSuitePlugin;
+import com.crawljax.plugins.csssuite.CRET;
 
 public class Beckers {
 
@@ -32,7 +32,7 @@ public class Beckers {
 
 		builder.setBrowserConfig(new BrowserConfiguration(BrowserType.FIREFOX, 1));
 
-		CssSuitePlugin cssSuite = new CssSuitePlugin("oaklandmetro", INDEX);
+		CRET cssSuite = new CRET("oaklandmetro", INDEX);
 		cssSuite._enableSassGeneration = true;
 		cssSuite._enableVerification = true;
 		cssSuite.enableDebug();

@@ -45,9 +45,9 @@ public class CssOnDomVerifier
     private Set<MDeclaration> _totalMissingDecls = new HashSet<>();
     private Set<MDeclaration> _totalAdditionalDecls = new HashSet<>();
 
-    private final Map<String, String> _defaultStyles = DefaultStylesHelper.CreateDefaultStyles();
+    private final Map<String, String> _defaultStyles = DefaultStylesHelper.createDefaultStyles();
 
-    private Map<MSelector, String> GenerateSelectorFileMap(Map<String, MCssFile> mcssFiles)
+    private Map<MSelector, String> generateSelectorFileMap(Map<String, MCssFile> mcssFiles)
     {
         Map<MSelector, String> result = new HashMap<>();
 
@@ -66,7 +66,7 @@ public class CssOnDomVerifier
     }
 
 
-    private Map<MDeclaration, MSelector> GenerateDeclarationSelectorMap(List<MSelector> selectors)
+    private Map<MDeclaration, MSelector> generateDeclarationSelectorMap(List<MSelector> selectors)
     {
         Map<MDeclaration, MSelector> result = new HashMap<>();
 
@@ -93,10 +93,10 @@ public class CssOnDomVerifier
         return effectiveProps;
     }
 
-    public void Verify(Map<StateVertex, LinkedHashMap<String, Integer>> states, Map<String, MCssFile> originalStyles, Map<String, MCssFile> generatedStyles) throws IOException
+    public void verify(Map<StateVertex, LinkedHashMap<String, Integer>> states, Map<String, MCssFile> originalStyles, Map<String, MCssFile> generatedStyles) throws IOException
     {
-        _selFileMapOrig = GenerateSelectorFileMap(originalStyles);
-        _selFileMapGnr = GenerateSelectorFileMap(generatedStyles);
+        _selFileMapOrig = generateSelectorFileMap(originalStyles);
+        _selFileMapGnr = generateSelectorFileMap(generatedStyles);
 
         MatchedElements matchedElementsOrig = new MatchedElements();
         MatchedElements matchedElementsGnr = new MatchedElements();
@@ -137,7 +137,7 @@ public class CssOnDomVerifier
             List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
             List<MDeclaration> effectivePropsOrig = FindEffectiveDeclarationsForElement(selectorsOrig);
 
-            if(ContainsEffectiveDecls(effectivePropsOrig))
+            if(containsEffectiveDeclarations(effectivePropsOrig))
             {
                 _totalEffectiveDeclsOrig.addAll(effectivePropsOrig);
                 _matchedAndEffectiveOrig.add(matchedElement);
@@ -158,7 +158,7 @@ public class CssOnDomVerifier
             LogHandler.debug("[VERIFICATION] Start effectiveness analysis and comparison for element %d of %d...", count, total);
 
             List<MSelector> selectorsOrig = matchedElementsOrig.SortSelectorsForMatchedElem(matchedElement);
-            _declSelMapOrig.putAll(GenerateDeclarationSelectorMap(selectorsOrig));
+            _declSelMapOrig.putAll(generateDeclarationSelectorMap(selectorsOrig));
 
             List<MDeclaration> effectivePropsOrig = FindEffectiveDeclarationsForElement(selectorsOrig);
 
@@ -169,7 +169,7 @@ public class CssOnDomVerifier
             }
 
             List<MSelector> selectorsGnr = matchedElementsGnr.SortSelectorsForMatchedElem(matchedElement);
-            _declSelMapGnr.putAll(GenerateDeclarationSelectorMap(selectorsGnr));
+            _declSelMapGnr.putAll(generateDeclarationSelectorMap(selectorsGnr));
 
             List<MDeclaration> effectivePropsGnr = FindEffectiveDeclarationsForElement(selectorsGnr);
 
@@ -326,10 +326,10 @@ public class CssOnDomVerifier
         _totalEquallyEffectiveDecls = Sets.difference(_totalEquallyEffectiveDecls, _totalEffectiveByName.keySet());
         _totalEquallyEffectiveDecls = Sets.difference(_totalEquallyEffectiveDecls, _totalMissingDecls);
 
-        LogResults();
+        logResults();
     }
 
-    private void LogResults()
+    private void logResults()
     {
         LogHandler.info("[VERIFICATION] %d elements matched originally, %d elements matches effective originally, %d elements equally matched by new,  %d elements unmatched, %d additional elements matched",
                 _equallyMatchedElems.size(), _matchedAndEffectiveOrig.size(), _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
@@ -339,29 +339,29 @@ public class CssOnDomVerifier
         for(MDeclaration orig : _totalEffectiveByName.keySet())
         {
             MDeclaration gnr = _totalEffectiveByName.get(orig);
-            LogHandler.info("[VERIFICATION] Matched by name: '%s'\nwith '%s'", PrintOrigDeclaration(orig), PrintGnrDeclaration(gnr));
+            LogHandler.info("[VERIFICATION] Matched by name: '%s'\nwith '%s'", printOrigDeclaration(orig), printGnrDeclaration(gnr));
         }
         for(MDeclaration orig : _totalMissingDecls)
         {
-            LogHandler.info("[VERIFICATION] Missing declaration: '%s'", PrintOrigDeclaration(orig));
+            LogHandler.info("[VERIFICATION] Missing declaration: '%s'", printOrigDeclaration(orig));
         }
         for(MDeclaration gnr : _totalAdditionalDecls)
         {
-            LogHandler.info("[VERIFICATION] Additional declaration: '%s'", PrintGnrDeclaration(gnr));
+            LogHandler.info("[VERIFICATION] Additional declaration: '%s'", printGnrDeclaration(gnr));
         }
     }
 
-    private String PrintOrigDeclaration(MDeclaration declaration)
+    private String printOrigDeclaration(MDeclaration declaration)
     {
         return String.format("%s %s %s", declaration, _declSelMapOrig.get(declaration), _selFileMapOrig.get(_declSelMapOrig.get(declaration)));
     }
 
-    private String PrintGnrDeclaration(MDeclaration declaration)
+    private String printGnrDeclaration(MDeclaration declaration)
     {
         return String.format("%s %s %s", declaration, _declSelMapGnr.get(declaration), _selFileMapGnr.get(_declSelMapGnr.get(declaration)));
     }
 
-    public void GenerateXml(SuiteStringBuilder builder, String prefix)
+    public void generateXml(SuiteStringBuilder builder, String prefix)
     {
         builder.append("%s<matched_elements_orig>%d</matched_elements_orig>", prefix, _matchedElementsOrig.size());
         builder.appendLine("%s<matched_effective_orig>%d</matched_effective_orig>", prefix, _matchedAndEffectiveOrig.size());
@@ -377,7 +377,7 @@ public class CssOnDomVerifier
         builder.appendLine("%s<additional_props>%d</additional_props>", prefix, _totalAdditionalDecls.size());
     }
 
-    public boolean ContainsEffectiveDecls(List<MDeclaration> declarations)
+    public boolean containsEffectiveDeclarations(List<MDeclaration> declarations)
     {
         if(declarations.isEmpty())
         {

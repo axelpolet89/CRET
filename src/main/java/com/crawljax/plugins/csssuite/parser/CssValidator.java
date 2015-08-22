@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public class CssValidator
 {
-    public static ValidationResponse ValidateW3C(String cssCode) throws IOException
+    public static ValidationResponse validateW3C(String cssCode) throws IOException
     {
         LogHandler.info("[W3C Validator] start css validation");
 

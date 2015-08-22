@@ -9,7 +9,7 @@ public class Specificity
 		this.value = value;
 	}
 
-	public int GetValue()
+	public int getValue()
 	{
 		return value;
 	}
@@ -21,7 +21,7 @@ public class Specificity
 		}
 
 		Specificity other = (Specificity) object;
-		return value == other.GetValue();
+		return value == other.getValue();
 	}
 
 	@Override

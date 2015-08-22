@@ -19,24 +19,24 @@ public class SpecificitySelector
         _fileOrder = order;
     }
 
-    public int GetSpecificity()
+    public int getSpecificity()
     {
-        return _mSelector.getSpecificity().GetValue();
+        return _mSelector.getSpecificity().getValue();
     }
 
-    public int GetLineNumber()
+    public int getLineNumber()
     {
         return _mSelector.getLineNumber();
     }
 
-    public int GetOrder() { return _mSelector.getOrder(); }
+    public int getOrder() { return _mSelector.getOrder(); }
 
-    public int GetFileOrder()
+    public int getFileOrder()
     {
         return _fileOrder;
     }
 
-    public MSelector GetSelector()
+    public MSelector getSelector()
     {
         return _mSelector;
     }

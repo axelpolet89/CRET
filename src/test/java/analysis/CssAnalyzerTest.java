@@ -37,7 +37,7 @@ public class CssAnalyzerTest
 		MCssFile externalFile = TestHelper.GetCssFileFromFile("./src/test/resources/cssanalyzer_test_styles.css");
 		Assert.assertNotNull(externalFile);
 
-		MCssFile internalFile = TestHelper.GetCssFromString("internal", CSSDOMHelper.ParseEmbeddedStyles(dom));
+		MCssFile internalFile = TestHelper.GetCssFromString("internal", CSSDOMHelper.parseEmbeddedStyles(dom));
 		Assert.assertNotNull(internalFile);
 
 		HashMap files = new HashMap();

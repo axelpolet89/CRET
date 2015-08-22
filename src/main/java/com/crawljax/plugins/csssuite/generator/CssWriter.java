@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class CssWriter
 {
-    public void Generate(File file, MCssFile mCssFile) throws IOException, URISyntaxException
+    public void generateCssCode(File file, MCssFile mCssFile) throws IOException, URISyntaxException
     {
         LogHandler.info("Generating CSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
 

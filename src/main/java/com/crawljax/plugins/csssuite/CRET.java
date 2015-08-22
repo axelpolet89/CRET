@@ -44,7 +44,7 @@ import com.crawljax.plugins.csssuite.parser.CssParser;
  * CSS Re-Engineering Tool main class
  * Crawljax plug-in
  */
-public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
+public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 {
 	/* Configuration properties */
 	public boolean _enableW3cValidation = false;
@@ -84,7 +84,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	private int _domstates;
 	private final List<SassStatistics> _sassStatistics;
 
-	public CssSuitePlugin(String siteName, String siteIndex)
+	public CRET(String siteName, String siteIndex)
 	{
 		_siteName = siteName;
 		_siteIndex = siteIndex;
@@ -201,7 +201,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			final Document dom = state.getDocument();
 
 			int order = 0;
-			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
+			for (String relPath : CSSDOMHelper.extractCssFileNames(dom))
 			{
 				String cssUrl = relPath;
 
@@ -212,14 +212,14 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 				}
 				else
 				{
-					cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
+					cssUrl = CSSDOMHelper.getAbsPath(url, relPath);
 				}
 
 				if (!_newMcssFiles.containsKey(cssUrl))
 				{
 					LogHandler.info("[FOUND NEW CSS FILE] " + cssUrl);
 
-					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
+					String cssCode = CSSDOMHelper.getUrlContent(cssUrl);
 
 					_originalCssLOC += countLOC(cssCode);
 
@@ -235,7 +235,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			// get all the embedded <STYLE> rules, save per HTML page
 			if (!_newMcssFiles.containsKey(url))
 			{
-				String embeddedCode = CSSDOMHelper.ParseEmbeddedStyles(dom);
+				String embeddedCode = CSSDOMHelper.parseEmbeddedStyles(dom);
 
 				if(!embeddedCode.isEmpty())
 				{
@@ -270,9 +270,9 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	{
 		CssParser parser = new CssParser();
 
-		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
+		MCssFile file = parser.parseCssIntoMCssRules(url, code);
 
-		List<String> parseErrors = parser.GetParseErrors();
+		List<String> parseErrors = parser.getParseErrors();
 		for(String parseError : parseErrors)
 		{
 			LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
@@ -381,7 +381,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			try
 			{
-				_targetCssFiles.put(fileName, FileHelper.CreateFileAndDirs(cssRootDir.concat(cssFile)));
+				_targetCssFiles.put(fileName, FileHelper.createFileAndDirs(cssRootDir.concat(cssFile)));
 			}
 			catch (Exception e)
 			{
@@ -400,7 +400,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			try
 			{
-				_targetSassFiles.put(fileName, FileHelper.CreateFileAndDirs(sassRootDir.concat(sassFile)));
+				_targetSassFiles.put(fileName, FileHelper.createFileAndDirs(sassRootDir.concat(sassFile)));
 			}
 			catch (Exception e)
 			{
@@ -417,7 +417,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			String cssFromSassFile = cssRootDir.concat(cssFile).replace("CSS(def)", "CSS(sass)");
 			try
 			{
-				_targetCssFromSassFiles.put(fileName, FileHelper.CreateFileAndDirs(cssFromSassFile));
+				_targetCssFromSassFiles.put(fileName, FileHelper.createFileAndDirs(cssFromSassFile));
 			}
 			catch (Exception e)
 			{
@@ -437,7 +437,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			try
 			{
-				FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("external_files_mapping.txt")));
+				FileWriter esWriter = new FileWriter(FileHelper.createFileAndDirs(root.concat("external_files_mapping.txt")));
 				esWriter.write("external files are mapped as follows:\n");
 				for (String fileName : externalMapping.keySet())
 				{
@@ -456,7 +456,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			try
 			{
-				FileWriter esWriter = new FileWriter(FileHelper.CreateFileAndDirs(root.concat("embedded_styles_mapping.txt")));
+				FileWriter esWriter = new FileWriter(FileHelper.createFileAndDirs(root.concat("embedded_styles_mapping.txt")));
 				esWriter.write("embedded files are mapped as follows:\n");
 				for (String fileName : embeddedMapping.keySet())
 				{
@@ -494,7 +494,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 		{
 			try
 			{
-				writer.Generate(_targetCssFiles.get(fileName), mcssFiles.get(fileName));
+				writer.generateCssCode(_targetCssFiles.get(fileName), mcssFiles.get(fileName));
 			}
 			catch (Exception e)
 			{
@@ -517,7 +517,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", _targetSassFiles.get(fileName));
 
 					SassBuilder sassBuilder = new SassBuilder(mcssFiles.get(fileName), _clonePropsUpperLimit);
-					scssFiles.put(fileName, sassWriter.GenerateSassCode(_targetSassFiles.get(fileName), sassBuilder.generateSass()));
+					scssFiles.put(fileName, sassWriter.generateSassCode(_targetSassFiles.get(fileName), sassBuilder.generateSass()));
 
 					//gather statistics for this file
 					_sassStatistics.add(sassBuilder.getStatistics());
@@ -569,15 +569,15 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 		try
 		{
-			verifier.Verify(_stateCssFiles, _origMcssFiles, parseGeneratedCss());
+			verifier.verify(_stateCssFiles, _origMcssFiles, parseGeneratedCss());
 
 			SuiteStringBuilder builder = new SuiteStringBuilder();
 			builder.append("<site>");
 			builder.appendLine("\t<site_name>%s</site_name>\n", _siteName);
-			verifier.GenerateXml(builder, "\t");
+			verifier.generateXml(builder, "\t");
 			builder.appendLine("</site>");
 
-			File verificationOutput = FileHelper.CreateFileAndDirs("./output/verification/verification_summary.xml");
+			File verificationOutput = FileHelper.createFileAndDirs("./output/verification/verification_summary.xml");
 			FileWriter writer = new FileWriter(verificationOutput, true);
 			writer.append(builder.toString());
 			writer.flush();
@@ -606,7 +606,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			try
 			{
 				String cssCode = new String(Files.readAllBytes(_targetCssFiles.get(fileName).toPath()), "UTF-8");
-				generatedCssFiles.put(fileName, parser.ParseCssIntoMCssRules(fileName, cssCode));
+				generatedCssFiles.put(fileName, parser.parseCssIntoMCssRules(fileName, cssCode));
 			}
 			catch (Exception ex)
 			{
@@ -639,7 +639,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 			builder.appendLine("</site>");
 
-			File verificationOutput = FileHelper.CreateFileAndDirs("./output/statistics/statistics_summary.xml");
+			File verificationOutput = FileHelper.createFileAndDirs("./output/statistics/statistics_summary.xml");
 			FileWriter writer = new FileWriter(verificationOutput, true);
 			writer.append(builder.toString());
 			writer.flush();

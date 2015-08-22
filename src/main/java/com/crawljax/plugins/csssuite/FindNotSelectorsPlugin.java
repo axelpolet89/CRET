@@ -79,31 +79,31 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 		{
 			final Document dom = state.getDocument();
 
-			for (String relPath : CSSDOMHelper.ExtractCssFileNames(dom))
+			for (String relPath : CSSDOMHelper.extractCssFileNames(dom))
 			{
-				String cssUrl = CSSDOMHelper.GetAbsPath(url, relPath);
+				String cssUrl = CSSDOMHelper.getAbsPath(url, relPath);
 
 				if (!_cssFiles.containsKey(cssUrl))
 				{
 					LogHandler.info("[FOUND NEW CSS FILE] " + cssUrl);
 
-					String cssCode = CSSDOMHelper.GetUrlContent(cssUrl);
+					String cssCode = CSSDOMHelper.getUrlContent(cssUrl);
 
-					_cssFiles.put(cssUrl, ParseCssRules(cssUrl, cssCode));
+					_cssFiles.put(cssUrl, parseCssRules(cssUrl, cssCode));
 				}
 			}
 
 			// get all the embedded <STYLE> rules, save per HTML page
 			if (!_embeddedStyles.containsKey(url))
 			{
-				String embeddedCode = CSSDOMHelper.ParseEmbeddedStyles(dom);
+				String embeddedCode = CSSDOMHelper.parseEmbeddedStyles(dom);
 
 				if(!embeddedCode.isEmpty())
 				{
 					LogHandler.info("[FOUND NEW EMBEDDED RULES] " + url);
 				}
 
-				MCssFile embeddedFile = ParseCssRules(url, embeddedCode);
+				MCssFile embeddedFile = parseCssRules(url, embeddedCode);
 
 				if(!embeddedAlreadyParsed(embeddedFile))
 				{
@@ -160,15 +160,15 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 	 * @param url
 	 * @param code
 	 */
-	private MCssFile ParseCssRules(String url, String code)
+	private MCssFile parseCssRules(String url, String code)
 	{
 		CssParser parser = new CssParser(_enableW3cValidation);
 
-		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
+		MCssFile file = parser.parseCssIntoMCssRules(url, code);
 
 		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.getRules().size());
 
-		_parserErrors.put(url, parser.GetParseErrors());
+		_parserErrors.put(url, parser.getParseErrors());
 
 		return file;
 	}

@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
  */
 public class FileHelper
 {
-    public static File CreateFileAndDirs(String fileName) throws IOException
+    public static File createFileAndDirs(String fileName) throws IOException
     {
         File file = new File(fileName);
         File dir = new File(fileName.replace(file.getName(), ""));

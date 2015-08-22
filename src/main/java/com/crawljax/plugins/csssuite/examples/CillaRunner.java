@@ -7,7 +7,7 @@ import com.crawljax.core.CrawljaxRunner;
 import com.crawljax.core.configuration.BrowserConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration.CrawljaxConfigurationBuilder;
-import com.crawljax.plugins.csssuite.CssSuitePlugin;
+import com.crawljax.plugins.csssuite.CRET;
 
 public class CillaRunner {
 
@@ -33,7 +33,7 @@ public class CillaRunner {
 
 		builder.setBrowserConfig(new BrowserConfiguration(BrowserType.FIREFOX, 1));
 
-		builder.addPlugin(new CssSuitePlugin("ece_ubc_ca", INDEX));
+		builder.addPlugin(new CRET("ece_ubc_ca", INDEX));
 
 		CrawljaxRunner crawljax = new CrawljaxRunner(builder.build());
 		crawljax.call();

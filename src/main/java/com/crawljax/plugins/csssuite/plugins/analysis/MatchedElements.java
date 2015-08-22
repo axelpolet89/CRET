@@ -65,7 +65,7 @@ public class MatchedElements
 		SortBySpecificity(selectorsToSort);
 
 		// extract the MSelectors from the list of sorted SpecificitySelectors and return
-		return selectorsToSort.stream().map((ss) -> ss.GetSelector()).collect(Collectors.toList());
+		return selectorsToSort.stream().map((ss) -> ss.getSelector()).collect(Collectors.toList());
 	}
 
 
@@ -88,29 +88,29 @@ public class MatchedElements
 	{
 		Collections.sort(selectors, (s1, s2) ->
 		{
-			int value1 = s1.GetSpecificity();
-			int value2 = s2.GetSpecificity();
+			int value1 = s1.getSpecificity();
+			int value2 = s2.getSpecificity();
 
 			//if two selectors have the same _specificity, we need to verify the position in the file or the position of the file in the DOM document
 			if (value1 == value2)
 			{
-				int fileOrder1 = s1.GetFileOrder();
-				int fileOrder2 = s2.GetFileOrder();
+				int fileOrder1 = s1.getFileOrder();
+				int fileOrder2 = s2.getFileOrder();
 
 				// if both selectors occur in same file, we simply check which selector has a higher rule number (placed lower in file)
 				if(fileOrder1 == fileOrder2)
 				{
-					int lineNo1 = s1.GetLineNumber();
-					int lineNo2 = s2.GetLineNumber();
+					int lineNo1 = s1.getLineNumber();
+					int lineNo2 = s2.getLineNumber();
 
 					// if both selectors occur on the same line, we verify which selector occurs later
 					if(lineNo1 == lineNo2)
 					{
-						return Integer.compare(s2.GetOrder(), s1.GetOrder());
+						return Integer.compare(s2.getOrder(), s1.getOrder());
 					}
 					else
 					{
-						return Integer.compare(s2.GetLineNumber(), s1.GetLineNumber());
+						return Integer.compare(s2.getLineNumber(), s1.getLineNumber());
 					}
 				}
 				else // otherwise we check which file was included later-on in the DOM (embedded/internal styles will always have a higher order than external styles_

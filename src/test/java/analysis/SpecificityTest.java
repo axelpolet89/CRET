@@ -98,13 +98,13 @@ public class SpecificityTest
 
 		MatchedElements.SortBySpecificity(list);
 
-		Assert.assertEquals("span div#aha #cal2", list.get(0).GetSelector().getSelectorText()); 	// defined later than #cal1
-		Assert.assertEquals("span div#aha #cal1", list.get(1).GetSelector().getSelectorText());
-		Assert.assertEquals("span", list.get(list.size() - 2).GetSelector().getSelectorText());
-		Assert.assertEquals("a", list.get(list.size() - 1).GetSelector().getSelectorText()); 		// defined later than span
+		Assert.assertEquals("span div#aha #cal2", list.get(0).getSelector().getSelectorText()); 	// defined later than #cal1
+		Assert.assertEquals("span div#aha #cal1", list.get(1).getSelector().getSelectorText());
+		Assert.assertEquals("span", list.get(list.size() - 2).getSelector().getSelectorText());
+		Assert.assertEquals("a", list.get(list.size() - 1).getSelector().getSelectorText()); 		// defined later than span
 
 		System.out.println("[TestOrderSpecificity] Ordering selectors by their specificity passed:");
-		for (MSelector s : list.stream().map((ss) -> ss.GetSelector()).collect(Collectors.toList()))
+		for (MSelector s : list.stream().map((ss) -> ss.getSelector()).collect(Collectors.toList()))
 		{
 			System.out.println("Selector: " + s.getSelectorText());
 		}
@@ -116,6 +116,6 @@ public class SpecificityTest
 		Specificity sp = mSelector.getSpecificity();
 
 		Assert.assertNotNull(sp);
-		Assert.assertEquals(expectedSpecificity, sp.GetValue());
+		Assert.assertEquals(expectedSpecificity, sp.getValue());
 	}
 }

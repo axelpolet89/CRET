@@ -46,7 +46,7 @@ public class NotSelectorsRunner
                     continue;
 
                 CrawljaxConfiguration.CrawljaxConfigurationBuilder builder = CrawljaxConfiguration.builderFor(lines.get(i));
-                CrawljaxHelper.Configure(builder, 1);
+                CrawljaxHelper.configureCrawljax(builder, 1);
 
                 FindNotSelectorsPlugin notSelectorsPlugin = new FindNotSelectorsPlugin(getNameForUrl(lines.get(i)), lines.get(i), writer, detailWriter);
 

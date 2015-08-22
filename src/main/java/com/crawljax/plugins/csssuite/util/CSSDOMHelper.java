@@ -26,7 +26,7 @@ public class CSSDOMHelper
 	 * @param dom
 	 * @return a list of css file names
 	 */
-	public static List<String> ExtractCssFileNames(Document dom)
+	public static List<String> extractCssFileNames(Document dom)
 	{
 		List<String> cssFileNames = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class CSSDOMHelper
 	 *            the (relative) URL of the file (e.g ../../world/news.css).
 	 * @return the absolute path of the file.
 	 */
-	public static String GetAbsPath(String location, String relUrl) {
+	public static String getAbsPath(String location, String relUrl) {
 
 		if (relUrl.startsWith("http")) {
 			return relUrl;
@@ -89,7 +89,7 @@ public class CSSDOMHelper
 	 * @return the content (string) of resource.
 	 * @throws IOException
 	 */
-	public static String GetUrlContent(String url) throws IOException {
+	public static String getUrlContent(String url) throws IOException {
 
 		GetMethod method = new GetMethod(url);
 
@@ -107,7 +107,7 @@ public class CSSDOMHelper
 	 * @param dom the document object.
 	 * @return the content of all the embedded css rules that are defined inside <STYLE> elements.
 	 */
-	public static String ParseEmbeddedStyles(Document dom)
+	public static String parseEmbeddedStyles(Document dom)
 	{
 		NodeList styles = dom.getElementsByTagName("style");
 
@@ -129,7 +129,7 @@ public class CSSDOMHelper
 	 * @return a list of elements inside the dom that have a class attribute
 	 * @throws XPathExpressionException
 	 */
-	public static List<ElementWithClass> GetElementWithClass(String stateName, Document dom)
+	public static List<ElementWithClass> getElementWithClass(String stateName, Document dom)
 	        throws XPathExpressionException {
 
 		final List<ElementWithClass> results = new ArrayList<>();

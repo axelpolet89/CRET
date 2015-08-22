@@ -38,7 +38,7 @@ public class DetectUndoingPlugin implements ICssTransformer
     {
         LogHandler.info("[CssAnalyzer] Performing analysis of invalid undo styles on matched CSS selectors...");
 
-        Map<String, String> defaultStyles = DefaultStylesHelper.CreateDefaultStyles();
+        Map<String, String> defaultStyles = DefaultStylesHelper.createDefaultStyles();
 
         // performance
         Set<Set<MSelector>> processedSets = new HashSet<>();

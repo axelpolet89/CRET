@@ -47,7 +47,7 @@ public class JavaLibSassTest
             SassContext ctx = SassFileContext.create(new File(scssSource).toPath());
             ctx.getOptions().setOutputStyle(SassOutputStyle.NESTED);
 
-            FileOutputStream outputStream = new FileOutputStream(FileHelper.CreateFileAndDirs(cssTarget));
+            FileOutputStream outputStream = new FileOutputStream(FileHelper.createFileAndDirs(cssTarget));
             ctx.compile(outputStream);
 
             outputStream.flush();

@@ -5,7 +5,7 @@ import com.crawljax.core.CrawljaxRunner;
 import com.crawljax.core.configuration.BrowserConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration;
 import com.crawljax.core.configuration.CrawljaxConfiguration.CrawljaxConfigurationBuilder;
-import com.crawljax.plugins.csssuite.CssSuitePlugin;
+import com.crawljax.plugins.csssuite.CRET;
 
 import java.util.concurrent.TimeUnit;
 
@@ -16,32 +16,22 @@ public class CssSuiteRunner {
 
 	//private static final String INDEX = "http://www.beckerelectric.com";
 	private static final String INDEX = "http://localhost/test/index.html";
-	//private static final String INDEX = "http://www.nu.nl";
 
-	public static void main(String[] args) {
-//		try {
-//			FileUtils.cleanDirectory(new File("output"));
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-
+	public static void main(String[] args)
+	{
 		Run();
 	}
 
 	private static void Run()
 	{
-		CssSuitePlugin cillaPlugin = new CssSuitePlugin("localhost", INDEX);
+		CRET cillaPlugin = new CRET("localhost", INDEX);
 		cillaPlugin.enableDebug();
 
-		CrawljaxRunner crawljax = new CrawljaxRunner(CreateConfig(10, cillaPlugin));
+		CrawljaxRunner crawljax = new CrawljaxRunner(createCrawljaxConfig(10, cillaPlugin));
 		crawljax.call();
 	}
 
-	private static CrawljaxConfiguration CreateConfig(CssSuitePlugin plugin){
-		return CreateConfig(30, plugin);
-	}
-
-	private static CrawljaxConfiguration CreateConfig(int maxRunTime, CssSuitePlugin plugin){
+	private static CrawljaxConfiguration createCrawljaxConfig(int maxRunTime, CRET plugin){
 		CrawljaxConfigurationBuilder builder = CrawljaxConfiguration.builderFor(INDEX);
 
 		//set global properties, depth of crawl, max states and max crawl-time

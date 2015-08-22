@@ -12,7 +12,7 @@ public class DefaultStylesHelper
      *
      * @return
      */
-    public static Map<String, String> CreateDefaultStyles()
+    public static Map<String, String> createDefaultStyles()
     {
         Map<String, String> defaultStyles = new HashMap<>();
 
@@ -23,13 +23,13 @@ public class DefaultStylesHelper
         defaultStyles.put("min-height", "0");
         defaultStyles.put("max-height", "none");
 
-        SetSeparateStyles("padding-%s", "0", defaultStyles);
-        SetSeparateStyles("margin-%s", "0", defaultStyles);
+        setSeparateStyles("padding-%s", "0", defaultStyles);
+        setSeparateStyles("margin-%s", "0", defaultStyles);
 
         defaultStyles.put("border-width", "medium");
         defaultStyles.put("border-style", "none");
-        SetSeparateStyles("border-%s-width", "medium", defaultStyles);
-        SetSeparateStyles("border-%s-style", "none", defaultStyles);
+        setSeparateStyles("border-%s-width", "medium", defaultStyles);
+        setSeparateStyles("border-%s-style", "none", defaultStyles);
         defaultStyles.put("border-top-left-radius", "0");
         defaultStyles.put("border-top-right-radius", "0");
         defaultStyles.put("border-bottom-right-radius", "0");
@@ -57,7 +57,7 @@ public class DefaultStylesHelper
      * @param value
      * @param styles
      */
-    public static void SetSeparateStyles(String formatter, String value, Map<String, String> styles)
+    public static void setSeparateStyles(String formatter, String value, Map<String, String> styles)
     {
         styles.put(String.format(formatter, "top"), value);
         styles.put(String.format(formatter, "right"), value);

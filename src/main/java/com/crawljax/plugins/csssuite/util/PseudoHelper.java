@@ -17,7 +17,7 @@ public class PseudoHelper
      * @param pseudo the string containing a pseudo-class
      * @return boolean
      */
-    public static boolean IsNonStructuralPseudo(String pseudo)
+    public static boolean isNonStructuralPseudo(String pseudo)
     {
         if(pseudo.contains(":lang"))
         {

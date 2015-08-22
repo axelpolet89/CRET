@@ -59,9 +59,9 @@ public class CssParser
 	 *
 	 * @return
 	 */
-	public List<String> GetParseErrors()
+	public List<String> getParseErrors()
 	{
-		return _errorHandler.PrintParseErrors();
+		return _errorHandler.printParseErrors();
 	}
 
 
@@ -70,7 +70,7 @@ public class CssParser
 	 * @param cssCode
 	 * @return a CSSRuleList which contains objects which adhere to the org.w3c.dom.css specification
 	 */
-	private CSSRuleList ParseCssCode(String cssCode)
+	private CSSRuleList parseCssCode(String cssCode)
 	{
 		InputSource source = new InputSource(new StringReader(cssCode));
 		CSSOMParser cssomParser = new CSSOMParser(new SACParserCSS3());
@@ -95,19 +95,19 @@ public class CssParser
 	 * @param cssCode the css code
 	 * @return a list of MCssRule objects, of which each wraps a cssrule
 	 */
-	public MCssFile ParseCssIntoMCssRules(String url, String cssCode)
+	public MCssFile parseCssIntoMCssRules(String url, String cssCode)
 	{
 		Set<Defect> w3cWarnings = new HashSet<>();
 		Set<Defect> w3cErrors = new HashSet<>();
 
-		CSSRuleList ruleList = ParseCssCode(cssCode);
+		CSSRuleList ruleList = parseCssCode(cssCode);
 
 		if(_doW3cValidation && ruleList.getLength() > 0)
 		{
 			ValidationResponse response = null;
 			try
 			{
-				response = CssValidator.ValidateW3C(cssCode);
+				response = CssValidator.validateW3C(cssCode);
 				w3cWarnings = new HashSet<>(response.warnings());
 				w3cErrors = new HashSet<>(response.errors());
 			}
@@ -136,7 +136,7 @@ public class CssParser
 				else if (rule instanceof CSSMediaRuleImpl)
 				{
 					// pass styleRules and ignoredRules also, to collect any of them within the media-query
-					mediaRules.add(RecursiveParseMediaRules(rule, null, styleAndMediaRules, ignoredRules, w3cErrors));
+					mediaRules.add(recursiveParseMediaRules(rule, null, styleAndMediaRules, ignoredRules, w3cErrors));
 				}
 				else
 				{
@@ -161,7 +161,7 @@ public class CssParser
 	 *                        that is not regular style or another media, should be ignored
 	 * @return List of parsed media rules
 	 */
-	private MCssMediaRule RecursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssMediaRule parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)
+	private MCssMediaRule recursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssMediaRule parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)
 	{
 
 		CSSMediaRuleImpl mediaRule = (CSSMediaRuleImpl) rule;
@@ -198,7 +198,7 @@ public class CssParser
 				}
 				else if (innerRule instanceof CSSMediaRuleImpl)
 				{
-					innerRules.add(RecursiveParseMediaRules(innerRule, result, styleRules, ignoredRules, w3cErrors));
+					innerRules.add(recursiveParseMediaRules(innerRule, result, styleRules, ignoredRules, w3cErrors));
 				}
 				else
 				{

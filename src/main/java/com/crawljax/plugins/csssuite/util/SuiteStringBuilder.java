@@ -25,15 +25,15 @@ public class SuiteStringBuilder
 
     public void append(String format, Object... arguments)
     {
-        _builder.append(String.format(format, VarArgsToArray(arguments)));
+        _builder.append(String.format(format, varArgsToArray(arguments)));
     }
 
     public void appendLine(String format, Object... arguments)
     {
-        _builder.append("\n" + String.format(format, VarArgsToArray(arguments)));
+        _builder.append("\n" + String.format(format, varArgsToArray(arguments)));
     }
 
-    private static Object[] VarArgsToArray(Object... arguments)
+    private static Object[] varArgsToArray(Object... arguments)
     {
         //need to copy varargs to Object[], otherwise String.format fails
         Object[] args = new Object[arguments.length + 1];

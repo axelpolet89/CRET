@@ -33,7 +33,7 @@ public class CSSDOMHelperTest {
 
 		try {
 			Document dom = DomUtils.asDocument(html);
-			List<String> names = CSSDOMHelper.ExtractCssFileNames(dom);
+			List<String> names = CSSDOMHelper.extractCssFileNames(dom);
 
 			Assert.assertEquals(2, names.size());
 			Assert.assertEquals("basic.css", names.get(0));
@@ -48,26 +48,26 @@ public class CSSDOMHelperTest {
 	@Test
 	public void getGetAbsPath() {
 
-		Assert.assertEquals("http://www.google.com/world/bla/file.css", CSSDOMHelper.GetAbsPath(
+		Assert.assertEquals("http://www.google.com/world/bla/file.css", CSSDOMHelper.getAbsPath(
 				"http://www.google.com/world/tech/index.html", "../bla/file.css"));
 
-		Assert.assertEquals("http://www.google.com/bla/file.css", CSSDOMHelper.GetAbsPath(
+		Assert.assertEquals("http://www.google.com/bla/file.css", CSSDOMHelper.getAbsPath(
 				"http://www.google.com/world/tech/index.html", "../../bla/file.css"));
 
 		Assert.assertEquals("http://www.google.com/world/bla/file.css",
-		        CSSDOMHelper.GetAbsPath("http://www.google.com/world/tech/", "../bla/file.css"));
+		        CSSDOMHelper.getAbsPath("http://www.google.com/world/tech/", "../bla/file.css"));
 
 		Assert.assertEquals("http://www.google.com/world/bla/file.css",
-		        CSSDOMHelper.GetAbsPath("http://www.google.com/world/tech/", "../bla/file.css"));
+		        CSSDOMHelper.getAbsPath("http://www.google.com/world/tech/", "../bla/file.css"));
 
-		Assert.assertEquals("http://www.google.com/world/bla/file.css", CSSDOMHelper.GetAbsPath(
+		Assert.assertEquals("http://www.google.com/world/bla/file.css", CSSDOMHelper.getAbsPath(
 				"http://www.google.com/world/tech/", "http://www.google.com/world/bla/file.css"));
 
 		Assert.assertEquals("http://www.google.com/world/tech/file.css",
-		        CSSDOMHelper.GetAbsPath("http://www.google.com/world/tech/", "file.css"));
+		        CSSDOMHelper.getAbsPath("http://www.google.com/world/tech/", "file.css"));
 
 		Assert.assertEquals("http://www.google.com/file.css",
-		        CSSDOMHelper.GetAbsPath("http://www.google.com/world/tech/", "/file.css"));
+		        CSSDOMHelper.getAbsPath("http://www.google.com/world/tech/", "/file.css"));
 	}
 
 	@Test
@@ -85,7 +85,7 @@ public class CSSDOMHelperTest {
 		try {
 			Document dom = DomUtils.asDocument(html);
 
-			String result = CSSDOMHelper.ParseEmbeddedStyles(dom);
+			String result = CSSDOMHelper.parseEmbeddedStyles(dom);
 
 			Assert.assertNotNull(result);
 
@@ -111,7 +111,7 @@ public class CSSDOMHelperTest {
 
 		try {
 			Document dom = DomUtils.asDocument(html);
-			List<ElementWithClass> elements = CSSDOMHelper.GetElementWithClass("state1", dom);
+			List<ElementWithClass> elements = CSSDOMHelper.getElementWithClass("state1", dom);
 			Assert.assertEquals(2, elements.size());
 
 			Assert.assertEquals(5, elements.get(0).getClassValues().size());

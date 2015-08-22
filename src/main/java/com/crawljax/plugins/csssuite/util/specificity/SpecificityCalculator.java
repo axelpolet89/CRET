@@ -40,7 +40,7 @@ public class SpecificityCalculator
 	/**
 	 * applies to element types and pseudo-elements
 	 */
-	private void AddElementSelector() {
+	private void addElementSelector() {
 		value += ELEMENT_NAMES_AND_PSEUDO_ELEMENT_UNITS;
 	}
 
@@ -48,14 +48,14 @@ public class SpecificityCalculator
 	/**
 	 * applies to classes, attributes and pseudo-classes
 	 */
-	private void AddClassSelector() {
+	private void addClassSelector() {
 		value += CLASSES_ATTRIBUTES_AND_PSEUDO_CLASS_UNITS;
 	}
 
 	/**
 	 * applies to IDs only
 	 */
-	private void AddIDSelector() {
+	private void addIDSelector() {
 		value += ID_ATTRIBUTE_UNITS;
 	}
 
@@ -64,24 +64,24 @@ public class SpecificityCalculator
 	 * Recursively parse all attributes in given part
 	 * @param part
 	 */
-	private void RecursiveParseAttribute(String part)
+	private void recursiveParseAttribute(String part)
 	{
 		//first split on first closing brace
 		String[] temp = part.split("\\]", 2);
 
 		if(temp.length > 1 && !temp[1].isEmpty())
 		{
-			RecursiveParseAttribute(temp[0] + "]");
-			RecursiveParseAttribute(temp[1]);
+			recursiveParseAttribute(temp[0] + "]");
+			recursiveParseAttribute(temp[1]);
 		}
 		else
 		{
 			temp = part.split("\\[");
 			if(temp.length > 1 && !temp[0].isEmpty()&& !temp[0].equals("*"))
 			{
-				this.AddElementSelector();
+				this.addElementSelector();
 			}
-			this.AddClassSelector();
+			this.addClassSelector();
 		}
 	}
 
@@ -91,21 +91,21 @@ public class SpecificityCalculator
 	 * @param part
 	 * @return
 	 */
-	private static boolean IgnorePart(String part)
+	private static boolean ignorePart(String part)
 	{
 		return part.isEmpty() || part.equals("+") || part.equals(">") || part.equals("~") || part.equals("*");
 	}
 
-	public Specificity ComputeSpecificity(String selector, int pseudoClassCount, boolean isPseudoElement)
+	public Specificity computeSpecificity(String selector, int pseudoClassCount, boolean isPseudoElement)
 	{
 		for(int i = 0; i < pseudoClassCount; i++)
 		{
-			this.AddClassSelector();
+			this.addClassSelector();
 		}
 
 		if(isPseudoElement)
 		{
-			this.AddElementSelector();
+			this.addElementSelector();
 		}
 
 		// replace every :not with a whitespace char,
@@ -124,7 +124,7 @@ public class SpecificityCalculator
 
 		for (String part : parts)
 		{
-			if(IgnorePart(part))
+			if(ignorePart(part))
 				continue;
 
 			if (part.contains(".")) {
@@ -132,12 +132,12 @@ public class SpecificityCalculator
 
 				if(!temp[0].isEmpty() && !temp[0].equals("*"))
 				{
-					this.AddElementSelector();
+					this.addElementSelector();
 				}
 
 				for(int i = 0; i < temp.length - 1; i++)
 				{
-					this.AddClassSelector();
+					this.addClassSelector();
 				}
 			}
 			else if (part.contains("#"))
@@ -145,18 +145,18 @@ public class SpecificityCalculator
 				String[] temp = part.split("\\#");
 				if (temp.length > 1 && !temp[0].isEmpty() && !temp[0].equals("*"))
 				{
-					this.AddElementSelector();
+					this.addElementSelector();
 				}
 
-				this.AddIDSelector();
+				this.addIDSelector();
 			}
 			else if (part.contains("["))
 			{
-				RecursiveParseAttribute(part);
+				recursiveParseAttribute(part);
 			}
 			else
 			{
-				this.AddElementSelector();
+				this.addElementSelector();
 			}
 		}
 

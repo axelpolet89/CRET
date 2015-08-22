@@ -155,7 +155,7 @@ public class MSelector
 			}
 		}
 
-		_specificity = new SpecificityCalculator().ComputeSpecificity(_selectorText,
+		_specificity = new SpecificityCalculator().computeSpecificity(_selectorText,
 				(_nonStructuralPseudoClasses.size() + _structuralPseudoClasses.size()),
 				_hasPseudoElement);
 	}
@@ -294,7 +294,7 @@ public class MSelector
 			return;
 
 		String pseudo = ":" + parts[1];
-		if(PseudoHelper.IsNonStructuralPseudo(pseudo))
+		if(PseudoHelper.isNonStructuralPseudo(pseudo))
 		{
 			if(_pseudoLevel == 0)
 				_keyPseudoClass = pseudo;

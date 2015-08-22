@@ -60,11 +60,11 @@ public class DetectUndoingPlugin implements ICssTransformer
                 MSelector selector = effectiveSelectors.get(i);
                 List<MDeclaration> properties = selector.GetDeclarations();
 
-                for (MDeclaration property : properties)
+                for (MDeclaration declaration : properties)
                 {
-                    final String name = property.GetName();
-                    final String value = property.GetValue();
-                    final boolean important = property.IsImportant();
+                    final String name = declaration.GetName();
+                    final String value = declaration.GetValue();
+                    final boolean important = declaration.IsImportant();
 
                     // skip declarations that we do not support yet
                     if(!defaultStyles.containsKey(name))
@@ -89,9 +89,9 @@ public class DetectUndoingPlugin implements ICssTransformer
                             // even with a 0 value, then it is a valid undo (f.e. border-top-width: 0; besides border-width: 4px;)
                             for (MDeclaration property2 : properties)
                             {
-                                if (property != property2)
+                                if (declaration != property2)
                                 {
-                                    if (property.AllowCoexistence(property2))
+                                    if (declaration.AllowCoexistence(property2))
                                     {
                                         validUndo = true;
                                         break;
@@ -143,7 +143,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                                     final String otherName = otherProperty.GetName();
                                     final String otherValue = otherProperty.GetValue();
 
-                                    if (property.AllowCoexistence(otherProperty) || otherName.equals(name) && !otherValue.equals(value))
+                                    if (declaration.AllowCoexistence(otherProperty) || otherName.equals(name) && !otherValue.equals(value))
                                     {
                                         // verify whether this property is allowed to co-exist to another property, whatever the value
                                         // verify whether another effective property in a less-specific selector has the same name
@@ -151,7 +151,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                                         validUndo = true;
                                         LogHandler.debug("[CssUndoDetector] Found an effective property '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
                                                         "that is (correctly) undone by effective property with value '%s' in (more-specific) selector '%s'",
-                                                otherProperty.GetName(), otherProperty.GetValue(), nextSelector, property.GetValue(), selector);
+                                                otherProperty.GetName(), otherProperty.GetValue(), nextSelector, declaration.GetValue(), selector);
                                         break;
                                     }
                                 }
@@ -163,7 +163,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                             }
                         }
 
-                        property.SetInvalidUndo(!validUndo);
+                        declaration.SetInvalidUndo(!validUndo);
                     }
                 }
             }

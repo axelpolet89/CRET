@@ -109,23 +109,23 @@ public class MDeclaration
 
 	/**
 	 * Full copy constructor
-	 * @param property
+	 * @param declaration
 	 */
-	public MDeclaration(MDeclaration property)
+	public MDeclaration(MDeclaration declaration)
 	{
-		_name = property.GetName();
-		_originalValue = property.GetOriginalValue();
-		_normalizedValue = property.GetValue();
-		_status = property.GetStatus();
-		_isEffective = property.IsEffective();
-		_isImportant = property.IsImportant();
-		_isIgnored = property.IsIgnored();
-		_isInvalidUndo = property.IsInvalidUndo();
-		_w3cError = property.GetW3cError();
-		_nameVendorPrefix = property.GetNameVendor();
-		_valueVendorPrefix = property.GetValueVendor();
-		_order = property.GetOrder();
-		_isFaulty = property.IsFaulty();
+		_name = declaration.GetName();
+		_originalValue = declaration.GetOriginalValue();
+		_normalizedValue = declaration.GetValue();
+		_status = declaration.GetStatus();
+		_isEffective = declaration.IsEffective();
+		_isImportant = declaration.IsImportant();
+		_isIgnored = declaration.IsIgnored();
+		_isInvalidUndo = declaration.IsInvalidUndo();
+		_w3cError = declaration.GetW3cError();
+		_nameVendorPrefix = declaration.GetNameVendor();
+		_valueVendorPrefix = declaration.GetValueVendor();
+		_order = declaration.GetOrder();
+		_isFaulty = declaration.IsFaulty();
 	}
 
 
@@ -193,7 +193,7 @@ public class MDeclaration
 	}
 
 	/**
-	 * @param value a normalized value for this MProperty
+	 * @param value a normalized value for this MDeclaration
 	 */
 	public void SetNormalizedValue(String value)
 	{
@@ -202,7 +202,7 @@ public class MDeclaration
 
 
 	/**
-	 * @param effective mark this MProperty as effective or ineffectiv
+	 * @param effective mark this MDeclaration as effective or ineffectiv
 	 */
 	public void SetEffective(boolean effective)
 	{
@@ -237,7 +237,7 @@ public class MDeclaration
 
 	/**
 	 * @param otherProperty the other property besides which this one may co-exist
-	 * @return false, this MProperty may never coexist with another MProperty in the same MSelector
+	 * @return false, this MDeclaration may never coexist with another MDeclaration in the same MSelector
 	 */
 	public boolean AllowCoexistence(MDeclaration otherProperty)
 	{

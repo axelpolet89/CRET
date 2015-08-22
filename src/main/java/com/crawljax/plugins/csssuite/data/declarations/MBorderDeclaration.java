@@ -1,7 +1,7 @@
 package com.crawljax.plugins.csssuite.data.declarations;
 
 /**
- * An extension to MProperty, used on outline and border properties
+ * An extension to MDeclaration, used on outline and border properties
  * which is used to determine whether a property name represents a subset of another property
  * For instance, a border-top-width is a subset of border-width
  */

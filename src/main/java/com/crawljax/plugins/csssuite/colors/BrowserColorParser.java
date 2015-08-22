@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * Created by axel on 6/9/2015.
  *
- * Enables transformation of a browser color name (X11 color scheme) into its rgb representation.
+ * Transforms browser color names (X11 color scheme) into its rgb representation.
  */
 public class BrowserColorParser
 {

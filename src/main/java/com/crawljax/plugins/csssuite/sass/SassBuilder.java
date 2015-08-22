@@ -410,8 +410,8 @@ public class SassBuilder
 
         for(SassSelector sassSelector : sassSelectors)
         {
-            List<MDeclaration> paddings = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("padding-")).collect(Collectors.toList());
-            List<MDeclaration> margins = sassSelector.GetProperties().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("margin-")).collect(Collectors.toList());
+            List<MDeclaration> paddings = sassSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("padding-")).collect(Collectors.toList());
+            List<MDeclaration> margins = sassSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("margin-")).collect(Collectors.toList());
 
             if(paddings.size() > 1)
             {

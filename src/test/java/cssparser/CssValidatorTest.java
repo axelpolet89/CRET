@@ -25,10 +25,10 @@ public class CssValidatorTest
         SuiteStringBuilder builder = new SuiteStringBuilder();
 
         builder.append("div, a, span{\nbackground: solid; }"); //incorrect background value --> error
-        builder.appendLine("#id, .class, span[attr=\"test\"], a:hover, span::before{\ncolor: black;\nmargin 10 px;} "); //second property syntax-error
+        builder.appendLine("#id, .class, span[attr=\"test\"], a:hover, span::before{\ncolor: black;\nmargin 10 px;} "); //second declaration syntax-error
         builder.appendLine("h p[att=\"test\"{\ncolor: red; }"); //syntax-error, unclosed attribute --> error
         builder.appendLine("div {\n color black;}"); // no colon --> parse error
-        builder.appendLine("div {\n hyphenate: none;}"); // no such property --> error
+        builder.appendLine("div {\n hyphenate: none;}"); // no such declaration --> error
         builder.appendLine("div {\n-moz-box-shadow:10px 5px 5px black;}"); //unknown vendor specification --> warning
         builder.appendLine("span:invalid, div, a:valid { color: black; }"); //first and third selector are errors, because invalid pseudo-classes
 

@@ -26,6 +26,11 @@ import org.w3c.dom.css.CSSStyleSheet;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
 
+/**
+ * Created by axel on 6/15/2015.
+ *
+ * Responsible for parsing a given string of CSS code, possible executing W3C validation beforehand
+ */
 public class CssParser
 {
 	private final ParserErrorHandler _errorHandler;

@@ -17,6 +17,14 @@ import org.w3c.css.sac.*;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
+/**
+ * Created by axel on 6/9/2015.
+ *
+ * Represent a CSS selector
+ * Containing one or more declarations
+ *
+ * Holds selector-specific information, including pseudo-selector presence
+ */
 public class MSelector
 {
 	private final Selector _selector;

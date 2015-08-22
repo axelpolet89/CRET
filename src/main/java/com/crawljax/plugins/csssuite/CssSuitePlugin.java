@@ -38,6 +38,12 @@ import com.crawljax.core.state.StateVertex;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 import com.crawljax.plugins.csssuite.parser.CssParser;
 
+/**
+ * Created by axel on 5/17/2015.
+ *
+ * CSS Re-Engineering Tool main class
+ * Crawljax plug-in
+ */
 public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
 	/* Configuration properties */

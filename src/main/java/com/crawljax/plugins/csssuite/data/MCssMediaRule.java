@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Created by axel on 6/9/2015.
+ *
+ * Represents a CSS media rule, which can contain multiple other CSS rules
  */
 public class MCssMediaRule extends MCssRuleBase
 {

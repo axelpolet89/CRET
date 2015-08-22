@@ -124,7 +124,7 @@ public class SassSelector
         return result;
     }
 
-    public List<MDeclaration> GetProperties()
+    public List<MDeclaration> GetDeclarations()
     {
         return _declarations;
     }

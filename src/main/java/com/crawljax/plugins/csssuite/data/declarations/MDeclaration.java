@@ -1,9 +1,10 @@
 package com.crawljax.plugins.csssuite.data.declarations;
 
 /**
- * Represents a style declaration or CSS property that is contained inside a CSS rule
- * A property has a name, value and may be important
- * After analysis, a property may be overridden, thereby rendered ineffective
+ * Created by axel on 6/9/2015.
+ *
+ * Represents a style declaration that is contained inside a CSS selector
+ * A declaration has a name, value and may be important
  */
 public class MDeclaration
 {
@@ -83,7 +84,7 @@ public class MDeclaration
 
 
 	/**
-	 * Constructor for property without error (used in normalizer plug-in and tests)
+	 * Constructor for declaration without error (used in normalizer plug-in and tests)
 	 * @param name
 	 * @param value
 	 * @param isImportant
@@ -95,7 +96,7 @@ public class MDeclaration
 
 
 	/**
-	 * Constructor for property without error and optional effectiveness, used in normalization
+	 * Constructor for declaration without error and optional effectiveness, used in normalization
 	 * @param name
 	 * @param value
 	 * @param isImportant
@@ -236,10 +237,10 @@ public class MDeclaration
 
 
 	/**
-	 * @param otherProperty the other property besides which this one may co-exist
+	 * @param otherDeclaration the other declaration besides which this one may co-exist
 	 * @return false, this MDeclaration may never coexist with another MDeclaration in the same MSelector
 	 */
-	public boolean AllowCoexistence(MDeclaration otherProperty)
+	public boolean AllowCoexistence(MDeclaration otherDeclaration)
 	{
 		return false;
 	}

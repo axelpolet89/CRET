@@ -17,6 +17,11 @@ import org.w3c.css.sac.Selector;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Created by axel on 6/9/2015.
+ *
+ * Represents a default CSS rule, containing one or more CSS selectors
+ */
 public class MCssRule extends MCssRuleBase
 {
 	private final CSSStyleRuleImpl _styleRule;
@@ -287,7 +292,7 @@ public class MCssRule extends MCssRuleBase
 			}
 
 			builder.append(" {");
-			for(MDeclaration mProp : mTuple.GetProperties())
+			for(MDeclaration mProp : mTuple.GetDeclarations())
 			{
 				builder.appendLine("\t" + mProp.toString());
 			}
@@ -301,12 +306,12 @@ public class MCssRule extends MCssRuleBase
 	private class MTuple
 	{
 		private final List<MSelector> _selectors;
-		private final List<MDeclaration> _properties;
+		private final List<MDeclaration> _declarations;
 
 		public MTuple(MSelector mSelector, List<MDeclaration> declarations)
 		{
 			_selectors = new ArrayList<>(Arrays.asList(mSelector));
-			_properties = declarations;
+			_declarations = declarations;
 		}
 
 		public void AddSelector(MSelector selector)
@@ -319,9 +324,9 @@ public class MCssRule extends MCssRuleBase
 			return _selectors;
 		}
 
-		public List<MDeclaration> GetProperties()
+		public List<MDeclaration> GetDeclarations()
 		{
-			return _properties;
+			return _declarations;
 		}
 	}
 }

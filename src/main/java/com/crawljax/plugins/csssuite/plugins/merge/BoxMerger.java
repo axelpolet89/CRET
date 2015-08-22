@@ -61,7 +61,7 @@ public class BoxMerger extends MergerBase
      * @return
      */
     @Override
-    protected List<MDeclaration> MergeProperties()
+    protected List<MDeclaration> mergeDeclarations()
     {
         String value;
 

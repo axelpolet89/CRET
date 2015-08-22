@@ -7,6 +7,8 @@ import org.w3c.dom.Element;
 import com.crawljax.util.DomUtils;
 
 /**
+ * Created by axel on 6/9/2015.
+ *
  * Wraps the org.w3c.dom.Element class, and combines a given Element with the state crawljax found it in
  */
 public class ElementWrapper 

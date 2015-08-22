@@ -75,23 +75,23 @@ public class JavaLibSassTest
 
             for(int j = 0; j < refSelectors.size(); j++)
             {
-                List<MDeclaration> refProperties = refSelectors.get(j).GetDeclarations();
-                List<MDeclaration> libSassProperties = libSassSelectors.get(j).GetDeclarations();
+                List<MDeclaration> refDeclarations = refSelectors.get(j).GetDeclarations();
+                List<MDeclaration> libSassDeclarations = libSassSelectors.get(j).GetDeclarations();
 
                 List<MediaQuery> refMedia = refSelectors.get(j).GetMediaQueries();
                 List<MediaQuery> libSassMedia = libSassSelectors.get(j).GetMediaQueries();
 
                 LogHandler.debug("Checking selector %s on selector %s", refSelectors.get(j), libSassSelectors.get(j));
                 Assert.assertEquals(refSelectors.get(j).GetSelectorText(), libSassSelectors.get(j).GetSelectorText());
-                Assert.assertEquals(refProperties.size(), libSassProperties.size());
+                Assert.assertEquals(refDeclarations.size(), libSassDeclarations.size());
                 Assert.assertEquals(refMedia.size(), libSassMedia.size());
 
-                for(int k = 0; k < refProperties.size(); k++)
+                for(int k = 0; k < refDeclarations.size(); k++)
                 {
-                    Assert.assertEquals(refProperties.get(k).GetName(), libSassProperties.get(k).GetName());
-                    if(!refProperties.get(k).GetValue().equals(libSassProperties.get(k).GetValue()))
+                    Assert.assertEquals(refDeclarations.get(k).GetName(), libSassDeclarations.get(k).GetName());
+                    if(!refDeclarations.get(k).GetValue().equals(libSassDeclarations.get(k).GetValue()))
                     {
-                        LogHandler.warn("Mismatch property value! In selector %s and selector %s, property %s and property %s", refSelectors.get(j), libSassSelectors.get(j), refProperties.get(k), libSassProperties.get(k));
+                        LogHandler.warn("Mismatch declaration value! In selector %s and selector %s, declaration %s and declaration %s", refSelectors.get(j), libSassSelectors.get(j), refDeclarations.get(k), libSassDeclarations.get(k));
                     }
                 }
 

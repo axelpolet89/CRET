@@ -35,16 +35,16 @@ public class DetectClonedDeclarationsPlugin implements ICssTransformer
             {
                 for(MSelector mSelector : mCssRule.GetSelectors())
                 {
-                    List<MDeclaration> mProperties = mSelector.GetDeclarations();
+                    List<MDeclaration> declarations = mSelector.GetDeclarations();
                     List<MDeclaration> clonedProps = new ArrayList<>();
 
-                    for(int i = 0; i < mProperties.size(); i++)
+                    for(int i = 0; i < declarations.size(); i++)
                     {
-                        final MDeclaration current = mProperties.get(i);
+                        final MDeclaration current = declarations.get(i);
 
-                        for(int j = i+1; j < mProperties.size(); j++)
+                        for(int j = i+1; j < declarations.size(); j++)
                         {
-                            final MDeclaration other = mProperties.get(j);
+                            final MDeclaration other = declarations.get(j);
 
                             if(current.GetName().equals(other.GetName()))
                             {
@@ -52,13 +52,13 @@ public class DetectClonedDeclarationsPlugin implements ICssTransformer
                                 {
                                     clonedProps.add(current);
                                     _clonedDeclarationsRemoved++;
-                                    LogHandler.debug("[DetectClonedProperties] Property with '%s' in selector '%s' of file '%s' is a clone of a LATER declared property, and considered ineffective, will be removed", current, mSelector, fileName);
+                                    LogHandler.debug("[DetectClonedDeclarations] Declaration with '%s' in selector '%s' of file '%s' is a clone of a LATER declared declaration, and considered ineffective, will be removed", current, mSelector, fileName);
                                 }
                                 else if (current.IsImportant() && !other.IsImportant())
                                 {
                                     clonedProps.add(other);
                                     _clonedDeclarationsRemoved++;
-                                    LogHandler.debug("[DetectClonedProperties] Property with '%s' in selector '%s' of file '%s' is a clone of a PREVIOUS declared property, and considered ineffective, will be removed", current, mSelector, fileName);
+                                    LogHandler.debug("[DetectClonedDeclarations] Declaration with '%s' in selector '%s' of file '%s' is a clone of a PREVIOUS declared declaration, and considered ineffective, will be removed", current, mSelector, fileName);
                                 }
                             }
                         }

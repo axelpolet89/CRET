@@ -10,6 +10,8 @@ import java.util.List;
 
 /**
  * Created by axel on 6/15/2015.
+ *
+ * Base class for a CSS rule
  */
 public class MCssRuleBase
 {

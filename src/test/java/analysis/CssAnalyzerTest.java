@@ -117,53 +117,53 @@ public class CssAnalyzerTest
 		Assert.assertEquals(8, effectiveExternal.size());
 		Assert.assertEquals(1, effectiveInternal.size());
 
-		List<MDeclaration> properties = effectiveExternal.get(0).GetDeclarations();
+		List<MDeclaration> mDeclarations = effectiveExternal.get(0).GetDeclarations();
 
 		// div#footer
-		Assert.assertEquals(properties.size(), 1);
-		Assert.assertEquals(properties.get(0).GetName(), "color");
+		Assert.assertEquals(mDeclarations.size(), 1);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "color");
 
 		// #footer
-		properties = effectiveExternal.get(1).GetDeclarations();
-		Assert.assertEquals(properties.size(), 1);
-		Assert.assertEquals(properties.get(0).GetName(), "background");
+		mDeclarations = effectiveExternal.get(1).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 1);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "background");
 
 		// #footer
-		properties = effectiveExternal.get(2).GetDeclarations();
-		Assert.assertEquals(properties.size(), 2);
-		Assert.assertEquals(properties.get(0).GetName(), "margin");
-		Assert.assertEquals(properties.get(1).GetName(), "padding");
+		mDeclarations = effectiveExternal.get(2).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 2);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "margin");
+		Assert.assertEquals(mDeclarations.get(1).GetName(), "padding");
 
 		// #wishlist2 li:first-child
-		properties = effectiveExternal.get(3).GetDeclarations();
-		Assert.assertEquals(properties.size(), 1);
-		Assert.assertEquals(properties.get(0).GetName(), "background-color");
+		mDeclarations = effectiveExternal.get(3).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 1);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "background-color");
 
 		// #wishlist3 li a:hover
-		properties = effectiveExternal.get(4).GetDeclarations();
-		Assert.assertEquals(properties.size(), 1);
-		Assert.assertEquals(properties.get(0).GetName(), "border");
+		mDeclarations = effectiveExternal.get(4).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 1);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "border");
 
 		// #wishlist3 li a:link
-		properties = effectiveExternal.get(5).GetDeclarations();
-		Assert.assertEquals(properties.size(), 1);
-		Assert.assertEquals(properties.get(0).GetName(), "border");
+		mDeclarations = effectiveExternal.get(5).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 1);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "border");
 
 		// ul li a
-		properties = effectiveExternal.get(6).GetDeclarations();
-		Assert.assertEquals(properties.size(), 1);
-		Assert.assertEquals(properties.get(0).GetName(), "color");
+		mDeclarations = effectiveExternal.get(6).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 1);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "color");
 
 		// ul li a
-		properties = effectiveExternal.get(7).GetDeclarations();
-		Assert.assertEquals(properties.size(), 1);
-		Assert.assertEquals(properties.get(0).GetName(), "color");
+		mDeclarations = effectiveExternal.get(7).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 1);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "color");
 
 		// INTERNAL ul li a
-		properties = effectiveInternal.get(0).GetDeclarations();
-		Assert.assertEquals(properties.size(), 2);
-		Assert.assertEquals(properties.get(0).GetName(), "font-size");
-		Assert.assertEquals(properties.get(1).GetName(), "display");
+		mDeclarations = effectiveInternal.get(0).GetDeclarations();
+		Assert.assertEquals(mDeclarations.size(), 2);
+		Assert.assertEquals(mDeclarations.get(0).GetName(), "font-size");
+		Assert.assertEquals(mDeclarations.get(1).GetName(), "display");
 	}
 
 

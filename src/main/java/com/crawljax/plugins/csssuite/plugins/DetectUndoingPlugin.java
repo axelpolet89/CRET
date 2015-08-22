@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 /**
  * Created by axel on 6/2/2015.
  *
- * Responsible for finding invalid undo styles. A property is defind to be an invalid undo style if:
- * the property's value is a default value for that property
- * the property is effective
- * the property overrides no other effective property
+ * Responsible for finding invalid undo styles. A declaration is defind to be an invalid undo style if:
+ * the declaration's value is a default value for that declaration
+ * the declaration is effective
+ * the declaration overrides no other effective declaration
  */
 public class DetectUndoingPlugin implements ICssTransformer
 {
@@ -58,9 +58,9 @@ public class DetectUndoingPlugin implements ICssTransformer
             for (int i = 0; i < effectiveSelectors.size(); i++)
             {
                 MSelector selector = effectiveSelectors.get(i);
-                List<MDeclaration> properties = selector.GetDeclarations();
+                List<MDeclaration> declarations = selector.GetDeclarations();
 
-                for (MDeclaration declaration : properties)
+                for (MDeclaration declaration : declarations)
                 {
                     final String name = declaration.GetName();
                     final String value = declaration.GetValue();
@@ -74,10 +74,10 @@ public class DetectUndoingPlugin implements ICssTransformer
 
                     final String defaultValue = defaultStyles.get(name);
 
-                    // verify this property is effective and has a default value
+                    // verify this declaration is effective and has a default value
                     if (value.equals(defaultValue))
                     {
-                        LogHandler.debug("[CssUndoDetector] Found possible undoing property: '%s' with a (default) value '%s' in selector '%s'",
+                        LogHandler.debug("[CssUndoDetector] Found possible undoing declaration: '%s' with a (default) value '%s' in selector '%s'",
                                 name, value, selector);
 
                         // an important value is always a valid undo for now...
@@ -85,9 +85,9 @@ public class DetectUndoingPlugin implements ICssTransformer
 
                         if(!validUndo)
                         {
-                            // if this property is allowed to coexist besides another property in the same selector,
+                            // if this declaration is allowed to coexist besides another declaration in the same selector,
                             // even with a 0 value, then it is a valid undo (f.e. border-top-width: 0; besides border-width: 4px;)
-                            for (MDeclaration property2 : properties)
+                            for (MDeclaration property2 : declarations)
                             {
                                 if (declaration != property2)
                                 {
@@ -145,12 +145,12 @@ public class DetectUndoingPlugin implements ICssTransformer
 
                                     if (declaration.AllowCoexistence(otherProperty) || otherName.equals(name) && !otherValue.equals(value))
                                     {
-                                        // verify whether this property is allowed to co-exist to another property, whatever the value
-                                        // verify whether another effective property in a less-specific selector has the same name
+                                        // verify whether this declaration is allowed to co-exist to another declaration, whatever the value
+                                        // verify whether another effective declaration in a less-specific selector has the same name
                                         // verify that it has a different value
                                         validUndo = true;
-                                        LogHandler.debug("[CssUndoDetector] Found an effective property '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
-                                                        "that is (correctly) undone by effective property with value '%s' in (more-specific) selector '%s'",
+                                        LogHandler.debug("[CssUndoDetector] Found an effective declaration '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
+                                                        "that is (correctly) undone by effective declaration with value '%s' in (more-specific) selector '%s'",
                                                 otherProperty.GetName(), otherProperty.GetValue(), nextSelector, declaration.GetValue(), selector);
                                         break;
                                     }
@@ -198,7 +198,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                 {
                     if(mDeclaration.IsInvalidUndo())
                     {
-                        LogHandler.debug("[CssUndoDetector] Property %s with value %s in selector %s is an INVALID undo style", mDeclaration.GetName(), mDeclaration.GetValue(), mSelector);
+                        LogHandler.debug("[CssUndoDetector] Declaration %s with value %s in selector %s is an INVALID undo style", mDeclaration.GetName(), mDeclaration.GetValue(), mSelector);
                         _defaultDeclarationsRemoved++;
                     }
                 }

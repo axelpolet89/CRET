@@ -77,7 +77,7 @@ public class BackgroundMerger extends MergerBase
 
 
     @Override
-    protected List<MDeclaration> MergeProperties()
+    protected List<MDeclaration> mergeDeclarations()
     {
         List<MDeclaration> result = new ArrayList<>();
 

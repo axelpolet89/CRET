@@ -15,7 +15,7 @@ public abstract class MergerBase
     protected boolean _isImportant;
     protected int _order;
     protected boolean _isSet;
-    protected final List<MDeclaration> _otherProps;
+    protected final List<MDeclaration> _otherDeclarations;
 
     /**
      *
@@ -24,7 +24,7 @@ public abstract class MergerBase
     public MergerBase(String name)
     {
         _name = name;
-        _otherProps = new ArrayList<>();
+        _otherDeclarations = new ArrayList<>();
     }
 
     /**
@@ -39,7 +39,7 @@ public abstract class MergerBase
      *
      * @return
      */
-    protected abstract List<MDeclaration> MergeProperties();
+    protected abstract List<MDeclaration> mergeDeclarations();
 
 
     /**
@@ -79,21 +79,21 @@ public abstract class MergerBase
         }
         else if (_isImportant != isImportant)
         {
-            throw new CssSuiteException("Cannot normalize value '%s' for name '%s', because another property was previously parsed " +
-                                            "with important=%s and this property has important=%s, while this one is.", value, name, _isImportant, isImportant);
+            throw new CssSuiteException("Cannot normalize value '%s' for name '%s', because another declaration was previously parsed " +
+                                            "with important=%s and this declaration has important=%s, while this one is.", value, name, _isImportant, isImportant);
         }
 
         _order = Math.min(order, _order);
         if(!ParseFromSingle(name, value))
         {
-            _otherProps.add(new MDeclaration(name, value, isImportant, order));
+            _otherDeclarations.add(new MDeclaration(name, value, isImportant, order));
         }
         _isSet = true;
     }
 
-    public final List<MDeclaration> BuildMProperties()
+    public final List<MDeclaration> buildMDeclarations()
     {
-        _otherProps.addAll(MergeProperties());
-        return _otherProps;
+        _otherDeclarations.addAll(mergeDeclarations());
+        return _otherDeclarations;
     }
 }

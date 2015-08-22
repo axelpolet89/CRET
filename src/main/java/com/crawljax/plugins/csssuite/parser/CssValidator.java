@@ -8,6 +8,8 @@ import java.io.IOException;
 
 /**
  * Created by axel on 5/29/2015.
+ *
+ * W3C validation service wrapper
  */
 public class CssValidator
 {

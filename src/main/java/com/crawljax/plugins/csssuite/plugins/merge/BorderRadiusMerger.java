@@ -71,7 +71,7 @@ public class BorderRadiusMerger extends MergerBase
 
 
     @Override
-    protected List<MDeclaration> MergeProperties()
+    protected List<MDeclaration> mergeDeclarations()
     {
         String value;
 

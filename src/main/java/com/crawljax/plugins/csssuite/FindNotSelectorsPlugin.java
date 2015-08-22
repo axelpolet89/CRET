@@ -20,9 +20,11 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 
+/**
+ * Crawljax plug-in based on CRET, but only analyzes the percentage of :not selectors in given website
+ */
 public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlugin
 {
-	/* Configuration properties */
 	public final boolean _enableW3cValidation;
 
 	private final String _siteName;

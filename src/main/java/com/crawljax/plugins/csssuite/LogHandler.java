@@ -5,6 +5,8 @@ import org.apache.log4j.Logger;
 
 /**
  * Created by axel on 5/21/2015.
+ *
+ * Responsble for logging stuff throughout CRET using log4j
  */
 public class LogHandler
 {

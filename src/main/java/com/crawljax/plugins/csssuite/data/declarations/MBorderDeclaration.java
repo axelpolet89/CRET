@@ -1,9 +1,11 @@
 package com.crawljax.plugins.csssuite.data.declarations;
 
 /**
- * An extension to MDeclaration, used on outline and border properties
- * which is used to determine whether a property name represents a subset of another property
- * For instance, a border-top-width is a subset of border-width
+ * Created by axel on 6/9/2015.
+ *
+ * An extension to MDeclaration, used on outline and border declarations
+ * which is used to determine whether a declaration name represents a subset of another declaration
+ * For example, a border-top-width is a subset of border-width
  */
 public class MBorderDeclaration extends MDeclaration
 {
@@ -18,17 +20,17 @@ public class MBorderDeclaration extends MDeclaration
 
 	/**
 	 *
-	 * @param otherProperty
+	 * @param otherDeclaration
 	 * @return
 	 */
 	@Override
-	public boolean AllowCoexistence(MDeclaration otherProperty)
+	public boolean AllowCoexistence(MDeclaration otherDeclaration)
 	{
-		String name = otherProperty.GetName();
+		String name = otherDeclaration.GetName();
 
 		if(_name.equals(name) || _allowedWith.contains(name))
 		{
-			if(!_normalizedValue.equals(otherProperty.GetValue()))
+			if(!_normalizedValue.equals(otherDeclaration.GetValue()))
 			{
 				return true;
 			}

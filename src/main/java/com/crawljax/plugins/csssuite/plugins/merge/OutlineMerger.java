@@ -40,9 +40,9 @@ public class OutlineMerger extends BorderMerger
 
 
     @Override
-    protected List<MDeclaration> MergeProperties()
+    protected List<MDeclaration> mergeDeclarations()
     {
-        List<MDeclaration> result = super.MergeProperties();
+        List<MDeclaration> result = super.mergeDeclarations();
 
         if(!_offset.isEmpty())
         {

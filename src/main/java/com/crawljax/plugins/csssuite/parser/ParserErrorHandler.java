@@ -9,6 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Created by axel on 6/15/2015.
+ *
+ * Wrapper that implements SAC parser error handling
+ * Used in CssParser
+ */
 public class ParserErrorHandler implements ErrorHandler
 {
     private List<CSSParseException> _warnings;

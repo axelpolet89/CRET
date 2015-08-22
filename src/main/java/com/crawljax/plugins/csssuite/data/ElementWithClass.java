@@ -6,6 +6,8 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 /**
+ * Created by axel on 6/9/2015.
+ *
  * Extension of ElementWrapper, which holds any classes and unmatched classes for this Element
  */
 public class ElementWithClass extends ElementWrapper

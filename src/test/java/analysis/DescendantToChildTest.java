@@ -57,11 +57,11 @@ public class DescendantToChildTest
         for(String s : matchedElements.GetMatchedElements())
                 matches.add(s);
 
-        List<MDeclaration> matchedProperties = new ArrayList<>();
+        List<MDeclaration> matchedDeclarations = new ArrayList<>();
         for(String s : matches)
         {
             for(MSelector m : matchedElements.SortSelectorsForMatchedElem(s))
-                matchedProperties.addAll(m.GetDeclarations());
+                matchedDeclarations.addAll(m.GetDeclarations());
         }
 
         // post crawling
@@ -87,12 +87,12 @@ public class DescendantToChildTest
         Set<String> matches2 = matchedElements2.GetMatchedElements();
         Assert.assertArrayEquals(matches.toArray(), matches2.toArray());
 
-        List<MDeclaration> matchedProperties2 = new ArrayList<>();
+        List<MDeclaration> matchedDeclarations2 = new ArrayList<>();
         for(String s : matches2)
         {
             for(MSelector m : matchedElements2.SortSelectorsForMatchedElem(s))
-                matchedProperties2.addAll(m.GetDeclarations());
+                matchedDeclarations2.addAll(m.GetDeclarations());
         }
-        Assert.assertArrayEquals(matchedProperties.toArray(), matchedProperties2.toArray());
+        Assert.assertArrayEquals(matchedDeclarations.toArray(), matchedDeclarations2.toArray());
     }
 }

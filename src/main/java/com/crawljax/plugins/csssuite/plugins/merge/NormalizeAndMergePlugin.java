@@ -31,7 +31,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
     {
         for (String file : cssRules.keySet())
         {
-            LogHandler.info("[CssMergeNormalizer] Start normalization of properties for file '%s'", file);
+            LogHandler.info("[CssMergeNormalizer] Start normalization of declarations for file '%s'", file);
 
             for(MCssRule mRule : cssRules.get(file).GetRules())
             {
@@ -43,7 +43,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
                         _propSelMap.put(mDeclaration, mSelector);
                     }
 
-                    MergePropertiesToShorthand(mSelector);
+                    MergeDeclarationsToShorthand(mSelector);
 
                     //sort properties again
                     mSelector.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
@@ -56,13 +56,13 @@ public class NormalizeAndMergePlugin implements ICssTransformer
 
 
     /**
-     * Split any shorthand margin, padding, border, border-radius, outline and background property into parts
+     * Split any shorthand margin, padding, border, border-radius, outline and background declaration into parts
      * @param mSelector
      */
-    private void MergePropertiesToShorthand(MSelector mSelector)
+    private void MergeDeclarationsToShorthand(MSelector mSelector)
     {
-        List<MDeclaration> newProperties = new ArrayList<>();
-        List<MDeclaration> properties = mSelector.GetDeclarations();
+        List<MDeclaration> newDeclarations = new ArrayList<>();
+        List<MDeclaration> declarations = mSelector.GetDeclarations();
 
         List<MDeclaration> margins = new ArrayList<>();
         List<MDeclaration> paddings = new ArrayList<>();
@@ -79,13 +79,13 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         Set<MDeclaration> borderColors = new HashSet<>();
         Set<MDeclaration> borderWidths = new HashSet<>();
 
-        for(int i = 0; i < properties.size(); i++)
+        for(int i = 0; i < declarations.size(); i++)
         {
-            MDeclaration mDeclaration = properties.get(i);
+            MDeclaration mDeclaration = declarations.get(i);
 
             if(mDeclaration.IsIgnored())
             {
-                newProperties.add(mDeclaration);
+                newDeclarations.add(mDeclaration);
                 continue;
             }
 
@@ -164,59 +164,59 @@ public class NormalizeAndMergePlugin implements ICssTransformer
             }
             else
             {
-                newProperties.add(mDeclaration);
+                newDeclarations.add(mDeclaration);
             }
         }
 
-        newProperties.addAll(MergeBoxProperties(margins, new BoxMerger("margin")));
-        newProperties.addAll(MergeBoxProperties(paddings, new BoxMerger("padding")));
-        newProperties.addAll(MergeBorderProperties(border, new BorderMerger("border")));
+        newDeclarations.addAll(mergeBoxDeclarations(margins, new BoxMerger("margin")));
+        newDeclarations.addAll(mergeBoxDeclarations(paddings, new BoxMerger("padding")));
+        newDeclarations.addAll(MergeBorderDeclarations(border, new BorderMerger("border")));
 
         if(borderWidths.size() == (borderTop.size() + borderBottom.size() + borderLeft.size() + borderRight.size()))
         {
-            newProperties.addAll(MergeBoxProperties(new ArrayList<>(borderWidths), new BoxMerger("border-width")));
+            newDeclarations.addAll(mergeBoxDeclarations(new ArrayList<>(borderWidths), new BoxMerger("border-width")));
         }
         else if (borderStyles.size() == (borderTop.size() + borderBottom.size() + borderLeft.size() + borderRight.size()))
         {
-            newProperties.addAll(MergeBoxProperties(new ArrayList<>(borderStyles), new BoxMerger("border-style")));
+            newDeclarations.addAll(mergeBoxDeclarations(new ArrayList<>(borderStyles), new BoxMerger("border-style")));
         }
         else if (borderColors.size() == (borderTop.size() + borderBottom.size() + borderLeft.size() + borderRight.size()))
         {
-            newProperties.addAll(MergeBoxProperties(new ArrayList<>(borderColors), new BoxMerger("border-color")));
+            newDeclarations.addAll(mergeBoxDeclarations(new ArrayList<>(borderColors), new BoxMerger("border-color")));
         }
         else
         {
-            newProperties.addAll(MergeBorderProperties(borderTop, new BorderSideMerger("border-top")));
-            newProperties.addAll(MergeBorderProperties(borderRight, new BorderSideMerger("border-right")));
-            newProperties.addAll(MergeBorderProperties(borderBottom, new BorderSideMerger("border-bottom")));
-            newProperties.addAll(MergeBorderProperties(borderLeft, new BorderSideMerger("border-left")));
+            newDeclarations.addAll(MergeBorderDeclarations(borderTop, new BorderSideMerger("border-top")));
+            newDeclarations.addAll(MergeBorderDeclarations(borderRight, new BorderSideMerger("border-right")));
+            newDeclarations.addAll(MergeBorderDeclarations(borderBottom, new BorderSideMerger("border-bottom")));
+            newDeclarations.addAll(MergeBorderDeclarations(borderLeft, new BorderSideMerger("border-left")));
         }
 
-        newProperties.addAll(MergeBoxProperties(borderRadii, new BorderRadiusMerger("border-radius")));
-        newProperties.addAll(MergeBorderProperties(outline, new OutlineMerger("outline")));
-        newProperties.addAll(MergeBorderProperties(background, new BackgroundMerger("background")));
+        newDeclarations.addAll(mergeBoxDeclarations(borderRadii, new BorderRadiusMerger("border-radius")));
+        newDeclarations.addAll(MergeBorderDeclarations(outline, new OutlineMerger("outline")));
+        newDeclarations.addAll(MergeBorderDeclarations(background, new BackgroundMerger("background")));
 
-        mSelector.SetNewDeclarations(newProperties);
+        mSelector.SetNewDeclarations(newDeclarations);
     }
 
 
     /**
      *
-     * @param properties
+     * @param declarations
      * @param merger
      * @return
      */
-    private List<MDeclaration> MergeBoxProperties(List<MDeclaration> properties, MergerBase merger)
+    private List<MDeclaration> mergeBoxDeclarations(List<MDeclaration> declarations, MergerBase merger)
     {
-        if(properties.size() == 0)
+        if(declarations.size() == 0)
         {
             return new ArrayList<>();
         }
 
-        if(properties.size() == 4)
+        if(declarations.size() == 4)
         {
             List<MDeclaration> result = new ArrayList<>();
-            for (MDeclaration mDeclaration : properties)
+            for (MDeclaration mDeclaration : declarations)
             {
                 try
                 {
@@ -225,34 +225,34 @@ public class NormalizeAndMergePlugin implements ICssTransformer
                 catch (Exception e)
                 {
                     result.add(mDeclaration);
-                    LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s in selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
+                    LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single declaration %s in selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
                 }
             }
 
-            result.addAll(merger.BuildMProperties());
+            result.addAll(merger.buildMDeclarations());
             return result;
         }
 
-        return properties;
+        return declarations;
     }
 
 
     /**
      *
-     * @param properties
+     * @param declarations
      * @param merger
      * @return
      */
-    private List<MDeclaration> MergeBorderProperties(List<MDeclaration> properties, MergerBase merger)
+    private List<MDeclaration> MergeBorderDeclarations(List<MDeclaration> declarations, MergerBase merger)
     {
-        if (properties.size() == 0)
+        if (declarations.size() == 0)
         {
             return new ArrayList<>();
         }
 
         List<MDeclaration> result = new ArrayList<>();
 
-        for (MDeclaration mDeclaration : properties)
+        for (MDeclaration mDeclaration : declarations)
         {
             try
             {
@@ -261,11 +261,11 @@ public class NormalizeAndMergePlugin implements ICssTransformer
             catch (Exception e)
             {
                 result.add(mDeclaration);
-                LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single property %s for selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
+                LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single declaration %s for selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
             }
         }
 
-        result.addAll(merger.BuildMProperties());
+        result.addAll(merger.buildMDeclarations());
 
         return result;
     }

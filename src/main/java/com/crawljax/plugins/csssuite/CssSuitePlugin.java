@@ -278,7 +278,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 			LogHandler.warn("[CssParser] Parse errors occurred while parsing '%s'\n%s", url, parseError);
 		}
 
-		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size());
+		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.getRules().size());
 
 		return file;
 	}
@@ -689,17 +689,17 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private int countRuleSelectors(MCssRule mCssRule)
 	{
-		return (int)mCssRule.GetSelectors().stream().filter(s -> !s.IsIgnored()).count();
+		return (int)mCssRule.getSelectors().stream().filter(s -> !s.isIgnored()).count();
 	}
 
 	private int countRuleDeclarations(MCssRule mCssRule)
 	{
 		int count = 0;
-		for(MSelector mSelector : mCssRule.GetSelectors())
+		for(MSelector mSelector : mCssRule.getSelectors())
 		{
-			if(!mSelector.IsIgnored())
+			if(!mSelector.isIgnored())
 			{
-				count += mSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored()).count();
+				count += mSelector.getDeclarations().stream().filter(p -> !p.isIgnored()).count();
 			}
 		}
 		return count;
@@ -709,7 +709,7 @@ public class CssSuitePlugin implements OnNewStatePlugin, PostCrawlingPlugin
 	{
 		int count = 0;
 
-		for(MCssRule mCssRule : mCssFile.GetRules())
+		for(MCssRule mCssRule : mCssFile.getRules())
 		{
 			count += statisticsFunction.apply(mCssRule);
 		}

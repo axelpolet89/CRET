@@ -3,7 +3,6 @@ package analysis;
 import java.io.IOException;
 import java.util.List;
 
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
 import helpers.TestHelper;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
@@ -108,17 +107,17 @@ public class MatchedElementsTest
 
 		// non-structural pseudo-selector via MSelector (used in CssAnalyzer)
 		MSelector mSelector = TestHelper.CreateEmptySelector("#div2:hover");
-		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
+		result = seSelectors.querySelectorAll(mSelector.getFilteredSelectorText());
 		Assert.assertEquals(1, result.size());																					// it will match
 		List<Node> nodes = (List<Node>)result;
-		Assert.assertTrue(mSelector.CheckPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will be compatible
+		Assert.assertTrue(mSelector.checkPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will be compatible
 
 		// non-structural pseudo-selector via MSelector, but not compatible (div with visited)
 		mSelector = TestHelper.CreateEmptySelector("#div2:visited");
-		result = seSelectors.querySelectorAll(mSelector.GetFilteredSelectorText());
+		result = seSelectors.querySelectorAll(mSelector.getFilteredSelectorText());
 		Assert.assertEquals(1, result.size());																					// it will match
 		nodes = (List<Node>)result;
-		Assert.assertFalse(mSelector.CheckPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will not be compatible
+		Assert.assertFalse(mSelector.checkPseudoCompatibility(nodes.get(0).getNodeName(), nodes.get(0).getAttributes()));		// it will not be compatible
 
 		try
 		{

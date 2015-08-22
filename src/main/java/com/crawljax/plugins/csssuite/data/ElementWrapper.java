@@ -31,13 +31,13 @@ public class ElementWrapper
 	}
 
 	/** Getter */
-	public Element GetElement()
+	public Element getElement()
 	{
 		return _element;
 	}
 
 	/** Getter */
-	public String GetKey() { return _key; }
+	public String getKey() { return _key; }
 
 
 	@Override

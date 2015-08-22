@@ -71,7 +71,7 @@ public class MSelector
 		_parent = parent;
 		_w3cError = w3cError;
 
-		Init();
+		init();
 	}
 
 
@@ -82,11 +82,11 @@ public class MSelector
 	 */
 	public MSelector(Selector w3cSelector, MSelector mSel)
 	{
-		this(w3cSelector, mSel.GetDeclarations(), mSel.GetLineNumber(), mSel.GetOrder(), mSel.GetMediaQueries(), mSel.GetParent(), "");
+		this(w3cSelector, mSel.getDeclarations(), mSel.getLineNumber(), mSel.getOrder(), mSel.getMediaQueries(), mSel.getParent(), "");
 
 		// set additional declarations, left empty by default constructor
-		_isMatched = mSel.IsMatched();
-		_matchedElements.addAll(mSel.GetMatchedElements());
+		_isMatched = mSel.isMatched();
+		_matchedElements.addAll(mSel.getMatchedElements());
 	}
 
 
@@ -95,30 +95,30 @@ public class MSelector
 	 */
 	public MSelector(MSelector mSel)
 	{
-		_selector = mSel.GetW3cSelector();
+		_selector = mSel.getW3CSelector();
 		_selectorText = _selector.toString().trim();
 		_mediaQueries = new ArrayList<>();
-		_mediaQueries.addAll(mSel.GetMediaQueries());
-		_lineNumber = mSel.GetLineNumber();
-		_order = mSel.GetOrder();
-		_parent = mSel.GetParent();
-		_w3cError = mSel.GetW3cError();
+		_mediaQueries.addAll(mSel.getMediaQueries());
+		_lineNumber = mSel.getLineNumber();
+		_order = mSel.getOrder();
+		_parent = mSel.getParent();
+		_w3cError = mSel.getW3CError();
 
 		//copy construct declarations
-		_declarations = mSel.GetDeclarations().stream().map(MDeclaration::new).collect(Collectors.toList());
+		_declarations = mSel.getDeclarations().stream().map(MDeclaration::new).collect(Collectors.toList());
 
-		Init();
+		init();
 
 		// set additional declarations, left empty by default constructor
-		_isMatched = mSel.IsMatched();
-		_matchedElements.addAll(mSel.GetMatchedElements());
+		_isMatched = mSel.isMatched();
+		_matchedElements.addAll(mSel.getMatchedElements());
 	}
 
 
 	/**
 	 * Initialize other declarations, by recursively parsing w3c selector object
 	 */
-	private void Init()
+	private void init()
 	{
 		_matchedElements = new ArrayList<>();
 		_nonStructuralPseudoClasses = new LinkedHashMap<>();
@@ -130,7 +130,7 @@ public class MSelector
 		if(_isIgnored)
 		{
 			_isMatched = true;
-			_declarations.forEach(p -> p.SetEffective(true));
+			_declarations.forEach(p -> p.setEffective(true));
 			_selectorText = _selectorText.replace("*","");
 		}
 		else
@@ -138,7 +138,7 @@ public class MSelector
 
 			try
 			{
-				RecursiveFilterUniversalSelector(_selector);
+				recursiveFilterUniversalSelector(_selector);
 			}
 			catch (Exception ex)
 			{
@@ -147,7 +147,7 @@ public class MSelector
 
 			try
 			{
-				DeterminePseudo();
+				determinePseudo();
 			}
 			catch (Exception ex)
 			{
@@ -165,14 +165,14 @@ public class MSelector
 	 * Recursively filter every selector in the sequence on universal selectors that were added by the CssParser
 	 * @param selector
 	 */
-	private void RecursiveFilterUniversalSelector(Selector selector)
+	private void recursiveFilterUniversalSelector(Selector selector)
 	{
 		if(selector instanceof PseudoElementSelectorImpl)
 		{
 			String selectorText = selector.toString();
 			if(selectorText.contains("*"))
 			{
-				FilterUniversalSelector(selectorText);
+				filterUniversalSelector(selectorText);
 			}
 		}
 		else if(selector instanceof SimpleSelector)
@@ -180,20 +180,20 @@ public class MSelector
 			String selectorText = selector.toString();
 			if(selectorText.contains("*") && !selectorText.equals("*") && !selectorText.contains("["))
 			{
-				FilterUniversalSelector(selectorText);
+				filterUniversalSelector(selectorText);
 			}
 		}
 		else if (selector instanceof DescendantSelector)
 		{
 			DescendantSelector dSelector = (DescendantSelector)selector;
-			RecursiveFilterUniversalSelector(dSelector.getSimpleSelector());
-			RecursiveFilterUniversalSelector(dSelector.getAncestorSelector());
+			recursiveFilterUniversalSelector(dSelector.getSimpleSelector());
+			recursiveFilterUniversalSelector(dSelector.getAncestorSelector());
 		}
 		else if (selector instanceof SiblingSelector)
 		{
 			SiblingSelector dSelector = (SiblingSelector)selector;
-			RecursiveFilterUniversalSelector(dSelector.getSelector());
-			RecursiveFilterUniversalSelector(dSelector.getSiblingSelector());
+			recursiveFilterUniversalSelector(dSelector.getSelector());
+			recursiveFilterUniversalSelector(dSelector.getSiblingSelector());
 		}
 	}
 
@@ -202,7 +202,7 @@ public class MSelector
 	 * Replace part of the selector sequence from the universal selector
 	 * @param part
 	 */
-	private void FilterUniversalSelector(String part)
+	private void filterUniversalSelector(String part)
 	{
 		//first escape the selectorText (which will be used as a regular expression below)
 		part = part.replaceAll("\\*", "\\\\*");
@@ -220,7 +220,7 @@ public class MSelector
 	 * Foreach selector that is a non-structural pseudo-selector, we filter the _selectorText with that pseudo-selector,
 	 * so that we can use the selector to track any elements (without pseudo-state in a DOM tree)
 	 */
-	private void DeterminePseudo()
+	private void determinePseudo()
 	{
 		if(_selectorText.contains(":"))
 		{
@@ -228,7 +228,7 @@ public class MSelector
 
 			//find all pseudo selectors in the whole selector
 			_pseudoLevel = 0;
-			RecursiveParsePseudoClasses(_selector);
+			recursiveParsePseudoClasses(_selector);
 
 			for(String value : _nonStructuralPseudoClasses.values())
 			{
@@ -250,7 +250,7 @@ public class MSelector
 	 * If a pseudo-class is present, set it via PutPseudoClass
 	 * @param selector
 	 */
-	private void RecursiveParsePseudoClasses(Selector selector)
+	private void recursiveParsePseudoClasses(Selector selector)
 	{
 		if(selector instanceof PseudoElementSelectorImpl)
 		{
@@ -259,25 +259,25 @@ public class MSelector
 		}
 		else if(selector instanceof SimpleSelector)
 		{
-			PutPseudoClass(selector.toString().split(":"));
+			putPseudoClass(selector.toString().split(":"));
 		}
 		else if (selector instanceof DescendantSelector)
 		{
 			DescendantSelector dSelector = (DescendantSelector)selector;
 
-			RecursiveParsePseudoClasses(dSelector.getSimpleSelector());
+			recursiveParsePseudoClasses(dSelector.getSimpleSelector());
 
 			_pseudoLevel++;
-			RecursiveParsePseudoClasses(dSelector.getAncestorSelector());
+			recursiveParsePseudoClasses(dSelector.getAncestorSelector());
 		}
 		else if (selector instanceof SiblingSelector)
 		{
 			SiblingSelector dSelector = (SiblingSelector)selector;
 
-			RecursiveParsePseudoClasses(dSelector.getSelector());
+			recursiveParsePseudoClasses(dSelector.getSelector());
 
 			_pseudoLevel++;
-			RecursiveParsePseudoClasses(dSelector.getSiblingSelector());
+			recursiveParsePseudoClasses(dSelector.getSiblingSelector());
 		}
 	}
 
@@ -287,7 +287,7 @@ public class MSelector
 	 *
 	 * @param parts
 	 */
-	private void PutPseudoClass(String[] parts)
+	private void putPseudoClass(String[] parts)
 	{
 		//will be 3 if pseudo in :not
 		if(parts.length != 2)
@@ -310,58 +310,58 @@ public class MSelector
 
 
 	/** Getter */
-	public Selector GetW3cSelector() { return _selector; }
+	public Selector getW3CSelector() { return _selector; }
 
 	/** Getter */
-	public String GetSelectorText() { return _selectorText;	}
+	public String getSelectorText() { return _selectorText;	}
 
 	/** Getter */
-	public List<MDeclaration> GetDeclarations() { return _declarations; }
+	public List<MDeclaration> getDeclarations() { return _declarations; }
 
 	/** Getter */
-	public int GetLineNumber() { return _lineNumber; }
+	public int getLineNumber() { return _lineNumber; }
 
 	/** Getter */
-	public int GetOrder() { return _order; }
+	public int getOrder() { return _order; }
 
 	/** Getter */
-	public String GetW3cError() { return _w3cError; }
+	public String getW3CError() { return _w3cError; }
 
 	/** Getter */
-	public List<MediaQuery> GetMediaQueries() { return _mediaQueries; }
+	public List<MediaQuery> getMediaQueries() { return _mediaQueries; }
 
 	/** Getter */
-	public MCssRuleBase GetParent() { return _parent; };
+	public MCssRuleBase getParent() { return _parent; };
 
 	/** Getter */
-	public boolean IsIgnored() { return _isIgnored; }
+	public boolean isIgnored() { return _isIgnored; }
 
 	/** Getter */
-	public boolean IsNonStructuralPseudo() { return _isNonStructuralPseudo; }
+	public boolean isNonStructuralPseudo() { return _isNonStructuralPseudo; }
 
 	/** Getter */
-	public boolean HasPseudoElement() { return _hasPseudoElement; }
+	public boolean hasPseudoElement() { return _hasPseudoElement; }
 
 	/** Getter */
-	public String GetPseudoElement() { return _keyPseudoElement; }
+	public String getPseudoElement() { return _keyPseudoElement; }
 
 	/** Getter */
-	public String GetPseudoClass() { return _keyPseudoClass; }
+	public String getPseudoClass() { return _keyPseudoClass; }
 
 	/** Getter */
-	public boolean IsMatched() { return _isMatched; }
+	public boolean isMatched() { return _isMatched; }
 
 	/** Getter */
-	public Specificity GetSpecificity() { return _specificity; }
+	public Specificity getSpecificity() { return _specificity; }
 
 	/** Getter */
-	public List<ElementWrapper> GetMatchedElements() { return _matchedElements; }
+	public List<ElementWrapper> getMatchedElements() { return _matchedElements; }
 
 
 	/**
 	 * @return css code that is usable to query a DOM, e.g. with filtered-out pseudo selectors
 	 */
-	public String GetFilteredSelectorText()
+	public String getFilteredSelectorText()
 	{
 		if(_isNonStructuralPseudo)
 			return _selectorTextWithoutPseudo;
@@ -376,19 +376,19 @@ public class MSelector
 	 * @param attributes
 	 * @return whether the given element is compatible with the 'key' pseudo-class of this selector
 	 */
-	public boolean CheckPseudoCompatibility(String elementType, NamedNodeMap attributes)
+	public boolean checkPseudoCompatibility(String elementType, NamedNodeMap attributes)
 	{
 		switch (_keyPseudoClass)
 		{
 			case ":link":
 			case ":visited":
-				if(elementType.equalsIgnoreCase("a") && GetAttributeValue(attributes, "href") != null)
+				if(elementType.equalsIgnoreCase("a") && getAttributeValue(attributes, "href") != null)
 					return true;
 				break;
 			case ":checked":
 				if(elementType.equalsIgnoreCase("input"))
 				{
-					String type = GetAttributeValue(attributes, "type");
+					String type = getAttributeValue(attributes, "type");
 					if(type != null && type.equalsIgnoreCase("checkbox") || type.equalsIgnoreCase("radio") || type.equalsIgnoreCase("option"))
 						return true;
 				}
@@ -399,7 +399,7 @@ public class MSelector
 					return true;
 				if(elementType.equalsIgnoreCase("input"))
 				{
-					String type = GetAttributeValue(attributes, "type");
+					String type = getAttributeValue(attributes, "type");
 					if(type != null && type.equalsIgnoreCase("button") || type.equalsIgnoreCase("text"))
 						return true;
 				}
@@ -423,7 +423,7 @@ public class MSelector
 	 * @param attributeName
 	 * @return the value for the given attribute, or NULL
 	 */
-	private static String GetAttributeValue(NamedNodeMap attributes, String attributeName)
+	private static String getAttributeValue(NamedNodeMap attributes, String attributeName)
 	{
 		if(attributes == null)
 			return null;
@@ -442,7 +442,7 @@ public class MSelector
 	 * Indicate that this selector matches to one or more elements in a DOM
 	 * @param matched
 	 */
-	public void SetMatched(boolean matched)
+	public void setMatched(boolean matched)
 	{
 		_isMatched = matched;
 	}
@@ -452,7 +452,7 @@ public class MSelector
 	 * Add a DOM element that matches this selector
 	 * @param element
 	 */
-	public void AddMatchedElement(ElementWrapper element)
+	public void addMatchedElement(ElementWrapper element)
 	{
 		if (element != null)
 		{
@@ -466,9 +466,9 @@ public class MSelector
 	 * @param otherSelector
 	 * @return true if the 'key' (right-most) pseudo-class is equal to the key pseudo-class of the other selector
 	 */
-	public boolean HasEqualPseudoElement(MSelector otherSelector)
+	public boolean hasEqualPseudoElement(MSelector otherSelector)
 	{
-		return _keyPseudoElement.equals(otherSelector.GetPseudoElement());
+		return _keyPseudoElement.equals(otherSelector.getPseudoElement());
 	}
 
 
@@ -477,9 +477,9 @@ public class MSelector
 	 * @param otherSelector
 	 * @return true if the 'key' (right-most) pseudo-class is equal to the key pseudo-class of the other selector
 	 */
-	public boolean HasEqualPseudoClass(MSelector otherSelector)
+	public boolean hasEqualPseudoClass(MSelector otherSelector)
 	{
-		return _keyPseudoClass.equals(otherSelector.GetPseudoClass());
+		return _keyPseudoClass.equals(otherSelector.getPseudoClass());
 	}
 
 
@@ -491,7 +491,7 @@ public class MSelector
 	 */
 	public boolean HasEqualMediaQueries(MSelector otherSelector)
 	{
-		List<MediaQuery> commonQueries = FindCommonMediaQueries(otherSelector);
+		List<MediaQuery> commonQueries = findCommonMediaQueries(otherSelector);
 		if(_mediaQueries.containsAll(commonQueries) && commonQueries.containsAll(_mediaQueries))
 		{
 			return true;
@@ -506,11 +506,11 @@ public class MSelector
 	 * @param otherSelector
 	 * @return
 	 */
-	private List<MediaQuery> FindCommonMediaQueries(MSelector otherSelector)
+	private List<MediaQuery> findCommonMediaQueries(MSelector otherSelector)
 	{
 		List<MediaQuery> result = new ArrayList<>();
 
-		List<MediaQuery> otherQueries = otherSelector.GetMediaQueries();
+		List<MediaQuery> otherQueries = otherSelector.getMediaQueries();
 
 		for(MediaQuery query : _mediaQueries)
 		{
@@ -566,9 +566,9 @@ public class MSelector
 	/**
 	 * @return true if any declaration contained in this selector is effective
 	 */
-	public boolean HasEffectiveDeclarations()
+	public boolean hasEffectiveDeclarations()
 	{
-		return _declarations.stream().anyMatch((declaration) -> declaration.IsEffective());
+		return _declarations.stream().anyMatch((declaration) -> declaration.isEffective());
 	}
 
 
@@ -576,7 +576,7 @@ public class MSelector
 	 *
 	 * @param mDeclaration
 	 */
-	public void RestoreDevlaration(MDeclaration mDeclaration)
+	public void restoreDeclaration(MDeclaration mDeclaration)
 	{
 		_declarations.add(mDeclaration);
 	}
@@ -586,7 +586,7 @@ public class MSelector
 	 *
 	 * @param newProps
 	 */
-	public void SetNewDeclarations(List<MDeclaration> newProps)
+	public void setNewDeclarations(List<MDeclaration> newProps)
 	{
 		_declarations.clear();
 		_declarations.addAll(newProps);
@@ -596,18 +596,18 @@ public class MSelector
 	/**
 	 * Remove any declaration that has not been deemed effective
 	 */
-	public void RemoveIneffectiveDeclarations()
+	public void removeIneffectiveDeclarations()
 	{
-		_declarations.removeIf((p) -> !p.IsIgnored() && !p.IsEffective());
+		_declarations.removeIf((p) -> !p.isIgnored() && !p.isEffective());
 	}
 
 
 	/**
 	 * Remove any declaration that performs an invalid undo
 	 */
-	public void RemoveInvalidUndoDeclarations()
+	public void removeInvalidUndoDeclarations()
 	{
-		_declarations.removeIf((p) -> !p.IsIgnored() && p.IsInvalidUndo());
+		_declarations.removeIf((p) -> !p.isIgnored() && p.isInvalidUndo());
 	}
 
 
@@ -615,7 +615,7 @@ public class MSelector
 	 *
 	 * @param declarations
 	 */
-	public void RemoveDeclarations(List<MDeclaration> declarations)
+	public void removeDeclarations(List<MDeclaration> declarations)
 	{
 		_declarations.removeAll(declarations);
 	}
@@ -625,7 +625,7 @@ public class MSelector
 	 *
 	 * @param declarations
 	 */
-	public void RemoveDeclarationsByText(List<MDeclaration> declarations)
+	public void removeDeclarationsByText(List<MDeclaration> declarations)
 	{
 		List<MDeclaration> toRemove = new ArrayList<>();
 		for(MDeclaration mDeclaration : declarations)
@@ -641,30 +641,6 @@ public class MSelector
 
 		_declarations.removeAll(toRemove);
 	}
-
-
-	/**
-	 *
-	 * @return
-	 */
-	public String Print()
-	{
-		StringBuffer buffer = new StringBuffer();
-
-		buffer.append("Selector: " + _selectorText + "\n");
-		buffer.append(" Matched?: " + _isMatched + "\n");
-
-		if (_matchedElements.size() > 0) {
-			buffer.append(" Matched elements:: \n");
-		}
-
-		for (ElementWrapper eWrapper : _matchedElements) {
-			buffer.append(eWrapper.toString());
-		}
-
-		return buffer.toString();
-	}
-
 
 	@Override
 	public String toString()

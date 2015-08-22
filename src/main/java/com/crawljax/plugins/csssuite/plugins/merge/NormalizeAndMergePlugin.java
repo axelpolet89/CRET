@@ -33,12 +33,12 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         {
             LogHandler.info("[CssMergeNormalizer] Start normalization of declarations for file '%s'", file);
 
-            for(MCssRule mRule : cssRules.get(file).GetRules())
+            for(MCssRule mRule : cssRules.get(file).getRules())
             {
-                for(MSelector mSelector : mRule.GetSelectors())
+                for(MSelector mSelector : mRule.getSelectors())
                 {
                     _propSelMap.clear();
-                    for(MDeclaration mDeclaration : mSelector.GetDeclarations())
+                    for(MDeclaration mDeclaration : mSelector.getDeclarations())
                     {
                         _propSelMap.put(mDeclaration, mSelector);
                     }
@@ -46,7 +46,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
                     MergeDeclarationsToShorthand(mSelector);
 
                     //sort properties again
-                    mSelector.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+                    mSelector.getDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
                 }
             }
         }
@@ -62,7 +62,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
     private void MergeDeclarationsToShorthand(MSelector mSelector)
     {
         List<MDeclaration> newDeclarations = new ArrayList<>();
-        List<MDeclaration> declarations = mSelector.GetDeclarations();
+        List<MDeclaration> declarations = mSelector.getDeclarations();
 
         List<MDeclaration> margins = new ArrayList<>();
         List<MDeclaration> paddings = new ArrayList<>();
@@ -83,13 +83,13 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         {
             MDeclaration mDeclaration = declarations.get(i);
 
-            if(mDeclaration.IsIgnored())
+            if(mDeclaration.isIgnored())
             {
                 newDeclarations.add(mDeclaration);
                 continue;
             }
 
-            final String name = mDeclaration.GetName();
+            final String name = mDeclaration.getName();
 
             if(name.contains("margin"))
             {
@@ -196,7 +196,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         newDeclarations.addAll(MergeBorderDeclarations(outline, new OutlineMerger("outline")));
         newDeclarations.addAll(MergeBorderDeclarations(background, new BackgroundMerger("background")));
 
-        mSelector.SetNewDeclarations(newDeclarations);
+        mSelector.setNewDeclarations(newDeclarations);
     }
 
 
@@ -220,7 +220,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
             {
                 try
                 {
-                    merger.Parse(mDeclaration.GetName(), mDeclaration.GetValue(), mDeclaration.IsImportant(), mDeclaration.GetOrder());
+                    merger.Parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
                 }
                 catch (Exception e)
                 {
@@ -256,7 +256,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
         {
             try
             {
-                merger.Parse(mDeclaration.GetName(), mDeclaration.GetValue(), mDeclaration.IsImportant(), mDeclaration.GetOrder());
+                merger.Parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
             }
             catch (Exception e)
             {

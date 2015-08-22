@@ -61,16 +61,16 @@ public class DescendantToChildTest
         for(String s : matches)
         {
             for(MSelector m : matchedElements.SortSelectorsForMatchedElem(s))
-                matchedDeclarations.addAll(m.GetDeclarations());
+                matchedDeclarations.addAll(m.getDeclarations());
         }
 
         // post crawling
         Map<String, MCssFile> postResult =  dtoc.transform(eff.transform(files, matchedElements), matchedElements);
 
         List<MSelector> validSelectors = new ArrayList<>();
-        for(MCssRule rule : postResult.get("external").GetRules())
+        for(MCssRule rule : postResult.get("external").getRules())
         {
-            validSelectors.addAll(rule.GetSelectors());
+            validSelectors.addAll(rule.getSelectors());
         }
 
         // assert correct amount of valid selectors
@@ -78,7 +78,7 @@ public class DescendantToChildTest
         Assert.assertArrayEquals(Arrays.asList("div#footer", ".input-content > a", "#page h3", "body > .extra-content:after", "body.page > .content",
                         "*[class=\"input-content\"] > a:hover", ".input-content > *[checked]", "body > #page h3",
                         ".sibling-content > span + a > .image", ".sibling-content > span ~ a.url > .image", ".class1.class2.class3 > img", ".class4.class5.class6 span").toArray(),
-                validSelectors.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+                validSelectors.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
         // verify re-match of selectors by performing run-time analysis again
         MatchedElements matchedElements2 = new MatchedElements();
@@ -91,7 +91,7 @@ public class DescendantToChildTest
         for(String s : matches2)
         {
             for(MSelector m : matchedElements2.SortSelectorsForMatchedElem(s))
-                matchedDeclarations2.addAll(m.GetDeclarations());
+                matchedDeclarations2.addAll(m.getDeclarations());
         }
         Assert.assertArrayEquals(matchedDeclarations.toArray(), matchedDeclarations2.toArray());
     }

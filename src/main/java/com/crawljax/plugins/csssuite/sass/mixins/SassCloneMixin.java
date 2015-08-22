@@ -37,7 +37,7 @@ public class SassCloneMixin
 
         // retain original declaration-ordering, to maintain intra-selector semantics
         Map<String, Integer> declarationOrdering = new HashMap<>();
-        mSelector.GetDeclarations().forEach(p -> declarationOrdering.put(p.GetName(), p.GetOrder()));
+        mSelector.getDeclarations().forEach(p -> declarationOrdering.put(p.getName(), p.getOrder()));
         _declarationOrdering.put(mSelector, declarationOrdering);
     }
 
@@ -63,7 +63,7 @@ public class SassCloneMixin
 
     public int getDeclarationOrderForSelector(MSelector mSelector, MDeclaration mDeclaration)
     {
-        return _declarationOrdering.get(mSelector).get(mDeclaration.GetName());
+        return _declarationOrdering.get(mSelector).get(mDeclaration.getName());
     }
 
     public int GetNumber()

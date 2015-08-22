@@ -43,10 +43,10 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
         {
             LogHandler.info("[CssNormalizer] Start normalization of declarations for file '%s'", file);
 
-            for(MCssRule mRule : cssRules.get(file).GetRules())
+            for(MCssRule mRule : cssRules.get(file).getRules())
             {
                 LogHandler.debug("Rule: %s", mRule);
-                for(MSelector mSelector : mRule.GetSelectors())
+                for(MSelector mSelector : mRule.getSelectors())
                 {
                     NormalizeColors(mSelector);
                     SplitShortHandDeclarations(mSelector);
@@ -54,7 +54,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                     NormalizeUrls(mSelector);
 
                     //sort declarations again
-                    mSelector.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+                    mSelector.getDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
                 }
             }
         }
@@ -70,14 +70,14 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      */
     private void NormalizeColors(MSelector mSelector)
     {
-        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
+        for(MDeclaration mDeclaration : mSelector.getDeclarations())
         {
-            if(mDeclaration.IsIgnored())
+            if(mDeclaration.isIgnored())
             {
                 continue;
             }
 
-            final String origValue = mDeclaration.GetValue();
+            final String origValue = mDeclaration.getValue();
             String newValue = origValue;
 
             if(origValue.contains("rgb"))
@@ -127,7 +127,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
             for(String part : parts)
             {
-                String newPart = _browserColorParser.TryParseColorToHex(part);
+                String newPart = _browserColorParser.tryParseColorToHex(part);
                 if(!part.equals(newPart))
                 {
                     _normalizedColors++;
@@ -139,7 +139,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 }
             }
 
-            mDeclaration.SetNormalizedValue(newValue);
+            mDeclaration.setNormalizedValue(newValue);
         }
     }
 
@@ -150,25 +150,25 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      */
     private void NormalizeZeroes(MSelector mSelector)
     {
-        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
+        for(MDeclaration mDeclaration : mSelector.getDeclarations())
         {
-            if(mDeclaration.IsIgnored())
+            if(mDeclaration.isIgnored())
                 continue;
 
-            final String origValue = mDeclaration.GetValue();
-            final String value = mDeclaration.GetValue().replaceAll("\\s", "");
+            final String origValue = mDeclaration.getValue();
+            final String value = mDeclaration.getValue().replaceAll("\\s", "");
 
             if (value.equals("0px") || value.equals("0pt") || value.equals("0%") || value.equals("0pc") || value.equals("0in") || value.equals("0mm") || value.equals("0cm") || //absolute
                     value.equals("0em") || value.equals("0rem") || value.equals("0ex") || value.equals("0ch") || value.equals("0vw") || value.equals("0vh") || value.equals("0vmin") || value.equals("0vmax")) //relative
             {
                 _normalizedZeroes++;
-                mDeclaration.SetNormalizedValue("0");
-                LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mDeclaration.GetOriginalValue(), mDeclaration.GetValue());
+                mDeclaration.setNormalizedValue("0");
+                LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mDeclaration.getOriginalValue(), mDeclaration.getValue());
             }
-            else if (mDeclaration.GetOriginalValue().contains("0."))
+            else if (mDeclaration.getOriginalValue().contains("0."))
             {
                 _normalizedZeroes++;
-                mDeclaration.SetNormalizedValue(origValue.replaceAll("0\\.", "\\."));
+                mDeclaration.setNormalizedValue(origValue.replaceAll("0\\.", "\\."));
             }
         }
     }
@@ -180,22 +180,22 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
      */
     private void NormalizeUrls(MSelector mSelector)
     {
-        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
+        for(MDeclaration mDeclaration : mSelector.getDeclarations())
         {
-            if(mDeclaration.IsIgnored())
+            if(mDeclaration.isIgnored())
                 continue;
 
-            final String origValue = mDeclaration.GetValue();
+            final String origValue = mDeclaration.getValue();
 
             if(origValue.contains("http://"))
             {
                 _normalizedUrls++;
-                mDeclaration.SetNormalizedValue(origValue.replaceAll("http://", ""));
+                mDeclaration.setNormalizedValue(origValue.replaceAll("http://", ""));
             }
             else if(origValue.contains("https://"))
             {
                 _normalizedUrls++;
-                mDeclaration.SetNormalizedValue(origValue.replaceAll("https://", ""));
+                mDeclaration.setNormalizedValue(origValue.replaceAll("https://", ""));
             }
         }
     }
@@ -258,18 +258,18 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
     {
         List<MDeclaration> newDeclarations = new ArrayList<>();
 
-        for(MDeclaration mDeclaration : mSelector.GetDeclarations())
+        for(MDeclaration mDeclaration : mSelector.getDeclarations())
         {
-            if(mDeclaration.IsIgnored())
+            if(mDeclaration.isIgnored())
             {
                 newDeclarations.add(mDeclaration);
                 continue;
             }
 
-            final String name = mDeclaration.GetName();
-            final String value = mDeclaration.GetValue();
-            final boolean isImportant = mDeclaration.IsImportant();
-            final int order = mDeclaration.GetOrder();
+            final String name = mDeclaration.getName();
+            final String value = mDeclaration.getValue();
+            final boolean isImportant = mDeclaration.isImportant();
+            final int order = mDeclaration.getOrder();
 
 
             try
@@ -289,7 +289,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 {
                     if(name.equals("border-radius"))
                     {
-                        newDeclarations.addAll(BorderRadiusToProps(value, mDeclaration.GetNameVendor(), isImportant, order));
+                        newDeclarations.addAll(BorderRadiusToProps(value, mDeclaration.getNameVendor(), isImportant, order));
                         LogHandler.debug("[CssNormalizer] Transformed shorthand border-radius declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else if(name.equals("border"))
@@ -337,7 +337,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
             }
         }
 
-        mSelector.SetNewDeclarations(newDeclarations);
+        mSelector.setNewDeclarations(newDeclarations);
     }
 
 

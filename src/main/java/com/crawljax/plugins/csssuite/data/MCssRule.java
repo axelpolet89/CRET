@@ -41,7 +41,7 @@ public class MCssRule extends MCssRuleBase
 		_styleRule = rule;
 		_selectors = new ArrayList<>();
 
-		SetSelectors(w3cErrors, mediaQueries);
+		setSelectors(w3cErrors, mediaQueries);
 	}
 
 
@@ -56,12 +56,12 @@ public class MCssRule extends MCssRuleBase
 	/**
 	 * Parse all selectors from this _rule and add them to the _selectors, parse declarations once and try to find W3C errors for selectors in this rule
 	 */
-	private void SetSelectors(Set<Defect> w3cErrors, List<MediaQuery> mediaQueries)
+	private void setSelectors(Set<Defect> w3cErrors, List<MediaQuery> mediaQueries)
 	{
 		_selectors.addAll(((SelectorListImpl) _styleRule.getSelectors())
 				.getSelectors().stream()
-				.map(selector -> new MSelector(selector, ParseDeclarations(_styleRule, w3cErrors), GetLineNumber(), GetColumnNumber(),
-						mediaQueries, this, TryFindW3cErrorForSelector(selector, w3cErrors)))
+				.map(selector -> new MSelector(selector, parseDeclarations(_styleRule, w3cErrors), getLineNumber(), getColumnNumber(),
+						mediaQueries, this, tryFindW3CErrorForSelector(selector, w3cErrors)))
 				.collect(Collectors.toList()));
 	}
 
@@ -72,7 +72,7 @@ public class MCssRule extends MCssRuleBase
 	 * @param w3cErrors
 	 * @return
 	 */
-	private static List<MDeclaration> ParseDeclarations(CSSStyleRuleImpl styleRule, Set<Defect> w3cErrors)
+	private static List<MDeclaration> parseDeclarations(CSSStyleRuleImpl styleRule, Set<Defect> w3cErrors)
 	{
 		CSSStyleDeclarationImpl styleDeclaration = (CSSStyleDeclarationImpl)styleRule.getStyle();
 		List<Property> declarations = styleDeclaration.getProperties();
@@ -116,7 +116,7 @@ public class MCssRule extends MCssRuleBase
 	 * @param w3cErrors
 	 * @return W3C error, if present for given selector
 	 */
-	private static String TryFindW3cErrorForSelector(Selector selector, Set<Defect> w3cErrors)
+	private static String tryFindW3CErrorForSelector(Selector selector, Set<Defect> w3cErrors)
 	{
 		if(!(selector instanceof LocatableImpl))
 		{
@@ -176,19 +176,19 @@ public class MCssRule extends MCssRuleBase
 
 
 	/** Getter */
-	public CSSStyleRuleImpl GetStyleRule()
+	public CSSStyleRuleImpl getStyleRule()
 	{
 		return _styleRule;
 	}
 
 	/** Getter */
-	public List<MSelector> GetSelectors()
+	public List<MSelector> getSelectors()
 	{
 		return _selectors;
 	}
 
 	/** Getter */
-	public Locator GetLocator()
+	public Locator getLocator()
 	{
 		return _locator;
 	}
@@ -197,25 +197,25 @@ public class MCssRule extends MCssRuleBase
 	/**
 	 * @return the _selectors that are not matched (no associated DOM elements have been detected)
 	 */
-	public List<MSelector> GetUnmatchedSelectors()
+	public List<MSelector> getUnmatchedSelectors()
 	{
-		return _selectors.stream().filter(selector -> !selector.IsMatched() && !selector.IsIgnored()).collect(Collectors.toList());
+		return _selectors.stream().filter(selector -> !selector.isMatched() && !selector.isIgnored()).collect(Collectors.toList());
 	}
 
 
 	/**
 	 * @return the _selectors that are effective (associated DOM elements have been detected)
 	 */
-	public List<MSelector> GetMatchedSelectors()
+	public List<MSelector> getMatchedSelectors()
 	{
-		return _selectors.stream().filter(selector -> selector.IsMatched() && !selector.IsIgnored()).collect(Collectors.toList());
+		return _selectors.stream().filter(selector -> selector.isMatched() && !selector.isIgnored()).collect(Collectors.toList());
 	}
 
 
 	/**
 	 * Remove the given list of selectors from the _selectors
 	 */
-	public void RemoveSelectors(List<MSelector> selectors)
+	public void removeSelectors(List<MSelector> selectors)
 	{
 		_selectors.removeAll(selectors);
 	}
@@ -224,7 +224,7 @@ public class MCssRule extends MCssRuleBase
 	/**
 	 * Replace selector with another, used in selector transformations
 	 */
-	public void ReplaceSelector(MSelector oldS, MSelector newS)
+	public void replaceSelector(MSelector oldS, MSelector newS)
 	{
 		_selectors.remove(oldS);
 		_selectors.add(newS);
@@ -232,7 +232,7 @@ public class MCssRule extends MCssRuleBase
 
 
 	@Override
-	public boolean IsEmpty()
+	public boolean isEmpty()
 	{
 		return _selectors.size() == 0;
 	}
@@ -257,19 +257,19 @@ public class MCssRule extends MCssRuleBase
 	 * @return
 	 */
 	@Override
-	public String Print()
+	public String print()
 	{
 		Map<String, MTuple> combinations = new HashMap<>();
 		for(MSelector mSelector : _selectors)
 		{
-			List<MDeclaration> mProps = mSelector.GetDeclarations();
+			List<MDeclaration> mProps = mSelector.getDeclarations();
 
 			final String[] key = {""};
-			mProps.forEach(mProp -> key[0] += "|" + mProp.AsKey());
+			mProps.forEach(mProp -> key[0] += "|" + mProp.asKey());
 
 			if(combinations.containsKey(key[0]))
 			{
-				combinations.get(key[0]).AddSelector(mSelector);
+				combinations.get(key[0]).addSelector(mSelector);
 			}
 			else
 			{
@@ -281,18 +281,18 @@ public class MCssRule extends MCssRuleBase
 		for(String key : combinations.keySet())
 		{
 			MTuple mTuple = combinations.get(key);
-			List<MSelector> mSelectors = mTuple.GetSelectors();
+			List<MSelector> mSelectors = mTuple.getSelectors();
 
 			int size = mSelectors.size();
 			for(int i = 0; i < size; i++)
 			{
-				builder.append(mSelectors.get(i).GetSelectorText());
+				builder.append(mSelectors.get(i).getSelectorText());
 				if(i < size - 1)
 					builder.append(", ");
 			}
 
 			builder.append(" {");
-			for(MDeclaration mProp : mTuple.GetDeclarations())
+			for(MDeclaration mProp : mTuple.getDeclarations())
 			{
 				builder.appendLine("\t" + mProp.toString());
 			}
@@ -314,17 +314,17 @@ public class MCssRule extends MCssRuleBase
 			_declarations = declarations;
 		}
 
-		public void AddSelector(MSelector selector)
+		public void addSelector(MSelector selector)
 		{
 			_selectors.add(selector);
 		}
 
-		public List<MSelector> GetSelectors()
+		public List<MSelector> getSelectors()
 		{
 			return _selectors;
 		}
 
-		public List<MDeclaration> GetDeclarations()
+		public List<MDeclaration> getDeclarations()
 		{
 			return _declarations;
 		}

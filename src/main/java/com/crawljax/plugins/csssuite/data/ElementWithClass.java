@@ -24,13 +24,13 @@ public class ElementWithClass extends ElementWrapper
 	}
 
 	/** Getter */
-	public List<String> GetUnmatchedClasses()
+	public List<String> getUnmatchedClasses()
 	{
 		return _unmatchedClasses;
 	}
 
 	/** Getter */
-	public List<String> GetClassValues()
+	public List<String> getClassValues()
 	{
 		return _classValues;
 	}

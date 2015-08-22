@@ -21,15 +21,15 @@ public class SpecificitySelector
 
     public int GetSpecificity()
     {
-        return _mSelector.GetSpecificity().GetValue();
+        return _mSelector.getSpecificity().GetValue();
     }
 
     public int GetLineNumber()
     {
-        return _mSelector.GetLineNumber();
+        return _mSelector.getLineNumber();
     }
 
-    public int GetOrder() { return _mSelector.GetOrder(); }
+    public int GetOrder() { return _mSelector.getOrder(); }
 
     public int GetFileOrder()
     {

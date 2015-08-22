@@ -24,17 +24,17 @@ public class ElementSelectorMatcher
 
 				int order = stateFileOrder.get(fileName);
 
-				for (MCssRule mRule : cssRules.get(fileName).GetRules())
+				for (MCssRule mRule : cssRules.get(fileName).getRules())
 				{
-					List<MSelector> mSelectors = mRule.GetSelectors();
+					List<MSelector> mSelectors = mRule.getSelectors();
 					for (MSelector mSelector : mSelectors)
 					{
-						if (mSelector.IsIgnored())
+						if (mSelector.isIgnored())
 						{
 							continue;
 						}
 
-						String cssSelector = mSelector.GetFilteredSelectorText();
+						String cssSelector = mSelector.getFilteredSelectorText();
 
 						Selectors seSelectors = new Selectors(new W3CNode(dom));
 
@@ -57,9 +57,9 @@ public class ElementSelectorMatcher
 						for (Node node : result)
 						{
 							//compare any selector containing non-structural pseudo classes on their compatibility with the node they matched
-							if (mSelector.IsNonStructuralPseudo())
+							if (mSelector.isNonStructuralPseudo())
 							{
-								if (!mSelector.CheckPseudoCompatibility(node.getNodeName(), node.getAttributes()))
+								if (!mSelector.checkPseudoCompatibility(node.getNodeName(), node.getAttributes()))
 								{
 									continue;
 								}
@@ -68,13 +68,13 @@ public class ElementSelectorMatcher
 							if (node instanceof Document)
 							{
 								LogHandler.warn("CSS rule returns the whole document, rule '%s", mRule);
-								mSelector.SetMatched(true);
+								mSelector.setMatched(true);
 								matchCount++;
 							}
 							else
 							{
 								ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
-								mSelector.AddMatchedElement(ew);
+								mSelector.addMatchedElement(ew);
 								matchedElements.SetMatchedElement(ew, mSelector, order);
 								matchCount++;
 							}

@@ -2,18 +2,14 @@ package com.crawljax.plugins.csssuite.generator;
 
 import com.crawljax.plugins.csssuite.LogHandler;
 import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.data.MCssRule;
 import com.crawljax.plugins.csssuite.data.MCssRuleBase;
-import com.crawljax.plugins.csssuite.util.FileHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -25,16 +21,16 @@ public class CssWriter
     {
         LogHandler.info("Generating CSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
 
-        List<MCssRuleBase> rules = mCssFile.GetAllRules().stream().filter(r -> !r.IsEmpty()).collect(Collectors.toList());
+        List<MCssRuleBase> rules = mCssFile.getAllRules().stream().filter(r -> !r.isEmpty()).collect(Collectors.toList());
 
         Collections.sort(rules, new Comparator<MCssRuleBase>() {
             @Override
             public int compare(MCssRuleBase m1, MCssRuleBase m2) {
-                if(m1.GetLineNumber() == m2.GetLineNumber())
+                if(m1.getLineNumber() == m2.getLineNumber())
                 {
-                    return Integer.compare(m1.GetColumnNumber(), m2.GetColumnNumber());
+                    return Integer.compare(m1.getColumnNumber(), m2.getColumnNumber());
                 }
-                return Integer.compare(m1.GetLineNumber(), m2.GetLineNumber());
+                return Integer.compare(m1.getLineNumber(), m2.getLineNumber());
             }
         });
 
@@ -44,13 +40,13 @@ public class CssWriter
 
         for (MCssRuleBase rule : rules)
         {
-            if(rule.GetMediaQueries().size() > 0)
+            if(rule.getMediaQueries().size() > 0)
             {
-                List<MediaQuery> media = rule.GetMediaQueries();
+                List<MediaQuery> media = rule.getMediaQueries();
 
                 if(currentMedia.containsAll(media) && media.containsAll(currentMedia))
                 {
-                    writer.write(rule.Print());
+                    writer.write(rule.print());
                 }
                 else
                 {
@@ -70,7 +66,7 @@ public class CssWriter
 
                     writer.write(mediaQueryText);
 
-                    writer.write(rule.Print());
+                    writer.write(rule.print());
                 }
             }
             else
@@ -81,7 +77,7 @@ public class CssWriter
                     currentMedia = new ArrayList<>();
                 }
 
-                writer.write(rule.Print());
+                writer.write(rule.print());
             }
         }
 

@@ -76,22 +76,22 @@ public class EffectivenessPlugin implements ICssTransformer
 	{
 		List<MCssRule> newRules = new ArrayList<>();
 
-		for(MCssRule mRule : file.GetRules())
+		for(MCssRule mRule : file.getRules())
 		{
 			List<MSelector> ineffectiveSelectors = new ArrayList<>();
 
-			ineffectiveSelectors.addAll(mRule.GetUnmatchedSelectors());
+			ineffectiveSelectors.addAll(mRule.getUnmatchedSelectors());
 			_unmatchedSelectors += ineffectiveSelectors.size();
 
 			boolean effective = false;
 
-			for(MSelector mSelector : mRule.GetMatchedSelectors())
+			for(MSelector mSelector : mRule.getMatchedSelectors())
 			{
-				if(mSelector.HasEffectiveDeclarations())
+				if(mSelector.hasEffectiveDeclarations())
 				{
 					effective = true;
-					_ineffectiveDeclarations += mSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored() && !p.IsEffective()).count();
-					mSelector.RemoveIneffectiveDeclarations();
+					_ineffectiveDeclarations += mSelector.getDeclarations().stream().filter(p -> !p.isIgnored() && !p.isEffective()).count();
+					mSelector.removeIneffectiveDeclarations();
 				}
 				else
 				{
@@ -104,7 +104,7 @@ public class EffectivenessPlugin implements ICssTransformer
 			// otherwise rule is not effective at all and will not be added to result.
 			if(effective)
 			{
-				mRule.RemoveSelectors(ineffectiveSelectors);
+				mRule.removeSelectors(ineffectiveSelectors);
 				newRules.add(mRule);
 			}
 		}

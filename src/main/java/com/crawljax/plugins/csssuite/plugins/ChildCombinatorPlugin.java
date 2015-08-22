@@ -47,29 +47,29 @@ public class ChildCombinatorPlugin implements ICssTransformer
             LogHandler.info("[DescToChild] Analyzing selectors for over-qualified descendant-combinators in file '%s'", fileName);
             int count = 0;
 
-            for(MCssRule mRule : cssRules.get(fileName).GetRules())
+            for(MCssRule mRule : cssRules.get(fileName).getRules())
             {
                 // possible replacements for this mRule
                 Map<MSelector, MSelector> newSelectors = new HashMap<>();
 
-                for(MSelector mSelector : mRule.GetSelectors())
+                for(MSelector mSelector : mRule.getSelectors())
                 {
-                    if(mSelector.IsIgnored())
+                    if(mSelector.isIgnored())
                     {
                         continue;
                     }
 
                     LogHandler.debug("[DescToChild] [%s] Selector may transformed using a child-combinator instead of a descendant-combinator", mSelector);
 
-                    Selector w3cSelector = mSelector.GetW3cSelector();
-                    List<ElementWrapper> selectorElements = mSelector.GetMatchedElements();
+                    Selector w3cSelector = mSelector.getW3CSelector();
+                    List<ElementWrapper> selectorElements = mSelector.getMatchedElements();
 
                     _descendants.clear();
 
                     // verify whether ALL elements selected by given selector allow for child-combinators instead of descendant-combinators
                     for (ElementWrapper ew : selectorElements)
                     {
-                        recursiveFindDescendants(tryFilterPseudoElement(w3cSelector), ew.GetElement(), mSelector);
+                        recursiveFindDescendants(tryFilterPseudoElement(w3cSelector), ew.getElement(), mSelector);
                     }
 
                     // are there any descendant selectors in given selector, which could be transformable?
@@ -93,7 +93,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
                 // replace in CSS rule
                 for(MSelector oldSelector : newSelectors.keySet())
                 {
-                    mRule.ReplaceSelector(oldSelector, newSelectors.get(oldSelector));
+                    mRule.replaceSelector(oldSelector, newSelectors.get(oldSelector));
                 }
             }
 

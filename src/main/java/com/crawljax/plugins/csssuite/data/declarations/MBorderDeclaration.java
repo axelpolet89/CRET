@@ -24,13 +24,13 @@ public class MBorderDeclaration extends MDeclaration
 	 * @return
 	 */
 	@Override
-	public boolean AllowCoexistence(MDeclaration otherDeclaration)
+	public boolean allowCoexistence(MDeclaration otherDeclaration)
 	{
-		String name = otherDeclaration.GetName();
+		String name = otherDeclaration.getName();
 
 		if(_name.equals(name) || _allowedWith.contains(name))
 		{
-			if(!_normalizedValue.equals(otherDeclaration.GetValue()))
+			if(!_normalizedValue.equals(otherDeclaration.getValue()))
 			{
 				return true;
 			}

@@ -114,7 +114,7 @@ public class CSSDOMHelperTest {
 			List<ElementWithClass> elements = CSSDOMHelper.GetElementWithClass("state1", dom);
 			Assert.assertEquals(2, elements.size());
 
-			Assert.assertEquals(5, elements.get(0).GetClassValues().size());
+			Assert.assertEquals(5, elements.get(0).getClassValues().size());
 
 		} catch (IOException e) {
 			fail(e.getMessage());

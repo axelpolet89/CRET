@@ -35,30 +35,27 @@ public class MCssRuleBase
         this(rule, new ArrayList<>(), null);
     }
 
-    public AbstractCSSRuleImpl GetAbstractRule() { return _rule; }
+    public AbstractCSSRuleImpl getAbstractRule() { return _rule; }
 
-    public int GetLineNumber()
+    public int getLineNumber()
     {
         return _locator.getLineNumber();
     }
 
-    public int GetColumnNumber()
+    public int getColumnNumber()
     {
         return _locator.getColumnNumber();
     }
 
-    public List<MediaQuery> GetMediaQueries()
+    public List<MediaQuery> getMediaQueries()
     {
         return _mediaQueries;
     }
 
-    public boolean IsEmpty()
+    public boolean isEmpty()
     {
         return false;
     }
 
-    public String Print()
-    {
-        return _rule.toString() + "\n\n";
-    }
+    public String print() { return _rule.toString() + "\n\n";  }
 }

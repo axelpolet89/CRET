@@ -27,8 +27,8 @@ public class SassBoxMixin extends SassMixinBase
 
         for(MDeclaration mDeclaration : declarations)
         {
-            String name = mDeclaration.GetName();
-            String value = mDeclaration.GetFullValue();
+            String name = mDeclaration.getName();
+            String value = mDeclaration.getFullValue();
 
             if(name.contains("top"))
             {

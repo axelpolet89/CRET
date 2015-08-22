@@ -53,9 +53,9 @@ public class CssOnDomVerifier
 
         for(String fileName : mcssFiles.keySet())
         {
-            for(MCssRule mCssRule : mcssFiles.get(fileName).GetRules())
+            for(MCssRule mCssRule : mcssFiles.get(fileName).getRules())
             {
-                for(MSelector mSelector : mCssRule.GetSelectors())
+                for(MSelector mSelector : mCssRule.getSelectors())
                 {
                     result.put(mSelector, fileName);
                 }
@@ -71,7 +71,7 @@ public class CssOnDomVerifier
         Map<MDeclaration, MSelector> result = new HashMap<>();
 
         selectors.forEach((s) -> {
-            List<MDeclaration> mDeclarations = s.GetDeclarations().stream().filter(p -> p.IsIgnored() || p.IsEffective()).collect(Collectors.toList());
+            List<MDeclaration> mDeclarations = s.getDeclarations().stream().filter(p -> p.isIgnored() || p.isEffective()).collect(Collectors.toList());
             mDeclarations.forEach(p -> result.put(p, s));
         });
 
@@ -82,14 +82,14 @@ public class CssOnDomVerifier
     private List<MDeclaration> FindEffectiveDeclarationsForElement(List<MSelector> selectors)
     {
         // first reset all previously deemed effective declarations to non-effective
-        selectors.forEach(s -> s.GetDeclarations().forEach(p -> p.SetEffective(false)));
+        selectors.forEach(s -> s.getDeclarations().forEach(p -> p.setEffective(false)));
 
         String overridden = "overridden-" + new Random().nextInt();
 
         EffectivenessAnalysis.ComputeEffectiveness(selectors, overridden);
 
         List<MDeclaration> effectiveProps = new ArrayList<>();
-        selectors.forEach(s -> effectiveProps.addAll(s.GetDeclarations().stream().filter(p -> p.IsEffective() || p.IsIgnored()).collect(Collectors.toList())));
+        selectors.forEach(s -> effectiveProps.addAll(s.getDeclarations().stream().filter(p -> p.isEffective() || p.isIgnored()).collect(Collectors.toList())));
         return effectiveProps;
     }
 
@@ -173,8 +173,8 @@ public class CssOnDomVerifier
 
             List<MDeclaration> effectivePropsGnr = FindEffectiveDeclarationsForElement(selectorsGnr);
 
-            effectivePropsOrig.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
-            effectivePropsGnr.sort((p1, p2) -> p1.GetName().compareTo(p2.GetName()));
+            effectivePropsOrig.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+            effectivePropsGnr.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
 
             Set<MDeclaration> matchedPropsOnValueOrig = new HashSet<>();
             Set<MDeclaration> matchedPropsOnValueGnr = new HashSet<>();
@@ -182,8 +182,8 @@ public class CssOnDomVerifier
             // find all declaration matches by name, value and !important
             for(MDeclaration origDeclaration : effectivePropsOrig)
             {
-                final String name = origDeclaration.GetName();
-                final String value = bcp.TryParseColorToHex(origDeclaration.GetValue());
+                final String name = origDeclaration.getName();
+                final String value = bcp.tryParseColorToHex(origDeclaration.getValue());
 
                 for(MDeclaration gnrDeclaration : effectivePropsGnr)
                 {
@@ -192,11 +192,11 @@ public class CssOnDomVerifier
                         continue;
                     }
 
-                    if(gnrDeclaration.GetName().equals(name))
+                    if(gnrDeclaration.getName().equals(name))
                     {
-                        String gnrValue = bcp.TryParseColorToHex(gnrDeclaration.GetValue());
+                        String gnrValue = bcp.tryParseColorToHex(gnrDeclaration.getValue());
 
-                        if(gnrValue.equals(value) && gnrDeclaration.IsImportant() == origDeclaration.IsImportant())
+                        if(gnrValue.equals(value) && gnrDeclaration.isImportant() == origDeclaration.isImportant())
                         {
                             matchedPropsOnValueOrig.add(origDeclaration);
                             matchedPropsOnValueGnr.add(gnrDeclaration);
@@ -228,7 +228,7 @@ public class CssOnDomVerifier
                         continue;
                     }
 
-                    if(gnrDeclaration.GetName().equals(origDeclaration.GetName()))
+                    if(gnrDeclaration.getName().equals(origDeclaration.getName()))
                     {
                         matchedOnName.put(origDeclaration, gnrDeclaration);
                         alreadyNameMatchedGnr.add(gnrDeclaration);
@@ -253,9 +253,9 @@ public class CssOnDomVerifier
             for(MDeclaration remainingDeclaration : remainderOrig)
             {
                 // verify that remaing declaration from original styles is not a default style, then it is a valid mismatch
-                if(_defaultStyles.containsKey(remainingDeclaration.GetName()))
+                if(_defaultStyles.containsKey(remainingDeclaration.getName()))
                 {
-                    if(remainingDeclaration.GetValue().equals(_defaultStyles.get(remainingDeclaration.GetName())))
+                    if(remainingDeclaration.getValue().equals(_defaultStyles.get(remainingDeclaration.getName())))
                     {
                         _totalDefaultDeclsOrig.add(remainingDeclaration);
                         continue;
@@ -384,6 +384,6 @@ public class CssOnDomVerifier
             return false;
         }
 
-        return !declarations.stream().allMatch(p -> _defaultStyles.containsKey(p.GetName()) && _defaultStyles.get(p.GetName()).equals(p.GetValue()));
+        return !declarations.stream().allMatch(p -> _defaultStyles.containsKey(p.getName()) && _defaultStyles.get(p.getName()).equals(p.getValue()));
     }
 }

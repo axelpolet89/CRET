@@ -52,7 +52,7 @@ public class SassBuilder
     {
         CloneDetector cd = new CloneDetector();
 
-        List<MCssRule> cssRules = _mcssFile.GetRules();
+        List<MCssRule> cssRules = _mcssFile.getRules();
 
         // copy all MSelectors, so we won't affect the original rules
         List<MSelector> validSelectors = new ArrayList<>();
@@ -60,9 +60,9 @@ public class SassBuilder
 
         for(MCssRule rule : cssRules)
         {
-            for(MSelector mSelector : rule.GetSelectors())
+            for(MSelector mSelector : rule.getSelectors())
             {
-                if(mSelector.GetDeclarations().size() > _propUpperLimit)
+                if(mSelector.getDeclarations().size() > _propUpperLimit)
                 {
                     largeSelectors.add(new MSelector(mSelector));
                 }
@@ -88,7 +88,7 @@ public class SassBuilder
         List<SassMixinBase> sassMixins = GenerateConvenienceMixins(sassSelectors);
 
         LogHandler.debug("[SassGenerator] Generate SASS rules...");
-        List<SassRuleBase> sassRules = GenerateSassRules(sassSelectors, _mcssFile.GetMediaRules(), _mcssFile.GetIgnoredRules());
+        List<SassRuleBase> sassRules = GenerateSassRules(sassSelectors, _mcssFile.getMediaRules(), _mcssFile.getIgnoredRules());
 
         return new SassFile(_sassVariables, validMixins, sassMixins, sassRules);
     }
@@ -104,15 +104,15 @@ public class SassBuilder
 
         for(MSelector mSelector : selectors)
         {
-            for(MDeclaration mDeclaration : mSelector.GetDeclarations())
+            for(MDeclaration mDeclaration : mSelector.getDeclarations())
             {
-                if (mDeclaration.IsIgnored())
+                if (mDeclaration.isIgnored())
                 {
                     continue;
                 }
 
-                String origName = mDeclaration.GetName();
-                String origValue = mDeclaration.GetValue();
+                String origName = mDeclaration.getName();
+                String origValue = mDeclaration.getValue();
 
                 try
                 {
@@ -172,7 +172,7 @@ public class SassBuilder
                                     String[] rgbaParts = rgbaValue.replaceFirst("rgba\\(", "").replaceFirst("\\)", "").split(",");
 
                                     varType = SassVarType.ALPHA_COLOR;
-                                    varName = String.format("%s_%s", "alpha_color", ctn.TryGetNameForRgb(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim())));
+                                    varName = String.format("%s_%s", "alpha_color", ctn.tryGetNameForRgb(Integer.parseInt(rgbaParts[0].trim()), Integer.parseInt(rgbaParts[1].trim()), Integer.parseInt(rgbaParts[2].trim())));
                                     varValue = rgbaValue;
                                 }
                                 else if (part.contains("#"))
@@ -180,14 +180,14 @@ public class SassBuilder
                                     String hexValue = TryFindHex(part);
 
                                     varType = SassVarType.COLOR;
-                                    varName = String.format("%s_%s", "color", ctn.TryGetNameForHex(hexValue));
+                                    varName = String.format("%s_%s", "color", ctn.tryGetNameForHex(hexValue));
                                     varValue = hexValue;
                                 }
                             }
                             catch (CssSuiteException ex)
                             {
                                 LogHandler.error(ex, "[SassGenerator] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
-                                        origName, origValue, mSelector.GetSelectorText());
+                                        origName, origValue, mSelector.getSelectorText());
                                 continue;
                             }
 
@@ -212,12 +212,12 @@ public class SassBuilder
                         }
                     }
 
-                    mDeclaration.SetNormalizedValue(origValue);
+                    mDeclaration.setNormalizedValue(origValue);
                 }
                 catch (Exception e)
                 {
                     LogHandler.error(e, "[SassGenerator] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
-                            origName, origValue, mSelector.GetSelectorText());
+                            origName, origValue, mSelector.getSelectorText());
                 }
             }
         }
@@ -322,11 +322,11 @@ public class SassBuilder
                 int order = 0;
                 for(MSelector mSelector : mixin.GetRelatedSelectors())
                 {
-                    if(mSelector.GetLineNumber() != lineNumber || mSelector.GetOrder() != order)
+                    if(mSelector.getLineNumber() != lineNumber || mSelector.getOrder() != order)
                     {
                         count += numberOfProps - 1;
-                        lineNumber = mSelector.GetLineNumber();
-                        order = mSelector.GetOrder();
+                        lineNumber = mSelector.getLineNumber();
+                        order = mSelector.getOrder();
                     }
                 }
 
@@ -365,14 +365,14 @@ public class SassBuilder
     {
         mixin.GetRelatedSelectors().sort((s1, s2) ->
         {
-            if(s1.GetLineNumber() == s2.GetLineNumber())
+            if(s1.getLineNumber() == s2.getLineNumber())
             {
-                return Integer.compare(s1.GetOrder(), s2.GetOrder());
+                return Integer.compare(s1.getOrder(), s2.getOrder());
             }
 
-            return Integer.compare(s1.GetLineNumber(), s2.GetLineNumber());
+            return Integer.compare(s1.getLineNumber(), s2.getLineNumber());
         });
-        mixin.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+        mixin.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
     }
 
 
@@ -386,8 +386,8 @@ public class SassBuilder
 
         for (MSelector mSelector : mixin.GetRelatedSelectors())
         {
-            mixinProps.forEach(mixinProp -> mSelector.RestoreDevlaration(new MDeclaration(mixinProp.GetName(), mixinProp.GetValue(),
-                    mixinProp.IsImportant(), mixinProp.IsEffective(),
+            mixinProps.forEach(mixinProp -> mSelector.restoreDeclaration(new MDeclaration(mixinProp.getName(), mixinProp.getValue(),
+                    mixinProp.isImportant(), mixinProp.isEffective(),
                     mixin.getDeclarationOrderForSelector(mSelector, mixinProp))));
         }
     }
@@ -410,8 +410,8 @@ public class SassBuilder
 
         for(SassSelector sassSelector : sassSelectors)
         {
-            List<MDeclaration> paddings = sassSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("padding-")).collect(Collectors.toList());
-            List<MDeclaration> margins = sassSelector.GetDeclarations().stream().filter(p -> !p.IsIgnored() && p.GetName().contains("margin-")).collect(Collectors.toList());
+            List<MDeclaration> paddings = sassSelector.GetDeclarations().stream().filter(p -> !p.isIgnored() && p.getName().contains("padding-")).collect(Collectors.toList());
+            List<MDeclaration> margins = sassSelector.GetDeclarations().stream().filter(p -> !p.isIgnored() && p.getName().contains("margin-")).collect(Collectors.toList());
 
             if(paddings.size() > 1)
             {
@@ -460,7 +460,7 @@ public class SassBuilder
 
         for(MSelector mSelector : selectors)
         {
-            mSelector.GetDeclarations().sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+            mSelector.getDeclarations().sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
             SassSelector ss = new SassSelector(mSelector);
 
             for(SassCloneMixin st : extensions)
@@ -554,9 +554,9 @@ public class SassBuilder
             }
         }
 
-        for(MCssRuleBase ignoredRule : ignoredRules.stream().filter(r -> r.GetMediaQueries().isEmpty()).collect(Collectors.toList()))
+        for(MCssRuleBase ignoredRule : ignoredRules.stream().filter(r -> r.getMediaQueries().isEmpty()).collect(Collectors.toList()))
         {
-            sassRules.add(new SassIgnoredRule(ignoredRule.GetLineNumber(), ignoredRule.GetAbstractRule()));
+            sassRules.add(new SassIgnoredRule(ignoredRule.getLineNumber(), ignoredRule.getAbstractRule()));
         }
 
         // now process selectors held in media-queries
@@ -586,7 +586,7 @@ public class SassBuilder
     {
         List<SassRuleBase> innerRules = new ArrayList<>();
 
-        for(MCssRuleBase mRule : mediaRule.GetInnerRules())
+        for(MCssRuleBase mRule : mediaRule.getInnerRules())
         {
             if(mRule instanceof MCssMediaRule)
             {
@@ -597,12 +597,12 @@ public class SassBuilder
                 List<SassSelector> relatedSelectors = selectors.stream().filter(s -> s.GetParent().equals(mRule)).collect(Collectors.toList());
                 if(!relatedSelectors.isEmpty())
                 {
-                    innerRules.add(new SassRule(mRule.GetLineNumber(), relatedSelectors));
+                    innerRules.add(new SassRule(mRule.getLineNumber(), relatedSelectors));
                 }
             }
             else
             {
-                innerRules.add(new SassIgnoredRule(mRule.GetLineNumber(), mRule.GetAbstractRule()));
+                innerRules.add(new SassIgnoredRule(mRule.getLineNumber(), mRule.getAbstractRule()));
             }
         }
 
@@ -611,6 +611,6 @@ public class SassBuilder
             return null;
         }
 
-        return new SassMediaRule(mediaRule.GetLineNumber(), mediaRule.GetMediaQueries(), innerRules);
+        return new SassMediaRule(mediaRule.getLineNumber(), mediaRule.getMediaQueries(), innerRules);
     }
 }

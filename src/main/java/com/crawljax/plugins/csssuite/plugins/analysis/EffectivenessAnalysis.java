@@ -17,14 +17,14 @@ public class EffectivenessAnalysis
         for (int i = 0; i < selectors.size(); i++)
         {
             MSelector selector = selectors.get(i);
-            for (MDeclaration declaration : selector.GetDeclarations())
+            for (MDeclaration declaration : selector.getDeclarations())
             {
                 // find out if declaration was already deemed effective previously
-                boolean alreadyEffective = declaration.IsEffective();
+                boolean alreadyEffective = declaration.isEffective();
 
-                if (!declaration.GetStatus().equals(overridden))
+                if (!declaration.getStatus().equals(overridden))
                 {
-                    declaration.SetEffective(true);
+                    declaration.setEffective(true);
 
                     for (int j = i + 1; j < selectors.size(); j++)
                     {
@@ -34,20 +34,20 @@ public class EffectivenessAnalysis
                         MSelector nextSelector = selectors.get(j);
 
                         // a regular selector is less-specific, but will still apply
-                        if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() == 0)
+                        if (selector.getMediaQueries().size() > 0 && nextSelector.getMediaQueries().size() == 0)
                         {
                             continue;
                         }
 
                         // a regular selector is more specific, but the media-query selector may contain !important statements,
                         // however, regular will also apply
-                        if (selector.GetMediaQueries().size() == 0 && nextSelector.GetMediaQueries().size() > 0)
+                        if (selector.getMediaQueries().size() == 0 && nextSelector.getMediaQueries().size() > 0)
                         {
                             mediaCompare = true;
                         }
 
                         // both selectors have different media-queries
-                        if (selector.GetMediaQueries().size() > 0 && nextSelector.GetMediaQueries().size() > 0
+                        if (selector.getMediaQueries().size() > 0 && nextSelector.getMediaQueries().size() > 0
                                 && !selector.HasEqualMediaQueries(nextSelector))
                         {
                             continue;
@@ -55,17 +55,17 @@ public class EffectivenessAnalysis
 
                         // when 'this' selector includes a pseudo-element (as selector-key),
                         // it is always effective and does not affect other selectors, so we can break
-                        if (selector.HasPseudoElement() || nextSelector.HasPseudoElement())
+                        if (selector.hasPseudoElement() || nextSelector.hasPseudoElement())
                         {
-                            if (!selector.HasEqualPseudoElement(nextSelector))
+                            if (!selector.hasEqualPseudoElement(nextSelector))
                             {
                                 continue;
                             }
                         }
 
-                        if (selector.IsNonStructuralPseudo() || nextSelector.IsNonStructuralPseudo())
+                        if (selector.isNonStructuralPseudo() || nextSelector.isNonStructuralPseudo())
                         {
-                            if (!selector.HasEqualPseudoClass(nextSelector))
+                            if (!selector.hasEqualPseudoClass(nextSelector))
                             {
                                 pseudoCompare = true;
                             }
@@ -101,21 +101,21 @@ public class EffectivenessAnalysis
      */
     private static Void CompareDeclarations(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
-        for (MDeclaration nextDeclaration : otherSelector.GetDeclarations())
+        for (MDeclaration nextDeclaration : otherSelector.getDeclarations())
         {
-            if (declaration.GetName().equalsIgnoreCase(nextDeclaration.GetName()))
+            if (declaration.getName().equalsIgnoreCase(nextDeclaration.getName()))
             {
                 // it is possible, due to specificity ordering, that 'this' declaration was already deemed effective,
                 // but a less specific ('next') selector contained an !important declaration
                 // this declaration should not be !important or not previously deemed effective
-                if(!alreadyEffective && nextDeclaration.IsImportant() && !declaration.IsImportant())
+                if(!alreadyEffective && nextDeclaration.isImportant() && !declaration.isImportant())
                 {
-                    declaration.SetStatus(overridden);
-                    declaration.SetEffective(false);
+                    declaration.setStatus(overridden);
+                    declaration.setEffective(false);
                 }
                 else
                 {
-                    nextDeclaration.SetStatus(overridden);
+                    nextDeclaration.setStatus(overridden);
                 }
             }
         }
@@ -132,22 +132,22 @@ public class EffectivenessAnalysis
      */
     private static void CompareDeclarationsPs(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
-        for (MDeclaration nextDeclaration : otherSelector.GetDeclarations())
+        for (MDeclaration nextDeclaration : otherSelector.getDeclarations())
         {
-            if (declaration.GetName().equalsIgnoreCase(nextDeclaration.GetName())
-                    && declaration.GetValue().equalsIgnoreCase(nextDeclaration.GetValue()))
+            if (declaration.getName().equalsIgnoreCase(nextDeclaration.getName())
+                    && declaration.getValue().equalsIgnoreCase(nextDeclaration.getValue()))
             {
                 // it is possible, due to specificity ordering, that 'this' declaration was already deemed effective,
                 // but a less specific ('next') selector contained an !important declaration
                 // this declaration should not be !important or not previously deemed effective
-                if(!alreadyEffective && nextDeclaration.IsImportant() && !declaration.IsImportant())
+                if(!alreadyEffective && nextDeclaration.isImportant() && !declaration.isImportant())
                 {
-                    declaration.SetStatus(overridden);
-                    declaration.SetEffective(false);
+                    declaration.setStatus(overridden);
+                    declaration.setEffective(false);
                 }
                 else
                 {
-                    nextDeclaration.SetStatus(overridden);
+                    nextDeclaration.setStatus(overridden);
                 }
             }
         }
@@ -163,13 +163,13 @@ public class EffectivenessAnalysis
      */
     private static void CompareDeclarationsMq(MDeclaration declaration, MSelector otherSelector, String overridden)
     {
-        for (MDeclaration nextDeclaration : otherSelector.GetDeclarations())
+        for (MDeclaration nextDeclaration : otherSelector.getDeclarations())
         {
-            if (declaration.GetName().equalsIgnoreCase(nextDeclaration.GetName()))
+            if (declaration.getName().equalsIgnoreCase(nextDeclaration.getName()))
             {
-                if(!nextDeclaration.IsImportant() || declaration.IsImportant())
+                if(!nextDeclaration.isImportant() || declaration.isImportant())
                 {
-                    nextDeclaration.SetStatus(overridden);
+                    nextDeclaration.setStatus(overridden);
                 }
             }
         }

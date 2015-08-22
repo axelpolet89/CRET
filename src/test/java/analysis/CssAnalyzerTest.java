@@ -54,14 +54,14 @@ public class CssAnalyzerTest
 		List<MSelector> matchedExternal = new ArrayList<>();
 		List<MSelector> matchedInternal = new ArrayList<>();
 
-		for(MCssRule rule : externalFile.GetRules())
+		for(MCssRule rule : externalFile.getRules())
 		{
-			matchedExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.IsMatched()).collect(Collectors.toList()));
+			matchedExternal.addAll(rule.getSelectors().stream().filter(selector -> selector.isMatched()).collect(Collectors.toList()));
 		}
 
-		for(MCssRule rule : internalFile.GetRules())
+		for(MCssRule rule : internalFile.getRules())
 		{
-			matchedInternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.IsMatched()).collect(Collectors.toList()));
+			matchedInternal.addAll(rule.getSelectors().stream().filter(selector -> selector.isMatched()).collect(Collectors.toList()));
 		}
 
 		// assert correct amount of internal and external matched rules
@@ -69,24 +69,24 @@ public class CssAnalyzerTest
 		Assert.assertEquals(2, matchedInternal.size());
 		Assert.assertArrayEquals(Arrays.asList("div#footer", "#footer", "#footer", "#footer", "#wishlist2 li:first-child", "#wishlist2 li:last-child",	"#wishlist3 li a:hover",
 													"#wishlist3 li a:hover", "#wishlist3 li a:link", "#wishlist3 li a:visited", "ul li a", "div.input-content").toArray(),
-								matchedExternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+								matchedExternal.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
 		Assert.assertArrayEquals(Arrays.asList("ul li a", ".input-content").toArray(),
-				matchedInternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+				matchedInternal.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
 		Map<String, MCssFile> postResult = new EffectivenessPlugin().transform(files, matchedElements);
 
 		List<MSelector> effectiveExternal = new ArrayList<>();
 		List<MSelector> effectiveInternal = new ArrayList<>();
 
-		for(MCssRule rule : postResult.get("external").GetRules())
+		for(MCssRule rule : postResult.get("external").getRules())
 		{
-			effectiveExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveDeclarations()).collect(Collectors.toList()));
+			effectiveExternal.addAll(rule.getSelectors().stream().filter(selector -> selector.hasEffectiveDeclarations()).collect(Collectors.toList()));
 		}
 
-		for(MCssRule rule : postResult.get("internal").GetRules())
+		for(MCssRule rule : postResult.get("internal").getRules())
 		{
-			effectiveInternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveDeclarations()).collect(Collectors.toList()));
+			effectiveInternal.addAll(rule.getSelectors().stream().filter(selector -> selector.hasEffectiveDeclarations()).collect(Collectors.toList()));
 		}
 
 		//assert correct amount of internal and external effective selectors
@@ -95,75 +95,75 @@ public class CssAnalyzerTest
 
 		Assert.assertArrayEquals(Arrays.asList("div#footer", "#footer", "#footer", "#wishlist2 li:first-child",	"#wishlist3 li a:hover",
 						 						"#wishlist3 li a:link", "ul li a", "div.input-content").toArray(),
-				effectiveExternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+				effectiveExternal.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
 		Assert.assertArrayEquals(Arrays.asList("ul li a").toArray(),
-				effectiveInternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+				effectiveInternal.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
 		effectiveExternal.clear();
 		effectiveInternal.clear();
 
-		for(MCssRule rule : postResult.get("external").GetRules())
+		for(MCssRule rule : postResult.get("external").getRules())
 		{
-			effectiveExternal.addAll(rule.GetSelectors());
+			effectiveExternal.addAll(rule.getSelectors());
 		}
 
-		for(MCssRule rule : postResult.get("internal").GetRules())
+		for(MCssRule rule : postResult.get("internal").getRules())
 		{
-			effectiveInternal.addAll(rule.GetSelectors());
+			effectiveInternal.addAll(rule.getSelectors());
 		}
 
 		// we only have effective selectors, others were filtered by the CssAnalyzer
 		Assert.assertEquals(8, effectiveExternal.size());
 		Assert.assertEquals(1, effectiveInternal.size());
 
-		List<MDeclaration> mDeclarations = effectiveExternal.get(0).GetDeclarations();
+		List<MDeclaration> mDeclarations = effectiveExternal.get(0).getDeclarations();
 
 		// div#footer
 		Assert.assertEquals(mDeclarations.size(), 1);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "color");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "color");
 
 		// #footer
-		mDeclarations = effectiveExternal.get(1).GetDeclarations();
+		mDeclarations = effectiveExternal.get(1).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 1);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "background");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "background");
 
 		// #footer
-		mDeclarations = effectiveExternal.get(2).GetDeclarations();
+		mDeclarations = effectiveExternal.get(2).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 2);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "margin");
-		Assert.assertEquals(mDeclarations.get(1).GetName(), "padding");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "margin");
+		Assert.assertEquals(mDeclarations.get(1).getName(), "padding");
 
 		// #wishlist2 li:first-child
-		mDeclarations = effectiveExternal.get(3).GetDeclarations();
+		mDeclarations = effectiveExternal.get(3).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 1);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "background-color");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "background-color");
 
 		// #wishlist3 li a:hover
-		mDeclarations = effectiveExternal.get(4).GetDeclarations();
+		mDeclarations = effectiveExternal.get(4).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 1);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "border");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "border");
 
 		// #wishlist3 li a:link
-		mDeclarations = effectiveExternal.get(5).GetDeclarations();
+		mDeclarations = effectiveExternal.get(5).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 1);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "border");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "border");
 
 		// ul li a
-		mDeclarations = effectiveExternal.get(6).GetDeclarations();
+		mDeclarations = effectiveExternal.get(6).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 1);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "color");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "color");
 
 		// ul li a
-		mDeclarations = effectiveExternal.get(7).GetDeclarations();
+		mDeclarations = effectiveExternal.get(7).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 1);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "color");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "color");
 
 		// INTERNAL ul li a
-		mDeclarations = effectiveInternal.get(0).GetDeclarations();
+		mDeclarations = effectiveInternal.get(0).getDeclarations();
 		Assert.assertEquals(mDeclarations.size(), 2);
-		Assert.assertEquals(mDeclarations.get(0).GetName(), "font-size");
-		Assert.assertEquals(mDeclarations.get(1).GetName(), "display");
+		Assert.assertEquals(mDeclarations.get(0).getName(), "font-size");
+		Assert.assertEquals(mDeclarations.get(1).getName(), "display");
 	}
 
 
@@ -187,30 +187,30 @@ public class CssAnalyzerTest
 
 		List<MSelector> matchedExternal = new ArrayList<>();
 
-		for(MCssRule rule : externalFile.GetRules())
+		for(MCssRule rule : externalFile.getRules())
 		{
-			matchedExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.IsMatched()).collect(Collectors.toList()));
+			matchedExternal.addAll(rule.getSelectors().stream().filter(selector -> selector.isMatched()).collect(Collectors.toList()));
 		}
 
 		// assert correct amount of external matched rules
 		Assert.assertEquals(7, matchedExternal.size());
 
 		Assert.assertArrayEquals(Arrays.asList("div#footer", "div#footer", "div#footer", "body .extra-content", ".extra-content", "body .extra-content", ".extra-content").toArray(),
-				matchedExternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+				matchedExternal.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
 		Map<String, MCssFile> postResult = new EffectivenessPlugin().transform(files, matchedElements);
 
 		List<MSelector> effectiveExternal = new ArrayList<>();
-		for(MCssRule rule : postResult.get("external").GetRules())
+		for(MCssRule rule : postResult.get("external").getRules())
 		{
-			effectiveExternal.addAll(rule.GetSelectors().stream().filter(selector -> selector.HasEffectiveDeclarations()).collect(Collectors.toList()));
+			effectiveExternal.addAll(rule.getSelectors().stream().filter(selector -> selector.hasEffectiveDeclarations()).collect(Collectors.toList()));
 		}
 
 		//assert correct amount of internal and external effective selectors
 		Assert.assertEquals(6, effectiveExternal.size());
 
 		Assert.assertArrayEquals(Arrays.asList("div#footer", "div#footer", "div#footer", "body .extra-content", "body .extra-content", ".extra-content").toArray(),
-				effectiveExternal.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+				effectiveExternal.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
 		for(int i = 0; i < effectiveExternal.size(); i++)
 		{
@@ -218,14 +218,14 @@ public class CssAnalyzerTest
 
 			if (i == 5)
 			{
-				Assert.assertEquals(1, sel.GetDeclarations().size());
-				Assert.assertEquals("color", sel.GetDeclarations().get(0).GetName());
+				Assert.assertEquals(1, sel.getDeclarations().size());
+				Assert.assertEquals("color", sel.getDeclarations().get(0).getName());
 			}
 			else
 			{
-				for (MDeclaration prop : sel.GetDeclarations())
+				for (MDeclaration prop : sel.getDeclarations())
 				{
-					Assert.assertTrue(prop.IsEffective());
+					Assert.assertTrue(prop.isEffective());
 				}
 			}
 		}

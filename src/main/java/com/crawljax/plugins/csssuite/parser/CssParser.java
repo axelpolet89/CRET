@@ -172,7 +172,7 @@ public class CssParser
 		// in case of nested media-queries, also include other queries to next media-rule
 		if(parent != null)
 		{
-			queries.addAll(parent.GetMediaQueries());
+			queries.addAll(parent.getMediaQueries());
 		}
 
 		for(int i = 0; i < list.getLength(); i++)
@@ -211,7 +211,7 @@ public class CssParser
 			}
 		}
 
-		result.SetInnerRules(innerRules);
+		result.setInnerRules(innerRules);
 		return result;
 	}
 }

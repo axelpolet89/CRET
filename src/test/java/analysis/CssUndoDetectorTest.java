@@ -60,15 +60,15 @@ public class CssUndoDetectorTest
         Map<String, MCssFile> postResult =  undoDetector.transform(effectivenessPlugin.transform(normalizer.transform(files, matchedElements), matchedElements), matchedElements);
 
         List<MSelector> validSelectors = new ArrayList<>();
-        for(MCssRule rule : postResult.get("external").GetRules())
+        for(MCssRule rule : postResult.get("external").getRules())
         {
-            validSelectors.addAll(rule.GetSelectors());
+            validSelectors.addAll(rule.getSelectors());
         }
 
         //assert correct amount of valid selectors
         Assert.assertEquals(4, validSelectors.size());
         Assert.assertArrayEquals(Arrays.asList("ul li", "#wishlist1 li", "h3", "h3").toArray(),
-                validSelectors.stream().map((ms) -> ms.GetSelectorText()).collect(Collectors.toList()).toArray());
+                validSelectors.stream().map((ms) -> ms.getSelectorText()).collect(Collectors.toList()).toArray());
 
         for(int i = 0; i < validSelectors.size(); i++)
         {
@@ -76,15 +76,15 @@ public class CssUndoDetectorTest
 
             if (i == 2)
             {
-                Assert.assertEquals(1, sel.GetDeclarations().size());
-                Assert.assertEquals("color", sel.GetDeclarations().get(0).GetName());
+                Assert.assertEquals(1, sel.getDeclarations().size());
+                Assert.assertEquals("color", sel.getDeclarations().get(0).getName());
             }
             else
             {
-                for (MDeclaration prop : sel.GetDeclarations())
+                for (MDeclaration prop : sel.getDeclarations())
                 {
-                    Assert.assertTrue(prop.IsEffective());
-                    Assert.assertFalse(prop.IsInvalidUndo());
+                    Assert.assertTrue(prop.isEffective());
+                    Assert.assertFalse(prop.isInvalidUndo());
                 }
             }
         }

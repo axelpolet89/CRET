@@ -111,7 +111,7 @@ public class CloneDetector
                 {
                     for(MSelector mSel : allSelectors.stream().filter(s -> template.GetRelatedSelectors().contains(s)).collect(Collectors.toList()))
                     {
-                        mSel.RemoveDeclarationsByText(template.GetDeclarations());
+                        mSel.removeDeclarationsByText(template.GetDeclarations());
                     }
                 }
 
@@ -139,7 +139,7 @@ public class CloneDetector
 
         List<ClonedDeclaration> declarations = new ArrayList<>();
 
-        selectors.stream().forEach(s -> s.GetDeclarations().forEach(p -> declarations.add(new ClonedDeclaration(p, s))));
+        selectors.stream().forEach(s -> s.getDeclarations().forEach(p -> declarations.add(new ClonedDeclaration(p, s))));
 
         Set<Integer> visitedDeclarations = new HashSet<>();
 

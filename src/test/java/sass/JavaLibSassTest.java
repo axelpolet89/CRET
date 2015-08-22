@@ -61,35 +61,35 @@ public class JavaLibSassTest
         MCssFile refFile = TestHelper.GetCssFileFromFile("./src/test/resources/becker-style-ruby-sass-ref.css");
         MCssFile libSassFile = TestHelper.GetCssFileFromFile("./src/test/test_output/becker-style.css");
 
-        List<MCssRule> refRules = refFile.GetRules();
-        List<MCssRule> libSassRules = libSassFile.GetRules();
+        List<MCssRule> refRules = refFile.getRules();
+        List<MCssRule> libSassRules = libSassFile.getRules();
 
         Assert.assertEquals(refRules.size(), libSassRules.size());
 
         for(int i = 0; i < refRules.size(); i++)
         {
-            List<MSelector> refSelectors = refRules.get(i).GetSelectors();
-            List<MSelector> libSassSelectors = libSassRules.get(i).GetSelectors();
+            List<MSelector> refSelectors = refRules.get(i).getSelectors();
+            List<MSelector> libSassSelectors = libSassRules.get(i).getSelectors();
 
             Assert.assertEquals(refSelectors.size(), libSassSelectors.size());
 
             for(int j = 0; j < refSelectors.size(); j++)
             {
-                List<MDeclaration> refDeclarations = refSelectors.get(j).GetDeclarations();
-                List<MDeclaration> libSassDeclarations = libSassSelectors.get(j).GetDeclarations();
+                List<MDeclaration> refDeclarations = refSelectors.get(j).getDeclarations();
+                List<MDeclaration> libSassDeclarations = libSassSelectors.get(j).getDeclarations();
 
-                List<MediaQuery> refMedia = refSelectors.get(j).GetMediaQueries();
-                List<MediaQuery> libSassMedia = libSassSelectors.get(j).GetMediaQueries();
+                List<MediaQuery> refMedia = refSelectors.get(j).getMediaQueries();
+                List<MediaQuery> libSassMedia = libSassSelectors.get(j).getMediaQueries();
 
                 LogHandler.debug("Checking selector %s on selector %s", refSelectors.get(j), libSassSelectors.get(j));
-                Assert.assertEquals(refSelectors.get(j).GetSelectorText(), libSassSelectors.get(j).GetSelectorText());
+                Assert.assertEquals(refSelectors.get(j).getSelectorText(), libSassSelectors.get(j).getSelectorText());
                 Assert.assertEquals(refDeclarations.size(), libSassDeclarations.size());
                 Assert.assertEquals(refMedia.size(), libSassMedia.size());
 
                 for(int k = 0; k < refDeclarations.size(); k++)
                 {
-                    Assert.assertEquals(refDeclarations.get(k).GetName(), libSassDeclarations.get(k).GetName());
-                    if(!refDeclarations.get(k).GetValue().equals(libSassDeclarations.get(k).GetValue()))
+                    Assert.assertEquals(refDeclarations.get(k).getName(), libSassDeclarations.get(k).getName());
+                    if(!refDeclarations.get(k).getValue().equals(libSassDeclarations.get(k).getValue()))
                     {
                         LogHandler.warn("Mismatch declaration value! In selector %s and selector %s, declaration %s and declaration %s", refSelectors.get(j), libSassSelectors.get(j), refDeclarations.get(k), libSassDeclarations.get(k));
                     }

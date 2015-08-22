@@ -31,11 +31,11 @@ public class DetectClonedDeclarationsPlugin implements ICssTransformer
     {
         for(String fileName : cssRules.keySet())
         {
-            for(MCssRule mCssRule : cssRules.get(fileName).GetRules())
+            for(MCssRule mCssRule : cssRules.get(fileName).getRules())
             {
-                for(MSelector mSelector : mCssRule.GetSelectors())
+                for(MSelector mSelector : mCssRule.getSelectors())
                 {
-                    List<MDeclaration> declarations = mSelector.GetDeclarations();
+                    List<MDeclaration> declarations = mSelector.getDeclarations();
                     List<MDeclaration> clonedProps = new ArrayList<>();
 
                     for(int i = 0; i < declarations.size(); i++)
@@ -46,15 +46,15 @@ public class DetectClonedDeclarationsPlugin implements ICssTransformer
                         {
                             final MDeclaration other = declarations.get(j);
 
-                            if(current.GetName().equals(other.GetName()))
+                            if(current.getName().equals(other.getName()))
                             {
-                                if((!current.IsImportant() || other.IsImportant()) && current.GetValueVendor().isEmpty())
+                                if((!current.isImportant() || other.isImportant()) && current.getValueVendor().isEmpty())
                                 {
                                     clonedProps.add(current);
                                     _clonedDeclarationsRemoved++;
                                     LogHandler.debug("[DetectClonedDeclarations] Declaration with '%s' in selector '%s' of file '%s' is a clone of a LATER declared declaration, and considered ineffective, will be removed", current, mSelector, fileName);
                                 }
-                                else if (current.IsImportant() && !other.IsImportant())
+                                else if (current.isImportant() && !other.isImportant())
                                 {
                                     clonedProps.add(other);
                                     _clonedDeclarationsRemoved++;
@@ -64,7 +64,7 @@ public class DetectClonedDeclarationsPlugin implements ICssTransformer
                         }
                     }
 
-                    mSelector.RemoveDeclarations(clonedProps);
+                    mSelector.removeDeclarations(clonedProps);
                 }
             }
         }

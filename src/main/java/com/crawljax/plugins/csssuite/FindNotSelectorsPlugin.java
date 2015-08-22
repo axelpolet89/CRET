@@ -13,7 +13,6 @@ import com.crawljax.plugins.csssuite.parser.CssParser;
 import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
 
 import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.w3c.dom.Document;
 
 import java.io.*;
@@ -125,8 +124,8 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 
 		for(MCssFile mCssFile : _embeddedStyles.values())
 		{
-			List<MCssRule> existingRules = mCssFile.GetRules();
-			List<MCssRule> checkRules = check.GetRules();
+			List<MCssRule> existingRules = mCssFile.getRules();
+			List<MCssRule> checkRules = check.getRules();
 
 			if(existingRules.size() != checkRules.size())
 			{
@@ -167,7 +166,7 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 
 		MCssFile file = parser.ParseCssIntoMCssRules(url, code);
 
-		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.GetRules().size());
+		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.getRules().size());
 
 		_parserErrors.put(url, parser.GetParseErrors());
 
@@ -194,11 +193,11 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 			int totalSelectors = 0;
 			int notSelectors = 0;
 
-			for(MCssRule mCssRule : _cssFiles.get(fileName).GetRules())
+			for(MCssRule mCssRule : _cssFiles.get(fileName).getRules())
 			{
-				for(MSelector mSelector : mCssRule.GetSelectors())
+				for(MSelector mSelector : mCssRule.getSelectors())
 				{
-					if(mSelector.GetSelectorText().contains(":not"))
+					if(mSelector.getSelectorText().contains(":not"))
 					{
 						notSelectors++;
 					}
@@ -225,11 +224,11 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 			int totalSelectors = 0;
 			int notSelectors = 0;
 
-			for(MCssRule mCssRule : _embeddedStyles.get(fileName).GetRules())
+			for(MCssRule mCssRule : _embeddedStyles.get(fileName).getRules())
 			{
-				for(MSelector mSelector : mCssRule.GetSelectors())
+				for(MSelector mSelector : mCssRule.getSelectors())
 				{
-					if(mSelector.GetSelectorText().contains(":not"))
+					if(mSelector.getSelectorText().contains(":not"))
 					{
 						notSelectors++;
 					}

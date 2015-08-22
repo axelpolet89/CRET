@@ -43,26 +43,26 @@ public class ClonedDeclarationsTest
         clonedDeclarations.transform(files, new MatchedElements());
 
         List<MSelector> selectors = new ArrayList<>();
-        for(MCssRule rule : files.get("external").GetRules())
+        for(MCssRule rule : files.get("external").getRules())
         {
-            selectors.addAll(rule.GetSelectors());
+            selectors.addAll(rule.getSelectors());
         }
 
-        List<MDeclaration> mDeclarations = selectors.get(0).GetDeclarations();
+        List<MDeclaration> mDeclarations = selectors.get(0).getDeclarations();
         Assert.assertEquals(5,mDeclarations.size());
         Assert.assertEquals("border-width: 1px;", mDeclarations.get(2).toString());
         Assert.assertEquals("border-style: solid;", mDeclarations.get(3).toString());
         Assert.assertEquals("border-color: #ff0000;", mDeclarations.get(4).toString());
 
 
-        mDeclarations = selectors.get(1).GetDeclarations();
+        mDeclarations = selectors.get(1).getDeclarations();
         Assert.assertEquals(4,mDeclarations.size());
         Assert.assertEquals("padding-top: 40px;", mDeclarations.get(0).toString());
         Assert.assertEquals("padding-right: 40px;", mDeclarations.get(1).toString());
         Assert.assertEquals("padding-bottom: 40px;", mDeclarations.get(2).toString());
         Assert.assertEquals("padding-left: 40px;", mDeclarations.get(3).toString());
 
-        mDeclarations = selectors.get(2).GetDeclarations();
+        mDeclarations = selectors.get(2).getDeclarations();
         Assert.assertEquals(4,mDeclarations.size());
         Assert.assertEquals("padding-top: 30px !important;", mDeclarations.get(0).toString());
         Assert.assertEquals("padding-right: 30px !important;", mDeclarations.get(1).toString());

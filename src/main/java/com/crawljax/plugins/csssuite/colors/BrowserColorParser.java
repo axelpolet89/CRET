@@ -44,7 +44,7 @@ public class BrowserColorParser
      * @param browserColor the browser color (text)
      * @return an rgb representation for the given browserColor, if it is a valid X11 browser color
      */
-    public String TryParseColorToHex(String browserColor)
+    public String tryParseColorToHex(String browserColor)
     {
         if(_colorHexMap.containsKey(browserColor))
         {
@@ -52,12 +52,6 @@ public class BrowserColorParser
         }
 
         return browserColor;
-    }
-
-
-    public Set GetBrowserColors()
-    {
-        return _colorHexMap.keySet();
     }
 }
 

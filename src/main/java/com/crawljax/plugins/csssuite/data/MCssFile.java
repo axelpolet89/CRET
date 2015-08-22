@@ -30,41 +30,41 @@ public class MCssFile
      */
     public MCssFile(List<MCssRule> newRules, MCssFile oldFile)
     {
-        this(oldFile.GetName(), newRules, oldFile.GetMediaRules(), oldFile.GetIgnoredRules());
+        this(oldFile.getName(), newRules, oldFile.getMediaRules(), oldFile.getIgnoredRules());
     }
 
     /** Getter */
-    public String GetName()
+    public String getName()
     {
         return _name;
     }
 
     /** Getter */
-    public List<MCssRule> GetRules()
+    public List<MCssRule> getRules()
     {
         return _allRules;
     }
 
     /** Getter */
-    public List<MCssMediaRule> GetMediaRules()
+    public List<MCssMediaRule> getMediaRules()
     {
         return _mediaRules;
     }
 
     /** Getter */
-    public List<MCssRuleBase>  GetIgnoredRules()
+    public List<MCssRuleBase> getIgnoredRules()
     {
         return _ignoredRules;
     }
 
     /** Getter */
-    public List<MCssRuleBase> GetAllRules()
+    public List<MCssRuleBase> getAllRules()
     {
         List<MCssRuleBase> result = new ArrayList<>();
 
         result.addAll(_allRules);
         result.addAll(_ignoredRules);
 
-        return result.stream().sorted((r1, r2) -> Integer.compare(r1.GetLineNumber(), r2.GetLineNumber())).collect(Collectors.toList());
+        return result.stream().sorted((r1, r2) -> Integer.compare(r1.getLineNumber(), r2.getLineNumber())).collect(Collectors.toList());
     }
 }

@@ -21,7 +21,7 @@ public class MatchedElements
 
 	public void SetMatchedElement(ElementWrapper element, MSelector selector, int order)
 	{
-		String key = element.GetKey();
+		String key = element.getKey();
 
 		if(!_elementSelectors.containsKey(key))
 		{

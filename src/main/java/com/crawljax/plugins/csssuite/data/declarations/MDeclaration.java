@@ -114,81 +114,81 @@ public class MDeclaration
 	 */
 	public MDeclaration(MDeclaration declaration)
 	{
-		_name = declaration.GetName();
-		_originalValue = declaration.GetOriginalValue();
-		_normalizedValue = declaration.GetValue();
-		_status = declaration.GetStatus();
-		_isEffective = declaration.IsEffective();
-		_isImportant = declaration.IsImportant();
-		_isIgnored = declaration.IsIgnored();
-		_isInvalidUndo = declaration.IsInvalidUndo();
-		_w3cError = declaration.GetW3cError();
-		_nameVendorPrefix = declaration.GetNameVendor();
-		_valueVendorPrefix = declaration.GetValueVendor();
-		_order = declaration.GetOrder();
-		_isFaulty = declaration.IsFaulty();
+		_name = declaration.getName();
+		_originalValue = declaration.getOriginalValue();
+		_normalizedValue = declaration.getValue();
+		_status = declaration.getStatus();
+		_isEffective = declaration.isEffective();
+		_isImportant = declaration.isImportant();
+		_isIgnored = declaration.isIgnored();
+		_isInvalidUndo = declaration.isInvalidUndo();
+		_w3cError = declaration.getW3CError();
+		_nameVendorPrefix = declaration.getNameVendor();
+		_valueVendorPrefix = declaration.getValueVendor();
+		_order = declaration.getOrder();
+		_isFaulty = declaration.isFaulty();
 	}
 
 
 	/** Getter */
-	public String GetName()
+	public String getName()
 	{
 		return _name;
 	}
 
 	/** Getter */
-	public String GetOriginalValue()
+	public String getOriginalValue()
 	{
 		return _originalValue;
 	}
 
 	/** Getter */
-	public String GetW3cError()
+	public String getW3CError()
 	{
 		return _w3cError;
 	}
 
 	/** Getter */
-	public boolean IsIgnored() { return _isIgnored; }
+	public boolean isIgnored() { return _isIgnored; }
 
 	/** Getter */
-	public boolean IsImportant()
+	public boolean isImportant()
 	{
 		return _isImportant;
 	}
 
 	/** Getter */
-	public boolean IsFaulty() { return _isFaulty; }
+	public boolean isFaulty() { return _isFaulty; }
 
 	/** Getter */
-	public String GetNameVendor() { return _nameVendorPrefix; }
+	public String getNameVendor() { return _nameVendorPrefix; }
 
 	/** Getter */
-	public String GetValueVendor() { return _valueVendorPrefix; }
+	public String getValueVendor() { return _valueVendorPrefix; }
 
 	/** Getter */
-	public int GetOrder() { return _order; }
+	public int getOrder() { return _order; }
 
 	/** Getter */
-	public String GetValue() { return _normalizedValue;	}
+	public String getValue() { return _normalizedValue;	}
 
 	/** Getter */
-	public String GetStatus()
+	public String getStatus()
 	{
 		return _status;
 	}
 
 	/** Getter */
-	public boolean IsEffective()
+	public boolean isEffective()
 	{
 		return _isEffective;
 	}
 
 	/** Getter */
-	public boolean IsInvalidUndo() { return _isInvalidUndo; }
+	public boolean isInvalidUndo() { return _isInvalidUndo; }
 
 	/** Getter */
-	public String GetFullValue()
+	public String getFullValue()
 	{
 		return _normalizedValue + (_isImportant ? " !important" : "");
 	}
@@ -196,7 +196,7 @@ public class MDeclaration
 	/**
 	 * @param value a normalized value for this MDeclaration
 	 */
-	public void SetNormalizedValue(String value)
+	public void setNormalizedValue(String value)
 	{
 		_normalizedValue = value;
 	}
@@ -205,7 +205,7 @@ public class MDeclaration
 	/**
 	 * @param effective mark this MDeclaration as effective or ineffectiv
 	 */
-	public void SetEffective(boolean effective)
+	public void setEffective(boolean effective)
 	{
 		_isEffective = effective;
 	}
@@ -215,7 +215,7 @@ public class MDeclaration
 	 *
 	 * @param status
 	 */
-	public void SetStatus(String status)
+	public void setStatus(String status)
 	{
 		_status = status;
 	}
@@ -224,7 +224,7 @@ public class MDeclaration
 	/**
 	 *
 	 */
-	public void SetInvalidUndo(boolean invalid)
+	public void setInvalidUndo(boolean invalid)
 	{
 		if(_invalidUndoSet && !_isInvalidUndo)
 			return;
@@ -240,19 +240,9 @@ public class MDeclaration
 	 * @param otherDeclaration the other declaration besides which this one may co-exist
 	 * @return false, this MDeclaration may never coexist with another MDeclaration in the same MSelector
 	 */
-	public boolean AllowCoexistence(MDeclaration otherDeclaration)
+	public boolean allowCoexistence(MDeclaration otherDeclaration)
 	{
 		return false;
-	}
-
-
-	/**
-	 *
-	 * @return
-	 */
-	public int ComputeSizeBytes()
-	{
-		return (_name.getBytes().length+ _normalizedValue.getBytes().length);
 	}
 
 
@@ -260,24 +250,24 @@ public class MDeclaration
 	 * Transform this property into valid CSS syntax
 	 * @return valid CSS syntax
 	 */
-	public String Print()
+	public String print()
 	{
-		return String.format("{ %s : %s %s }", _name, GetFullValue(), (_isEffective ? "Effective" : "Ineffective"));
+		return String.format("{ %s : %s %s }", _name, getFullValue(), (_isEffective ? "Effective" : "Ineffective"));
 	}
 
 
 	/**
 	 * @return a short string that may be used as a key in HashMap comparisons
 	 */
-	public String AsKey()
+	public String asKey()
 	{
-		return String.format("%s-%s", _name, GetFullValue());
+		return String.format("%s-%s", _name, getFullValue());
 	}
 
 	@Override
 	public String toString()
 	{
-		return String.format("%s: %s;", _name, GetFullValue());
+		return String.format("%s: %s;", _name, getFullValue());
 	}
 }
 

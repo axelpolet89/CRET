@@ -4,7 +4,6 @@ import com.crawljax.plugins.csssuite.CssSuiteException;
 import com.crawljax.plugins.csssuite.LogHandler;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -69,8 +68,8 @@ public class ColorNameFinder
         _hexColorMap = new LinkedHashMap<>();
         _hexNameMap = new LinkedHashMap<>();
 
-        Init();
-        BuildColors();
+        init();
+        buildColors();
     }
 
 
@@ -78,7 +77,7 @@ public class ColorNameFinder
      *
      * @return
      */
-    private void Init()
+    private void init()
     {
         File file = new File("./src/main/java/com/crawljax/plugins/csssuite/colors/color_names_hex.txt");
 
@@ -103,12 +102,12 @@ public class ColorNameFinder
      *
      * @return
      */
-    private void BuildColors()
+    private void buildColors()
     {
         for(String hex : _hexNameMap.keySet())
         {
-            Rgb rgb = HexToRgb(hex);
-            Hsl hsl = RgbToHsl(rgb);
+            Rgb rgb = hexToRgb(hex);
+            Hsl hsl = rgbToHsl(rgb);
             _hexColorMap.put(hex, new Color(_hexNameMap.get(hex), rgb, hsl));
         }
     }
@@ -121,7 +120,7 @@ public class ColorNameFinder
      * @param b
      * @return
      */
-    private String RgbToHex(int r, int g, int b)
+    private String rgbToHex(int r, int g, int b)
     {
         return String.format("#%02x%02x%02x", r, g, b);
     }
@@ -132,7 +131,7 @@ public class ColorNameFinder
      * @param hex
      * @return
      */
-    private Rgb HexToRgb(String hex)
+    private Rgb hexToRgb(String hex)
     {
         if(hex.length() == 6)
             hex = "#" + hex;
@@ -146,9 +145,9 @@ public class ColorNameFinder
      * @param hex
      * @return
      */
-    private Hsl HexToHsl(String hex)
+    private Hsl hexToHsl(String hex)
     {
-        return RgbToHsl(HexToRgb(hex));
+        return rgbToHsl(hexToRgb(hex));
     }
 
 
@@ -157,7 +156,7 @@ public class ColorNameFinder
      * @param rgb
      * @return
      */
-    private Hsl RgbToHsl(Rgb rgb)
+    private Hsl rgbToHsl(Rgb rgb)
     {
         final double r = (double)rgb.r/(double)255;
         double g = (double)rgb.g/(double)255;
@@ -191,10 +190,10 @@ public class ColorNameFinder
     }
 
 
-    public String TryGetNameForHex(String hex) throws CssSuiteException
+    public String tryGetNameForHex(String hex) throws CssSuiteException
     {
-        Rgb rgb = HexToRgb(hex);
-        return TryGetNameForRgb(rgb.r, rgb.g, rgb.b);
+        Rgb rgb = hexToRgb(hex);
+        return tryGetNameForRgb(rgb.r, rgb.g, rgb.b);
     }
 
 
@@ -206,9 +205,9 @@ public class ColorNameFinder
      * @return
      * @throws CssSuiteException
      */
-    public String TryGetNameForRgb(int r, int g, int b) throws CssSuiteException
+    public String tryGetNameForRgb(int r, int g, int b) throws CssSuiteException
     {
-        String color = RgbToHex(r, g, b);
+        String color = rgbToHex(r, g, b);
         color = color.toUpperCase();
 
         if(color.length() < 3 || color.length() > 7)
@@ -230,7 +229,7 @@ public class ColorNameFinder
         if(_hexColorMap.containsKey(key))
             return _hexColorMap.get(key).name;
 
-        Hsl hsl = HexToHsl(color);
+        Hsl hsl = hexToHsl(color);
 
         double ndf1;
         double ndf2;

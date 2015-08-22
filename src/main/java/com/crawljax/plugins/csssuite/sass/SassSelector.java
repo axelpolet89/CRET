@@ -26,8 +26,8 @@ public class SassSelector
     {
         _original = original;
 
-        _selectorText = original.GetSelectorText();
-        _declarations = original.GetDeclarations();
+        _selectorText = original.getSelectorText();
+        _declarations = original.getDeclarations();
 
         _cloneIncludes = new ArrayList<>();
         _otherIncludes = new ArrayList<>();
@@ -45,7 +45,7 @@ public class SassSelector
 
     public void PrintContents(SuiteStringBuilder builder, String prefix)
     {
-        _declarations.sort((p1, p2) -> Integer.compare(p1.GetOrder(), p2.GetOrder()));
+        _declarations.sort((p1, p2) -> Integer.compare(p1.getOrder(), p2.getOrder()));
 
         for(SassCloneMixin cloneMixin : _cloneIncludes)
         {
@@ -59,7 +59,7 @@ public class SassSelector
 
         for(MDeclaration mDeclaration : _declarations)
         {
-            if(!mDeclaration.IsFaulty())
+            if(!mDeclaration.isFaulty())
             {
                 builder.appendLine("%s\t%s", prefix, mDeclaration);
             }
@@ -83,17 +83,17 @@ public class SassSelector
 
     public int GetLineNumber()
     {
-        return _original.GetLineNumber();
+        return _original.getLineNumber();
     }
 
     public int GetOrder()
     {
-        return _original.GetOrder();
+        return _original.getOrder();
     }
 
-    public List<MediaQuery> GetMediaQueries() { return _original.GetMediaQueries();}
+    public List<MediaQuery> GetMediaQueries() { return _original.getMediaQueries();}
 
-    public MCssRuleBase GetParent() { return _original.GetParent(); }
+    public MCssRuleBase GetParent() { return _original.getParent(); }
 
     public boolean HasEqualDeclarationsByText(SassSelector other)
     {

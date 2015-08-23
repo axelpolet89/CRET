@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/css-suite.iml" filepath="$PROJECT_DIR$/css-suite.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cret.iml" filepath="$PROJECT_DIR$/cret.iml" />
     </modules>
   </component>
 </project>

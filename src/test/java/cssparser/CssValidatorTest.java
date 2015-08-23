@@ -1,7 +1,7 @@
 package cssparser;
 
-import com.crawljax.plugins.csssuite.parser.CssValidator;
-import com.crawljax.plugins.csssuite.util.SuiteStringBuilder;
+import com.crawljax.plugins.cret.parser.CssValidator;
+import com.crawljax.plugins.cret.util.CretStringBuilder;
 import com.jcabi.w3c.ValidationResponse;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
@@ -22,7 +22,7 @@ public class CssValidatorTest
     @Test
     public void TestCssValidator() throws IOException
     {
-        SuiteStringBuilder builder = new SuiteStringBuilder();
+        CretStringBuilder builder = new CretStringBuilder();
 
         builder.append("div, a, span{\nbackground: solid; }"); //incorrect background value --> error
         builder.appendLine("#id, .class, span[attr=\"test\"], a:hover, span::before{\ncolor: black;\nmargin 10 px;} "); //second declaration syntax-error

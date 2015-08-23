@@ -8,12 +8,12 @@
 		<version>3.6</version>
 	</parent>
 
-	<artifactId>css-suite</artifactId>
+	<artifactId>cret</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-	<name>CSS-suite</name>
+	<name>CRET</name>
 	<description>
-	  Automated CSS Re-engineering
+	  Automated CSS Re-Engineering Tool
 	</description>
 	<inceptionYear>2014</inceptionYear>
 
@@ -144,21 +144,9 @@
 
 	<developers>
 		<developer>
-			<name>Ali Mesbah</name>
-			<email>amesbah@gmail.com</email>
-			<url>http://ece.ubc.ca/~amesbah/</url>
-			<organization>ECE, UBC</organization>
-		</developer>
-		<developer>
-			<name>Tahra Priebjrivat</name>
-			<email>tahra.prieb@gmail.com</email>
-			<organization>ECE, UBC</organization>
-		</developer>
-		<developer>
-			<name>Shabnam Mirshokraie</name>
-			<email>mirshokraie@gmail.com</email>
-			<url>http://ece.ubc.ca/~shabnamm/</url>
-			<organization>ECE, UBC</organization>
+			<name>Axel Polet</name>
+			<email>axel.polet33@gmail.com</email>
+			<organization>UVA</organization>
 		</developer>
 	</developers>
 

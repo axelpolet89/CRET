@@ -1,8 +1,8 @@
 package sass;
 
-import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
-import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
+import com.crawljax.plugins.cret.data.MCssFile;
+import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.merge.NormalizeAndMergePlugin;
 
 import helpers.TestHelper;
 import org.apache.log4j.Level;

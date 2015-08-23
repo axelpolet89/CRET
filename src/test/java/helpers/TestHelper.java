@@ -1,9 +1,9 @@
 package helpers;
 
-import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.parser.CssParser;
-import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
+import com.crawljax.plugins.cret.data.MCssFile;
+import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.parser.CssParser;
+import com.crawljax.plugins.cret.util.specificity.SpecificitySelector;
 import com.crawljax.util.DomUtils;
 import com.steadystate.css.parser.CSSOMParser;
 import com.steadystate.css.parser.SACParserCSS3;
@@ -55,12 +55,12 @@ public class TestHelper
         if(contents.isEmpty())
             return null;
 
-        CssParser parser = new CssParser();
+        CssParser parser = new CssParser(false);
         MCssFile mCssFile = parser.parseCssIntoMCssRules(path, contents);
 
-        if(parser.getParseErrors().size() > 0)
+        if(parser.getParseErrors().printParseErrors().size() > 0)
         {
-            for(String parseError : parser.getParseErrors())
+            for(String parseError : parser.getParseErrors().printParseErrors())
                 System.out.println(String.format("Incorrect CSS in file '%s' -> 's'", path, parseError));
 
             return null;
@@ -71,12 +71,12 @@ public class TestHelper
 
     public static MCssFile GetCssFromString(String name, String cssCode)
     {
-        CssParser parser = new CssParser();
+        CssParser parser = new CssParser(false);
         MCssFile mCssFile  = parser.parseCssIntoMCssRules(name, cssCode);
 
-        if(parser.getParseErrors().size() > 0)
+        if(parser.getParseErrors().printParseErrors().size() > 0)
         {
-            for(String parseError : parser.getParseErrors())
+            for(String parseError : parser.getParseErrors().printParseErrors())
                 System.out.println(String.format("Incorrect CSS in file '%s' -> 's'", name, parseError));
 
             return null;

@@ -5,15 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
-import com.crawljax.plugins.csssuite.util.specificity.SpecificitySelector;
+import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.util.specificity.SpecificitySelector;
 import helpers.TestHelper;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.util.specificity.Specificity;
+import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.util.specificity.Specificity;
 
 public class SpecificityTest
 {

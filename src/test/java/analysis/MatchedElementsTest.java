@@ -15,7 +15,7 @@ import se.fishtank.css.selectors.Selectors;
 import se.fishtank.css.selectors.dom.W3CNode;
 import se.fishtank.css.selectors.parser.ParserException;
 
-import com.crawljax.plugins.csssuite.data.MSelector;
+import com.crawljax.plugins.cret.data.MSelector;
 import com.crawljax.util.DomUtils;
 
 public class MatchedElementsTest

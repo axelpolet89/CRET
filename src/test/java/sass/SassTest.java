@@ -1,13 +1,13 @@
 package sass;
 
-import com.crawljax.plugins.csssuite.CssSuiteException;
-import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
-import com.crawljax.plugins.csssuite.plugins.merge.NormalizeAndMergePlugin;
-import com.crawljax.plugins.csssuite.sass.*;
-import com.crawljax.plugins.csssuite.sass.mixins.SassCloneMixin;
-import com.crawljax.plugins.csssuite.sass.variables.SassVariable;
+import com.crawljax.plugins.cret.CssSuiteException;
+import com.crawljax.plugins.cret.data.MCssFile;
+import com.crawljax.plugins.cret.plugins.NormalizeAndSplitPlugin;
+import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.merge.NormalizeAndMergePlugin;
+import com.crawljax.plugins.cret.sass.*;
+import com.crawljax.plugins.cret.sass.mixins.SassCloneMixin;
+import com.crawljax.plugins.cret.sass.variables.SassVariable;
 import helpers.TestHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;

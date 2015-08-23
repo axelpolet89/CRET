@@ -12,8 +12,8 @@ import org.junit.Test;
 
 import org.w3c.dom.Document;
 
-import com.crawljax.plugins.csssuite.data.ElementWithClass;
-import com.crawljax.plugins.csssuite.util.CSSDOMHelper;
+import com.crawljax.plugins.cret.data.ElementWithClass;
+import com.crawljax.plugins.cret.util.CSSDOMHelper;
 import com.crawljax.util.DomUtils;
 
 public class CSSDOMHelperTest {

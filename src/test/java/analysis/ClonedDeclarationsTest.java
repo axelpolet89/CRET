@@ -1,12 +1,12 @@
 package analysis;
 
-import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
-import com.crawljax.plugins.csssuite.plugins.DetectClonedDeclarationsPlugin;
-import com.crawljax.plugins.csssuite.plugins.NormalizeAndSplitPlugin;
-import com.crawljax.plugins.csssuite.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.data.MCssFile;
+import com.crawljax.plugins.cret.data.MCssRule;
+import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.plugins.DetectClonedDeclarationsPlugin;
+import com.crawljax.plugins.cret.plugins.NormalizeAndSplitPlugin;
+import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
 import helpers.TestHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;

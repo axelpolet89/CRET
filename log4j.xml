@@ -2,7 +2,7 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
 <log4j:configuration debug="false">
 
-    <appender name="css.suite.console" class="org.apache.log4j.ConsoleAppender">
+    <appender name="cret.console" class="org.apache.log4j.ConsoleAppender">
         <param name="target" value="System.out" />
         <param name="threshold" value="debug" />
         <layout class="org.apache.log4j.PatternLayout">
@@ -10,8 +10,8 @@
         </layout>
     </appender>
 
-    <appender name="css.suite.file" class="org.apache.log4j.FileAppender">
-        <param name="file" value="log/css_suite.log" />
+    <appender name="cret.file" class="org.apache.log4j.FileAppender">
+        <param name="file" value="log/cret.log" />
         <param name="append" value="true" />
         <param name="threshold" value="" />
         <layout class="org.apache.log4j.PatternLayout">
@@ -21,8 +21,7 @@
 
     <logger name="css.suite.logger">
         <level value="info" />
-        <appender-ref ref="css.suite.console" />
-        <appender-ref ref="css.suite.file" />
+        <appender-ref ref="cret.console" />
+        <appender-ref ref="cret.file" />
     </logger>
-
 </log4j:configuration>

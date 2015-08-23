@@ -5,12 +5,12 @@ import com.cathive.sass.SassContext;
 import com.cathive.sass.SassFileContext;
 import com.cathive.sass.SassOutputStyle;
 
-import com.crawljax.plugins.csssuite.LogHandler;
-import com.crawljax.plugins.csssuite.data.MCssFile;
-import com.crawljax.plugins.csssuite.data.MCssRule;
-import com.crawljax.plugins.csssuite.data.MSelector;
-import com.crawljax.plugins.csssuite.data.declarations.MDeclaration;
-import com.crawljax.plugins.csssuite.util.FileHelper;
+import com.crawljax.plugins.cret.LogHandler;
+import com.crawljax.plugins.cret.data.MCssFile;
+import com.crawljax.plugins.cret.data.MCssRule;
+import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.util.FileHelper;
 import com.steadystate.css.parser.media.MediaQuery;
 
 import org.apache.log4j.Level;

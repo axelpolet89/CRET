@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.examples;
+package com.crawljax.plugins.cret.runners;
 
 import com.crawljax.core.CrawljaxRunner;
 import com.crawljax.core.configuration.CrawljaxConfiguration;

@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.examples;
+package com.crawljax.plugins.cret.runners;
 
 import java.util.concurrent.TimeUnit;
 

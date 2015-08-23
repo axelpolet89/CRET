@@ -1,7 +1,7 @@
 package com.crawljax.plugins.cret.plugins.analysis;
 
-import com.crawljax.plugins.cret.data.MSelector;
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 
 import java.util.List;
 

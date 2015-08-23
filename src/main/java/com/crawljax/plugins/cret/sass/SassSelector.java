@@ -1,8 +1,8 @@
 package com.crawljax.plugins.cret.sass;
 
-import com.crawljax.plugins.cret.data.MCssRuleBase;
-import com.crawljax.plugins.cret.data.MSelector;
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.MCssRuleBase;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 import com.steadystate.css.parser.media.MediaQuery;

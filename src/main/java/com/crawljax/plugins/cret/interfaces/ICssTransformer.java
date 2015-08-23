@@ -1,6 +1,6 @@
 package com.crawljax.plugins.cret.interfaces;
 
-import com.crawljax.plugins.cret.data.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 

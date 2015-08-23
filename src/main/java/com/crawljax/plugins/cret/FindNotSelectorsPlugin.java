@@ -6,9 +6,9 @@ import com.crawljax.core.ExitNotifier.ExitStatus;
 import com.crawljax.core.plugin.OnNewStatePlugin;
 import com.crawljax.core.plugin.PostCrawlingPlugin;
 import com.crawljax.core.state.StateVertex;
-import com.crawljax.plugins.cret.data.MCssFile;
-import com.crawljax.plugins.cret.data.MCssRule;
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.MCssRule;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.parser.CssParser;
 import com.crawljax.plugins.cret.util.CSSDOMHelper;
 

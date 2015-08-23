@@ -1,6 +1,6 @@
 package com.crawljax.plugins.cret.util.specificity;
 
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 
 /**
  * Wraps a MSelector and an integer, for use in SpecificityHelper only

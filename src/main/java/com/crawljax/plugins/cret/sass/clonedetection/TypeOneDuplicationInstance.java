@@ -1,6 +1,6 @@
 package com.crawljax.plugins.cret.sass.clonedetection;
 
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.data;
+package com.crawljax.plugins.cret.dommodel;
 
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 import com.crawljax.util.XPathHelper;

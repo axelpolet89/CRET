@@ -1,7 +1,7 @@
 package analysis;
 
-import com.crawljax.plugins.cret.data.*;
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.*;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.plugins.*;
 
 import com.crawljax.plugins.cret.plugins.EffectivenessPlugin;

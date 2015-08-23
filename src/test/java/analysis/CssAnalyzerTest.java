@@ -2,10 +2,10 @@ package analysis;
 
 import com.crawljax.plugins.cret.plugins.EffectivenessPlugin;
 import com.crawljax.plugins.cret.plugins.analysis.ElementSelectorMatcher;
-import com.crawljax.plugins.cret.data.MCssFile;
-import com.crawljax.plugins.cret.data.MCssRule;
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.MCssRule;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.cret.util.CSSDOMHelper;
 import helpers.TestHelper;

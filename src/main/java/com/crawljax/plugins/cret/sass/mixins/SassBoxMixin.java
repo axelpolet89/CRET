@@ -1,6 +1,6 @@
 package com.crawljax.plugins.cret.sass.mixins;
 
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.Arrays;

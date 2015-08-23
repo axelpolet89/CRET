@@ -2,8 +2,8 @@ package com.crawljax.plugins.cret.sass;
 
 import com.crawljax.plugins.cret.CssSuiteException;
 import com.crawljax.plugins.cret.LogHandler;
-import com.crawljax.plugins.cret.data.*;
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.*;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.sass.clonedetection.CloneDetector;
 import com.crawljax.plugins.cret.colors.ColorNameFinder;
 import com.crawljax.plugins.cret.sass.mixins.SassBoxMixin;

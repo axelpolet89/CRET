@@ -1,7 +1,7 @@
 package com.crawljax.plugins.cret.plugins.analysis;
 
-import com.crawljax.plugins.cret.data.ElementWrapper;
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.dommodel.ElementWrapper;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.util.specificity.SpecificitySelector;
 
 import com.google.common.collect.ArrayListMultimap;

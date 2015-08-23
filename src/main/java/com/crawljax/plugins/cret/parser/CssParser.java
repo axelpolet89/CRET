@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Set;
 
 import com.crawljax.plugins.cret.LogHandler;
-import com.crawljax.plugins.cret.data.MCssFile;
-import com.crawljax.plugins.cret.data.MCssMediaRule;
-import com.crawljax.plugins.cret.data.MCssRule;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.MCssMediaRule;
+import com.crawljax.plugins.cret.cssmodel.MCssRule;
 
-import com.crawljax.plugins.cret.data.MCssRuleBase;
+import com.crawljax.plugins.cret.cssmodel.MCssRuleBase;
 import com.jcabi.w3c.Defect;
 import com.jcabi.w3c.ValidationResponse;
 

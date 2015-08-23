@@ -9,9 +9,9 @@ import java.util.function.Function;
 import com.cathive.sass.SassContext;
 import com.cathive.sass.SassFileContext;
 import com.cathive.sass.SassOutputStyle;
-import com.crawljax.plugins.cret.data.*;
-import com.crawljax.plugins.cret.generator.CssWriter;
-import com.crawljax.plugins.cret.generator.SassWriter;
+import com.crawljax.plugins.cret.cssmodel.*;
+import com.crawljax.plugins.cret.generation.CssWriter;
+import com.crawljax.plugins.cret.generation.SassWriter;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
 import com.crawljax.plugins.cret.parser.ParserErrorHandler;
 import com.crawljax.plugins.cret.plugins.*;
@@ -27,7 +27,6 @@ import com.crawljax.plugins.cret.verification.CssOnDomVerifier;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
-import org.apache.velocity.runtime.directive.Parse;
 import org.w3c.dom.Document;
 
 import com.crawljax.core.CrawlSession;

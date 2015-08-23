@@ -1,6 +1,6 @@
-package com.crawljax.plugins.cret.data;
+package com.crawljax.plugins.cret.cssmodel;
 
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 import com.jcabi.w3c.Defect;
 import com.steadystate.css.dom.Property;

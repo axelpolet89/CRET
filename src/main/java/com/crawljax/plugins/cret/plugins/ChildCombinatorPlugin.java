@@ -1,10 +1,10 @@
 package com.crawljax.plugins.cret.plugins;
 
 import com.crawljax.plugins.cret.LogHandler;
-import com.crawljax.plugins.cret.data.ElementWrapper;
-import com.crawljax.plugins.cret.data.MCssFile;
-import com.crawljax.plugins.cret.data.MCssRule;
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.dommodel.ElementWrapper;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.MCssRule;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
 import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;

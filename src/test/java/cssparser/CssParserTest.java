@@ -2,15 +2,15 @@ package cssparser;
 
 import java.util.List;
 
-import com.crawljax.plugins.cret.data.MCssFile;
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.crawljax.plugins.cret.data.MCssRule;
+import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.parser.CssParser;
 
 public class CssParserTest

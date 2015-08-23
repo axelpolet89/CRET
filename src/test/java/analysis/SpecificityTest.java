@@ -12,7 +12,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.util.specificity.Specificity;
 
 public class SpecificityTest

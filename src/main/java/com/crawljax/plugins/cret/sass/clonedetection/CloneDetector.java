@@ -3,7 +3,7 @@ package com.crawljax.plugins.cret.sass.clonedetection;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 
 import com.crawljax.plugins.cret.sass.mixins.SassCloneMixin;
 import com.crawljax.plugins.cret.sass.clonedetection.fpgrowth.FPGrowth;

@@ -1,8 +1,8 @@
-package com.crawljax.plugins.cret.generator;
+package com.crawljax.plugins.cret.generation;
 
 import com.crawljax.plugins.cret.LogHandler;
-import com.crawljax.plugins.cret.data.MCssFile;
-import com.crawljax.plugins.cret.data.MCssRuleBase;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.MCssRuleBase;
 import com.steadystate.css.parser.media.MediaQuery;
 
 import java.io.File;

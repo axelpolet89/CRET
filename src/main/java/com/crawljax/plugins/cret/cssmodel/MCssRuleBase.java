@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.data;
+package com.crawljax.plugins.cret.cssmodel;
 
 import com.steadystate.css.dom.AbstractCSSRuleImpl;
 import com.steadystate.css.parser.media.MediaQuery;

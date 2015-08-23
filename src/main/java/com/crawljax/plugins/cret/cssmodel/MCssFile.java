@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.data;
+package com.crawljax.plugins.cret.cssmodel;
 
 import java.util.ArrayList;
 import java.util.List;

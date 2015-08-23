@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.generator;
+package com.crawljax.plugins.cret.generation;
 
 import com.crawljax.plugins.cret.LogHandler;
 import com.crawljax.plugins.cret.sass.*;

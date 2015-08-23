@@ -1,10 +1,11 @@
-package com.crawljax.plugins.cret.data;
+package com.crawljax.plugins.cret.cssmodel;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.crawljax.plugins.cret.LogHandler;
-import com.crawljax.plugins.cret.data.declarations.MDeclaration;
+import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
+import com.crawljax.plugins.cret.dommodel.ElementWrapper;
 import com.crawljax.plugins.cret.util.PseudoHelper;
 import com.crawljax.plugins.cret.util.specificity.Specificity;
 import com.crawljax.plugins.cret.util.specificity.SpecificityCalculator;

@@ -1,7 +1,7 @@
 package helpers;
 
-import com.crawljax.plugins.cret.data.MCssFile;
-import com.crawljax.plugins.cret.data.MSelector;
+import com.crawljax.plugins.cret.cssmodel.MCssFile;
+import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.parser.CssParser;
 import com.crawljax.plugins.cret.util.specificity.SpecificitySelector;
 import com.crawljax.util.DomUtils;

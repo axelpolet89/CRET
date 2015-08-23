@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.data.declarations;
+package com.crawljax.plugins.cret.cssmodel.declarations;
 
 /**
  * Created by axel on 6/9/2015.

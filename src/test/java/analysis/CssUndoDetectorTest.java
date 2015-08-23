@@ -5,11 +5,11 @@ import com.crawljax.plugins.cret.cssmodel.MCssRule;
 
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
-import com.crawljax.plugins.cret.plugins.EffectivenessPlugin;
-import com.crawljax.plugins.cret.plugins.analysis.ElementSelectorMatcher;
+import com.crawljax.plugins.cret.plugins.effectiveness.EffectivenessPlugin;
+import com.crawljax.plugins.cret.plugins.matcher.ElementSelectorMatcher;
 import com.crawljax.plugins.cret.plugins.NormalizeAndSplitPlugin;
-import com.crawljax.plugins.cret.plugins.DetectUndoingPlugin;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.DefaultStylesPlugin;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import helpers.TestHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -50,7 +50,7 @@ public class CssUndoDetectorTest
 
         NormalizeAndSplitPlugin normalizer = new NormalizeAndSplitPlugin();
         EffectivenessPlugin effectivenessPlugin = new EffectivenessPlugin();
-        DetectUndoingPlugin undoDetector = new DetectUndoingPlugin();
+        DefaultStylesPlugin undoDetector = new DefaultStylesPlugin();
 
         // crawl dom
         MatchedElements matchedElements = new MatchedElements();

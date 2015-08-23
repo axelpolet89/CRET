@@ -6,7 +6,7 @@ import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.DefaultStylesHelper;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * the declaration is effective
  * the declaration overrides no other effective declaration
  */
-public class DetectUndoingPlugin implements ICssTransformer
+public class DefaultStylesPlugin implements ICssTransformer
 {
     private int _defaultDeclarationsRemoved = 0;
     private int _emptySelectorsRemoved = 0;
@@ -36,7 +36,7 @@ public class DetectUndoingPlugin implements ICssTransformer
     @Override
     public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
     {
-        LogHandler.info("[CssAnalyzer] Performing analysis of invalid undo styles on matched CSS selectors...");
+        LogHandler.info("[DefaultStyles] Performing analysis of invalid undo styles on matched CSS selectors...");
 
         Map<String, String> defaultStyles = DefaultStylesHelper.createDefaultStyles();
 
@@ -77,7 +77,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                     // verify this declaration is effective and has a default value
                     if (value.equals(defaultValue))
                     {
-                        LogHandler.debug("[CssUndoDetector] Found possible undoing declaration: '%s' with a (default) value '%s' in selector '%s'",
+                        LogHandler.debug("[DefaultStyles] Found possible undoing declaration: '%s' with a (default) value '%s' in selector '%s'",
                                 name, value, selector);
 
                         // an important value is always a valid undo for now...
@@ -149,7 +149,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                                         // verify whether another effective declaration in a less-specific selector has the same name
                                         // verify that it has a different value
                                         validUndo = true;
-                                        LogHandler.debug("[CssUndoDetector] Found an effective declaration '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
+                                        LogHandler.debug("[DefaultStyles] Found an effective declaration '%s' with a different value '%s' in (less-specific) selector '%s'\n" +
                                                         "that is (correctly) undone by effective declaration with value '%s' in (more-specific) selector '%s'",
                                                 otherProperty.getName(), otherProperty.getValue(), nextSelector, declaration.getValue(), selector);
                                         break;
@@ -198,7 +198,7 @@ public class DetectUndoingPlugin implements ICssTransformer
                 {
                     if(mDeclaration.isInvalidUndo())
                     {
-                        LogHandler.debug("[CssUndoDetector] Declaration %s with value %s in selector %s is an INVALID undo style", mDeclaration.getName(), mDeclaration.getValue(), mSelector);
+                        LogHandler.debug("[DefaultStyles] Declaration %s with value %s in selector %s is an INVALID undo style", mDeclaration.getName(), mDeclaration.getValue(), mSelector);
                         _defaultDeclarationsRemoved++;
                     }
                 }

@@ -6,7 +6,7 @@ import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import com.steadystate.css.parser.selectors.*;
@@ -44,7 +44,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
     {
         for(String fileName : cssRules.keySet())
         {
-            LogHandler.info("[DescToChild] Analyzing selectors for over-qualified descendant-combinators in file '%s'", fileName);
+            LogHandler.info("[ChildCombinator] Analyzing selectors for over-qualified descendant-combinators in file '%s'", fileName);
             int count = 0;
 
             for(MCssRule mRule : cssRules.get(fileName).getRules())
@@ -59,7 +59,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
                         continue;
                     }
 
-                    LogHandler.debug("[DescToChild] [%s] Selector may transformed using a child-combinator instead of a descendant-combinator", mSelector);
+                    LogHandler.debug("[ChildCombinator] [%s] Selector may transformed using a child-combinator instead of a descendant-combinator", mSelector);
 
                     Selector w3cSelector = mSelector.getW3CSelector();
                     List<ElementWrapper> selectorElements = mSelector.getMatchedElements();
@@ -78,13 +78,13 @@ public class ChildCombinatorPlugin implements ICssTransformer
                         long size = _descendants.values().stream().filter(d -> d).count();
                         count += size;
 
-                        LogHandler.debug("[DescToChild] [%s] Selector contains '%d' descendant-combinators that can be replaced by child-combinators", mSelector, size);
+                        LogHandler.debug("[ChildCombinator] [%s] Selector contains '%d' descendant-combinators that can be replaced by child-combinators", mSelector, size);
                         Selector newW3cSelector = recursiveUpdateSelector(w3cSelector);
 
                         // call copy constructor to create MSelector replacement
                         MSelector newSelector = new MSelector(newW3cSelector, mSelector);
                         newSelectors.put(mSelector, newSelector);
-                        LogHandler.debug("[DescToChild] [%s] New MSelector created: '%s', will replace old", mSelector, newSelector);
+                        LogHandler.debug("[ChildCombinator] [%s] New MSelector created: '%s', will replace old", mSelector, newSelector);
 
                         _selectorsTransformed++;
                     }
@@ -97,7 +97,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
                 }
             }
 
-            LogHandler.info("[DescToChild] Removed a total of %d over-qualified descendant-combinators, replaced them by child-combinators", count);
+            LogHandler.info("[ChildCombinator] Removed a total of %d over-qualified descendant-combinators, replaced them by child-combinators", count);
         }
 
         return cssRules;
@@ -170,7 +170,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
             Node parent = node.getParentNode();
             Selector ancestor = dSel.getAncestorSelector();
 
-            LogHandler.debug("[DescToChild] [%s] Trying to match direct parent node '%s' of node '%s' with the parent selector '%s' of descendant-selector '%s'", mSelector, parent, node, ancestor, selector);
+            LogHandler.debug("[ChildCombinator] [%s] Trying to match direct parent node '%s' of node '%s' with the parent selector '%s' of descendant-selector '%s'", mSelector, parent, node, ancestor, selector);
 
             boolean atDocumentRoot = false;
 
@@ -179,13 +179,13 @@ public class ChildCombinatorPlugin implements ICssTransformer
                 if(!_descendants.containsKey(dSel))
                 {
                     _descendants.put(dSel, true);
-                    LogHandler.debug("[DescToChild] [%s] Direct parent node '%s' is selectable by ancestor-part '%s' of descendant-selector '%s', child-combinator MAY be allowed", mSelector, parent, ancestor, selector);
+                    LogHandler.debug("[ChildCombinator] [%s] Direct parent node '%s' is selectable by ancestor-part '%s' of descendant-selector '%s', child-combinator MAY be allowed", mSelector, parent, ancestor, selector);
                 }
             }
             else
             {
                 _descendants.put(dSel, false);
-                LogHandler.debug("[DescToChild] [%s] Direct parent node '%s' is NOT selectable by ancestor-part '%s' of descendant-selector '%s', child-combinator NOT allowed", mSelector, parent, ancestor, selector);
+                LogHandler.debug("[ChildCombinator] [%s] Direct parent node '%s' is NOT selectable by ancestor-part '%s' of descendant-selector '%s', child-combinator NOT allowed", mSelector, parent, ancestor, selector);
 
                 // direct parent node is not selectable by ancestor-part of descendant-selector,
                 // need to search up in DOM to find the parent that matched the ancestor-part, before continuing
@@ -196,7 +196,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
                     if (parent instanceof Document)
                     {
                         atDocumentRoot = true;
-                        LogHandler.warn("[DescToChild] [%s] Found document root while trying to find parent DOM element that should be selectable by ancestor '%s' of selector '%s'", mSelector, ancestor, selector);
+                        LogHandler.warn("[ChildCombinator] [%s] Found document root while trying to find parent DOM element that should be selectable by ancestor '%s' of selector '%s'", mSelector, ancestor, selector);
                         break;
                     }
                     else
@@ -245,11 +245,11 @@ public class ChildCombinatorPlugin implements ICssTransformer
 
         if (trySelectNodeWithCss(node, selToMatch))
         {
-            LogHandler.debug("[DescToChild] [%s] Node '%s' is selectable by simple selector '%s' of selector '%s'", mSelector, printNode(node), selToMatch, selector);
+            LogHandler.debug("[ChildCombinator] [%s] Node '%s' is selectable by simple selector '%s' of selector '%s'", mSelector, printNode(node), selToMatch, selector);
             return true;
         }
 
-        LogHandler.debug("[DescToChild] [%s] Node '%s' is NOT selectable by simple selector '%s' of selector '%s'", mSelector, printNode(node), selToMatch, selector);
+        LogHandler.debug("[ChildCombinator] [%s] Node '%s' is NOT selectable by simple selector '%s' of selector '%s'", mSelector, printNode(node), selToMatch, selector);
         return false;
     }
 
@@ -283,12 +283,12 @@ public class ChildCombinatorPlugin implements ICssTransformer
             }
             else
             {
-                LogHandler.warn("[DescToChild] Unsupported: Selector '%s' is no ElementSelector or ConditionalSelector, but a %s", selector, selector.getClass());
+                LogHandler.warn("[ChildCombinator] Unsupported: Selector '%s' is no ElementSelector or ConditionalSelector, but a %s", selector, selector.getClass());
             }
         }
         catch(Exception ex)
         {
-            LogHandler.error(ex, "[DescToChild] Error while matching node to selector for node '%s' and selector '%s'", printNode(node), selector);
+            LogHandler.error(ex, "[ChildCombinator] Error while matching node to selector for node '%s' and selector '%s'", printNode(node), selector);
         }
 
         return false;
@@ -412,7 +412,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
         }
         else
         {
-            LogHandler.warn("[DescToChild] Unsupported: ConditionalSelector '%s' is no ID, CLASS or ATTRIBUTE SELECTOR, but a '%s'", innerSelector, innerSelector.getClass());
+            LogHandler.warn("[ChildCombinator] Unsupported: ConditionalSelector '%s' is no ID, CLASS or ATTRIBUTE SELECTOR, but a '%s'", innerSelector, innerSelector.getClass());
         }
 
         return false;

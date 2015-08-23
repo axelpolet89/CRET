@@ -3,7 +3,7 @@ package sass;
 import com.crawljax.plugins.cret.CssSuiteException;
 import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.plugins.NormalizeAndSplitPlugin;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.cret.sass.*;
 import com.crawljax.plugins.cret.sass.mixins.SassCloneMixin;

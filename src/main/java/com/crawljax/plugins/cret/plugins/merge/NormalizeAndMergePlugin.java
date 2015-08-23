@@ -1,12 +1,13 @@
 package com.crawljax.plugins.cret.plugins.merge;
 
+import com.crawljax.plugins.cret.CssSuiteException;
 import com.crawljax.plugins.cret.LogHandler;
 import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.*;
@@ -31,7 +32,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
     {
         for (String file : cssRules.keySet())
         {
-            LogHandler.info("[CssMergeNormalizer] Start normalization of declarations for file '%s'", file);
+            LogHandler.info("[NormalizeAndMerge] Start normalization of declarations for file '%s'", file);
 
             for(MCssRule mRule : cssRules.get(file).getRules())
             {
@@ -158,7 +159,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
             {
                 outline.add(mDeclaration);
             }
-            else if(name.contains("background"))
+            else if(name.contains("background-"))
             {
                 background.add(mDeclaration);
             }
@@ -222,10 +223,17 @@ public class NormalizeAndMergePlugin implements ICssTransformer
                 {
                     merger.parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
                 }
-                catch (Exception e)
+                catch (CssSuiteException e)
                 {
                     result.add(mDeclaration);
-                    LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single declaration %s in selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
+                    LogHandler.debug("[NormalizeAndMerge] Cannot parse single declaration %s in selector %s into its shorthand equivalent -\n%s",
+                            mDeclaration, _propSelMap.get(mDeclaration), e.getMessage());
+                }
+                catch(Exception e)
+                {
+                    result.add(mDeclaration);
+                    LogHandler.error(e, "[NormalizeAndMerge] Cannot parse single declaration %s in selector %s into its shorthand equivalent",
+                            mDeclaration, _propSelMap.get(mDeclaration));
                 }
             }
 
@@ -258,10 +266,17 @@ public class NormalizeAndMergePlugin implements ICssTransformer
             {
                 merger.parse(mDeclaration.getName(), mDeclaration.getValue(), mDeclaration.isImportant(), mDeclaration.getOrder());
             }
-            catch (Exception e)
+            catch (CssSuiteException e)
             {
                 result.add(mDeclaration);
-                LogHandler.error(e, "[CssMergeNormalizer] Cannot parse single declaration %s for selector %s into shorthand equivalent, just add it to result", mDeclaration, _propSelMap.get(mDeclaration));
+                LogHandler.debug("[NormalizeAndMerge] Cannot parse single declaration %s in selector %s into its shorthand equivalent -\n%s",
+                        mDeclaration, _propSelMap.get(mDeclaration), e.getMessage());
+            }
+            catch(Exception e)
+            {
+                result.add(mDeclaration);
+                LogHandler.error(e, "[NormalizeAndMerge] Cannot parse single declaration %s in selector %s into its shorthand equivalent",
+                        mDeclaration, _propSelMap.get(mDeclaration));
             }
         }
 

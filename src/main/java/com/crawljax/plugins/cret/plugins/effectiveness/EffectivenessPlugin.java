@@ -1,12 +1,11 @@
-package com.crawljax.plugins.cret.plugins;
+package com.crawljax.plugins.cret.plugins.effectiveness;
 
 import com.crawljax.plugins.cret.LogHandler;
 import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.analysis.EffectivenessAnalysis;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.*;
@@ -31,7 +30,7 @@ public class EffectivenessPlugin implements ICssTransformer
 	{
 		Random random = new Random();
 
-		LogHandler.info("[CssAnalyzer] Performing effectiveness analysis on matched CSS selectors...");
+		LogHandler.info("[Effectiveness] Performing effectiveness analysis on matched CSS selectors...");
 
 		// performance
 		Set<Set<MSelector>> processedSets = new HashSet<>();
@@ -43,7 +42,7 @@ public class EffectivenessPlugin implements ICssTransformer
 			// performance
 			if(processedSets.contains(new HashSet<>(matchedSelectors)))
 			{
-				LogHandler.debug("[CssAnalyzer] Set of matched selectors for element '%s' already processed", keyElement);
+				LogHandler.debug("[Effectiveness] Set of matched selectors for element '%s' already processed", keyElement);
 				continue;
 			}
 

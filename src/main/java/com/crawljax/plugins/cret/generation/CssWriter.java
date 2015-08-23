@@ -19,7 +19,7 @@ public class CssWriter
 {
     public void generateCssCode(File file, MCssFile mCssFile) throws IOException, URISyntaxException
     {
-        LogHandler.info("Generating CSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
+        LogHandler.info("[CssWriter] Generating CSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
 
         List<MCssRuleBase> rules = mCssFile.getAllRules().stream().filter(r -> !r.isEmpty()).collect(Collectors.toList());
 

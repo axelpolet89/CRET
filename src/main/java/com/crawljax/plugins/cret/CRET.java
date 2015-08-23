@@ -15,9 +15,9 @@ import com.crawljax.plugins.cret.generation.SassWriter;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
 import com.crawljax.plugins.cret.parser.ParserErrorHandler;
 import com.crawljax.plugins.cret.plugins.*;
-import com.crawljax.plugins.cret.plugins.EffectivenessPlugin;
-import com.crawljax.plugins.cret.plugins.analysis.ElementSelectorMatcher;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.effectiveness.EffectivenessPlugin;
+import com.crawljax.plugins.cret.plugins.matcher.ElementSelectorMatcher;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.plugins.merge.NormalizeAndMergePlugin;
 import com.crawljax.plugins.cret.sass.SassBuilder;
 import com.crawljax.plugins.cret.sass.SassStatistics;
@@ -98,7 +98,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 		LogHandler.info("");
 		LogHandler.info("==================================START NEW CRET RUN=====================================");
-		LogHandler.info("TARGET: %s at URL %s", _siteName, this._siteIndex);
+		LogHandler.info("[CRET] TARGET: %s at URL %s", _siteName, this._siteIndex);
 
 		_originalCssLOC = 0;
 		_domstates = 0;
@@ -112,9 +112,9 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 		_postPlugins = new ArrayList<>();
 		_postPlugins.add(new NormalizeAndSplitPlugin());
-		_postPlugins.add(new DetectClonedDeclarationsPlugin());
+		_postPlugins.add(new ClonedDeclarationsPlugin());
 		_postPlugins.add(new EffectivenessPlugin());
-		_postPlugins.add(new DetectUndoingPlugin());
+		_postPlugins.add(new DefaultStylesPlugin());
 		_postPlugins.add(new ChildCombinatorPlugin());
 		_postPlugins.add(new NormalizeAndMergePlugin());
 
@@ -143,11 +143,11 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 	@Override
 	public void onNewState(CrawlerContext context, StateVertex newState)
 	{
-		LogHandler.info("[NEW STATE] %s", newState.getUrl());
+		LogHandler.info("[CRET] [NEW STATE] %s", newState.getUrl());
 		_domstates++;
 
 		// if the external CSS files are not parsed yet, do so
-		LogHandler.info("[NEW STATE] Parse CSS rules...");
+		LogHandler.info("[CRET] [NEW STATE] Parse CSS rules...");
 		LinkedHashMap<String, Integer> stateFileOrder = parseCssRulesForState(context, newState);
 
 		try
@@ -157,7 +157,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 		}
 		catch (Exception ex)
 		{
-			LogHandler.error(ex, "[NEW STATE] [MATCH SELECTORS] Error occurred while matching selectors for state %s", newState.getName());
+			LogHandler.error(ex, "[CRET] [NEW STATE] Error occurred while matching selectors for state %s", newState.getName());
 		}
 	}
 
@@ -229,7 +229,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 				if (!_newMcssFiles.containsKey(cssUrl))
 				{
-					LogHandler.info("[FOUND NEW CSS FILE] " + cssUrl);
+					LogHandler.info("[CRET] FOUND NEW CSS FILE " + cssUrl);
 
 					String cssCode = CSSDOMHelper.getUrlContent(cssUrl);
 
@@ -251,7 +251,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 				if(!embeddedCode.isEmpty())
 				{
-					LogHandler.info("[FOUND NEW EMBEDDED RULES] " + url);
+					LogHandler.info("[CRET] FOUND NEW EMBEDDED RULES " + url);
 				}
 
 				_originalCssLOC += countLOC(embeddedCode);
@@ -285,7 +285,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 		MCssFile file = parser.parseCssIntoMCssRules(url, code);
 		_parserErrors.put(url, parser.getParseErrors());
 
-		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.getRules().size());
+		LogHandler.info("[CRET] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.getRules().size());
 
 		return file;
 	}
@@ -327,7 +327,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private Map<String, MCssFile> executePostTransformations()
 	{
-		LogHandler.info("[CRET PLUGIN] Execute POST crawl-time transformations...");
+		LogHandler.info("[CRET] Execute POST crawl-time transformations...");
 
 		Map<String, MCssFile> rules = _newMcssFiles;
 		for(ICssTransformer plugin : _postPlugins)
@@ -373,7 +373,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private boolean generateTargetFiles(Map<String, MCssFile> source)
 	{
-		LogHandler.info("[GenerateCssAndSass] START CODE GENERATION...");
+		LogHandler.info("[CRET] START TARGET FILE CREATION...");
 
 		String cssOutputRoot = String.format("%s\\CSS(def)\\", _outputRoot);
 		String sassOutputRoot = String.format("%s\\SASS\\", _outputRoot);
@@ -388,7 +388,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 		for(String fileName : source.keySet())
 		{
-			LogHandler.info("[GenerateCssAndSass] Generate output file objects for filename '%s'", fileName);
+			LogHandler.info("[CRET] Generate output file objects for filename '%s'", fileName);
 
 			boolean inError = false;
 
@@ -402,7 +402,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 				externalMapping.put(fileName, cssFile);
 
-				LogHandler.info("[GenerateCssAndSass] Styles contained in external CSS file, write as external css file '%s'", cssFile);
+				LogHandler.info("[CRET] Styles contained in external CSS file, write as external css file '%s'", cssFile);
 				externalIdx ++;
 			}
 			else
@@ -412,7 +412,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 				embeddedMapping.put(fileName, cssFile);
 
-				LogHandler.info("[GenerateCssAndSass] Styles not contained in external CSS file, write to embedded style file '%s'", cssFile);
+				LogHandler.info("[CRET] Styles not contained in external CSS file, write to embedded style file '%s'", cssFile);
 				embeddedIdx ++;
 			}
 
@@ -424,7 +424,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				filesInError = true;
 				inError = true;
-				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for CSS file '%s' at root '%s'", cssFile, cssRootDir);
+				LogHandler.error(e, "[CRET] [CSS] Error in building File object for CSS file '%s' at root '%s'", cssFile, cssRootDir);
 			}
 
 			if(inError)
@@ -443,7 +443,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				filesInError = true;
 				inError = true;
-				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS file '%s' at root '%s'", sassFile, sassRootDir);
+				LogHandler.error(e, "[CRET] [SASS] Error in building File object for SASS file '%s' at root '%s'", sassFile, sassRootDir);
 			}
 
 			if(inError)
@@ -459,14 +459,14 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			catch (Exception e)
 			{
 				filesInError = true;
-				LogHandler.error(e, "[GenerateCssAndSass] Error in building File object for SASS-to-CSS file at path '%s'", cssFromSassFile);
+				LogHandler.error(e, "[CRET][SASStoCSS] Error in building File object for SASS-to-CSS file at path '%s'", cssFromSassFile);
 			}
 		}
 
 
 		if(filesInError)
 		{
-			LogHandler.info("[GenerateCssAndSass] Errors occurred while building File objects, do not continue code generation");
+			LogHandler.info("[CRET] Errors occurred while building File objects, do not continue code generation");
 			return false;
 		}
 
@@ -485,7 +485,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (IOException e)
 			{
-				LogHandler.error(e, "[GenerateCssAndSass] Error in generating external file mapping");
+				LogHandler.error(e, "[CRET] Error in generating external file mapping");
 			}
 		}
 
@@ -504,7 +504,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (IOException e)
 			{
-				LogHandler.error(e, "[GenerateCssAndSass] Error in generating embedded file mapping");
+				LogHandler.error(e, "[CRET] Error in generating embedded file mapping");
 			}
 		}
 
@@ -521,6 +521,8 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private boolean generateCssAndSass(Map<String, MCssFile> mcssFiles, boolean generateSass)
 	{
+		LogHandler.info("[CRET] START CSS and SASS CODE GENERATION...");
+
 		boolean cssInError = false;
 		boolean sassInError = false;
 		boolean sassToCssInError = false;
@@ -536,7 +538,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			catch (Exception e)
 			{
 				cssInError = true;
-				LogHandler.error(e, "[Generate CSS Code] Error while generating CSS code for file %s", _targetCssFiles.get(fileName));
+				LogHandler.error(e, "[CRET] [CSS] Error while generating CSS code for file %s", _targetCssFiles.get(fileName));
 			}
 		}
 
@@ -551,7 +553,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			{
 				try
 				{
-					LogHandler.info("[Generate SCSS Code] Generating SCSS code for file %s...", _targetSassFiles.get(fileName));
+					LogHandler.info("[CRET] [SASS] Building SASS code for file %s...", _targetSassFiles.get(fileName));
 
 					SassBuilder sassBuilder = new SassBuilder(mcssFiles.get(fileName), _clonePropsUpperLimit);
 					scssFiles.put(fileName, sassWriter.generateSassCode(_targetSassFiles.get(fileName), sassBuilder.generateSass()));
@@ -562,7 +564,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 				catch (Exception e)
 				{
 					sassInError = true;
-					LogHandler.error(e, "[Generate SCSS Code] Error while generating SCSS code for file %s", fileName);
+					LogHandler.error(e, "[CRET] [SASS] Error while generating SASS code for file %s", fileName);
 				}
 			}
 
@@ -571,7 +573,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 				// generate CSS from SCSS files
 				for (String fileName : scssFiles.keySet())
 				{
-					LogHandler.info("[Compile SCSS from CSS] Start compiling SCSS code for file %s...", fileName);
+					LogHandler.info("[CRET] [SASStoCSS] Start compiling SASS code for file %s...", _targetCssFromSassFiles.get(fileName));
 					try
 					{
 						SassContext ctx = SassFileContext.create(scssFiles.get(fileName).toPath());
@@ -586,7 +588,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 					catch (Exception e)
 					{
 						sassToCssInError = true;
-						LogHandler.error(e, "[Compile CSS from SCSS] Error while compiling SCSS to CSS via java-sass for source '%s' to target '%s'", scssFiles.get(fileName), _targetCssFiles.get(fileName));
+						LogHandler.error(e, "[CRET] [SASStoCSS] Error while compiling SASS to CSS via java-sass for source '%s' to target '%s'", _targetSassFiles.get(fileName),_targetCssFromSassFiles.get(fileName));
 					}
 				}
 			}
@@ -622,7 +624,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 		}
 		catch (Exception ex)
 		{
-			LogHandler.error(ex, "[VERIFICATION] Error occurred in verification process");
+			LogHandler.error(ex, "[CRET] [VERIFICATION] Error occurred in verification process");
 		}
 	}
 
@@ -633,7 +635,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 	 */
 	private Map<String, MCssFile> parseGeneratedCss()
 	{
-		LogHandler.info("[GENERATED CSS] Parse generated CSS files...");
+		LogHandler.info("[CRET] [VERIFICATION] Parse generated CSS files...");
 
 		CssParser parser = new CssParser(false);
 		Map<String, MCssFile> generatedCssFiles = new HashMap<>();
@@ -647,7 +649,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			}
 			catch (Exception ex)
 			{
-				LogHandler.error(ex, "[GENERATED CSS] Cannot read lines or parse css code from new file %s", _targetCssFiles.get(fileName).toPath());
+				LogHandler.error(ex, "[CRET] [VERIFICATION] Cannot read lines or parse css code from new file %s", _targetCssFiles.get(fileName).toPath());
 			}
 		}
 
@@ -657,7 +659,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 
 	private void generateStatistics()
 	{
-		LogHandler.info("[STATISTICS] Start verification for all found DOM states with original and new CSS files");
+		LogHandler.info("[CRET] [STATISTICS] Start verification for all found DOM states with original and new CSS files");
 
 		try
 		{
@@ -684,7 +686,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 		}
 		catch (Exception ex)
 		{
-			LogHandler.error(ex, "[STATISTICS] Error occurred in verification process");
+			LogHandler.error(ex, "[CRET] [STATISTICS] Error occurred in verification process");
 		}
 	}
 

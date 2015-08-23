@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.plugins.analysis;
+package com.crawljax.plugins.cret.plugins.matcher;
 
 import java.util.*;
 
@@ -20,7 +20,7 @@ public class ElementSelectorMatcher
 	{
 			for (String fileName : stateFileOrder.keySet())
 			{
-				LogHandler.info("[CssAnalyzer] Matching DOM elements for css file '%s'...", fileName);
+				LogHandler.info("[ElementSelectorMatcher] Matching DOM elements for css file '%s'...", fileName);
 				int matchCount = 0;
 
 				int order = stateFileOrder.get(fileName);
@@ -46,12 +46,12 @@ public class ElementSelectorMatcher
 						}
 						catch (ParserException ex)
 						{
-							LogHandler.warn("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'", cssSelector, mRule, fileName);
+							LogHandler.warn("[ElementSelectorMatcher] Could not query DOM tree with selector '%s' from rule '%s' from file '%s'", cssSelector, mRule, fileName);
 							continue;
 						}
 						catch (Exception ex)
 						{
-							LogHandler.error("Could not query DOM tree with selector '%s' from rule '%s' from file '%s'" + cssSelector, mRule, fileName);
+							LogHandler.error("[ElementSelectorMatcher] Could not query DOM tree with selector '%s' from rule '%s' from file '%s'" + cssSelector, mRule, fileName);
 							continue;
 						}
 
@@ -68,7 +68,7 @@ public class ElementSelectorMatcher
 
 							if (node instanceof Document)
 							{
-								LogHandler.warn("CSS rule returns the whole document, rule '%s", mRule);
+								LogHandler.warn("[ElementSelectorMatcher] CSS rule returns the whole document, rule '%s", mRule);
 								mSelector.setMatched(true);
 								matchCount++;
 							}
@@ -83,7 +83,7 @@ public class ElementSelectorMatcher
 					}
 				}
 
-				LogHandler.info("[CssAnalyzer] Matched '%d' elements in DOM to CSS selectors", matchCount);
+				LogHandler.info("[ElementSelectorMatcher] Matched '%d' elements in DOM to CSS selectors", matchCount);
 		}
 	}
 }

@@ -73,21 +73,21 @@ public class SassBuilder
             }
         }
 
-        LogHandler.debug("[SassGenerator] Generate SASS variables...");
+        LogHandler.debug("[SassBuilder] Build SASS variables...");
         generateVariables(validSelectors);
         generateVariables(largeSelectors);
 
-        LogHandler.debug("[SassGeneratpr] Generate SASS mixins...");
+        LogHandler.debug("[SassBuilder] Build SASS mixins...");
         List<SassCloneMixin> validMixins = processAndFilterClones(cd.generateMixins(validSelectors));
 
-        LogHandler.debug("[SassGenerator] Generate SASS selectors...");
+        LogHandler.debug("[SassBuilder] Build SASS selectors...");
         List<SassSelector> sassSelectors = generateSassSelectors(validSelectors, validMixins);
         sassSelectors.addAll(generateSassSelectors(largeSelectors, validMixins));
 
-        LogHandler.debug("[SassGenerator] Generate SASS convenience mixins...");
+        LogHandler.debug("[SassBuilder] Build SASS convenience mixins...");
         List<SassMixinBase> sassMixins = generateConvenienceMixins(sassSelectors);
 
-        LogHandler.debug("[SassGenerator] Generate SASS rules...");
+        LogHandler.debug("[SassBuilder] Build SASS rules...");
         List<SassRuleBase> sassRules = generateSassRules(sassSelectors, _mcssFile.getMediaRules(), _mcssFile.getIgnoredRules());
 
         return new SassFile(_sassVariables, validMixins, sassMixins, sassRules);
@@ -186,7 +186,7 @@ public class SassBuilder
                             }
                             catch (CssSuiteException ex)
                             {
-                                LogHandler.error(ex, "[SassGenerator] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
+                                LogHandler.error(ex, "[SassBuilder] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
                                         origName, origValue, mSelector.getSelectorText());
                                 continue;
                             }
@@ -216,7 +216,7 @@ public class SassBuilder
                 }
                 catch (Exception e)
                 {
-                    LogHandler.error(e, "[SassGenerator] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
+                    LogHandler.error(e, "[SassBuilder] Error occurred while creating SassVariable for declaration '%s' with value '%s' for selector '%s'",
                             origName, origValue, mSelector.getSelectorText());
                 }
             }

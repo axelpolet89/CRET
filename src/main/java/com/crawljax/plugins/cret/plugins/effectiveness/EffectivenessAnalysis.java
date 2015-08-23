@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.plugins.analysis;
+package com.crawljax.plugins.cret.plugins.effectiveness;
 
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;

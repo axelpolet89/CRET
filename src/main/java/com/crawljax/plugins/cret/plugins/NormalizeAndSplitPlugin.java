@@ -7,7 +7,7 @@ import com.crawljax.plugins.cret.cssmodel.*;
 import com.crawljax.plugins.cret.cssmodel.declarations.MBorderDeclaration;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.*;
@@ -163,7 +163,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
             {
                 _normalizedZeroes++;
                 mDeclaration.setNormalizedValue("0");
-                LogHandler.debug("[CssNormalizer] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mDeclaration.getOriginalValue(), mDeclaration.getValue());
+                LogHandler.debug("[NormalizeAndSplit] Normalized zeroes in '%s' -> original: '%s', new: '%s'", mSelector, mDeclaration.getOriginalValue(), mDeclaration.getValue());
             }
             else if (mDeclaration.getOriginalValue().contains("0."))
             {
@@ -277,13 +277,13 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 if (name.equals("margin") || name.equals("padding"))
                 {
                     newDeclarations.addAll(boxToDeclarations(value, isImportant, order, name + "-%s"));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[NormalizeAndSplit] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if(name.equals("border-width") || name.equals("border-style") || name.equals("border-color"))
                 {
                     String spec = name.replace("border-","");
                     newDeclarations.addAll(boxToDeclarations(value, isImportant, order, "border-%s-" + spec));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[NormalizeAndSplit] Transformed shorthand '%s' declaration value into parts: '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.contains("border"))
                 {
@@ -298,12 +298,12 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                         //especially because of ordering...
 
                         newDeclarations.addAll(borderToDeclarations(name, value, isImportant, order));
-                        LogHandler.debug("[CssNormalizer] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                        LogHandler.debug("[NormalizeAndSplit] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else if(name.equals("border-top") || name.equals("border-right") || name.equals("border-bottom") || name.equals("border-left"))
                     {
                         newDeclarations.addAll(borderToDeclarations(name, value, isImportant, order));
-                        LogHandler.debug("[CssNormalizer] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                        LogHandler.debug("[NormalizeAndSplit] Transformed shorthand border declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                     }
                     else
                     {
@@ -313,12 +313,12 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
                 else if(name.equals("outline"))
                 {
                     newDeclarations.addAll(borderToDeclarations(name, value, isImportant, order));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand outline declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[NormalizeAndSplit] Transformed shorthand outline declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else if (name.equals("background") && !value.contains(",")) // do not support multiple backgrounds
                 {
                     newDeclarations.addAll(backgroundToDeclarations(value, isImportant, order));
-                    LogHandler.debug("[CssNormalizer] Transformed shorthand background declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
+                    LogHandler.debug("[NormalizeAndSplit] Transformed shorthand background declaration into parts: '%s' : '%s', important=%s", name, value, isImportant);
                 }
                 else
                 {
@@ -327,12 +327,12 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
             }
             catch (CssSuiteException e)
             {
-                LogHandler.warn(e, "[CssNormalizer] CssSuiteException on selector '%s', in declaration '%s'", mSelector, mDeclaration);
+                LogHandler.warn(e, "[NormalizeAndSplit] CssSuiteException on selector '%s', in declaration '%s'", mSelector, mDeclaration);
                 newDeclarations.add(mDeclaration);
             }
             catch (Exception e)
             {
-                LogHandler.error("[CssNormalizer] Exception on selector '%s', in declaration '%s'", mSelector, mDeclaration);
+                LogHandler.error("[NormalizeAndSplit] Exception on selector '%s', in declaration '%s'", mSelector, mDeclaration);
                 newDeclarations.add(mDeclaration);
             }
         }

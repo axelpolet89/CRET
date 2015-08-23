@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.plugins.analysis;
+package com.crawljax.plugins.cret.plugins.matcher;
 
 import com.crawljax.plugins.cret.dommodel.ElementWrapper;
 import com.crawljax.plugins.cret.cssmodel.MSelector;

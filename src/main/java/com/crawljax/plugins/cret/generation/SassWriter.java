@@ -22,7 +22,7 @@ public class SassWriter
 {
     public File generateSassCode(File file, SassFile sassFile) throws URISyntaxException, IOException
     {
-        LogHandler.info("Generating SCSS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
+        LogHandler.info("[SassWriter] Generating SASS code for file '%s'...", file.getPath().replace("%", "-PERC-"));
 
         FileWriter writer = new FileWriter(file);
 

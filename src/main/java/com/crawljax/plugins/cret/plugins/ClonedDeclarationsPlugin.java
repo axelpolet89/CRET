@@ -6,7 +6,7 @@ import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by axel on 6/12/2015.
  */
-public class DetectClonedDeclarationsPlugin implements ICssTransformer
+public class ClonedDeclarationsPlugin implements ICssTransformer
 {
     private int _clonedDeclarationsRemoved = 0;
 
@@ -52,13 +52,13 @@ public class DetectClonedDeclarationsPlugin implements ICssTransformer
                                 {
                                     clonedProps.add(current);
                                     _clonedDeclarationsRemoved++;
-                                    LogHandler.debug("[DetectClonedDeclarations] Declaration with '%s' in selector '%s' of file '%s' is a clone of a LATER declared declaration, and considered ineffective, will be removed", current, mSelector, fileName);
+                                    LogHandler.debug("[ClonedDeclarations] Declaration with '%s' in selector '%s' of file '%s' is a clone of a LATER declared declaration, and considered ineffective, will be removed", current, mSelector, fileName);
                                 }
                                 else if (current.isImportant() && !other.isImportant())
                                 {
                                     clonedProps.add(other);
                                     _clonedDeclarationsRemoved++;
-                                    LogHandler.debug("[DetectClonedDeclarations] Declaration with '%s' in selector '%s' of file '%s' is a clone of a PREVIOUS declared declaration, and considered ineffective, will be removed", current, mSelector, fileName);
+                                    LogHandler.debug("[ClonedDeclarations] Declaration with '%s' in selector '%s' of file '%s' is a clone of a PREVIOUS declared declaration, and considered ineffective, will be removed", current, mSelector, fileName);
                                 }
                             }
                         }

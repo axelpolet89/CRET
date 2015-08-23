@@ -4,9 +4,9 @@ import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
-import com.crawljax.plugins.cret.plugins.DetectClonedDeclarationsPlugin;
+import com.crawljax.plugins.cret.plugins.ClonedDeclarationsPlugin;
 import com.crawljax.plugins.cret.plugins.NormalizeAndSplitPlugin;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import helpers.TestHelper;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -37,7 +37,7 @@ public class ClonedDeclarationsTest
         files.put("external", externalFile);
 
         NormalizeAndSplitPlugin splitPlugin = new NormalizeAndSplitPlugin();
-        DetectClonedDeclarationsPlugin clonedDeclarations = new DetectClonedDeclarationsPlugin();
+        ClonedDeclarationsPlugin clonedDeclarations = new ClonedDeclarationsPlugin();
 
         splitPlugin.transform(files, new MatchedElements());
         clonedDeclarations.transform(files, new MatchedElements());

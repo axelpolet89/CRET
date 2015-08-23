@@ -7,11 +7,11 @@ import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
-import com.crawljax.plugins.cret.plugins.DetectClonedDeclarationsPlugin;
-import com.crawljax.plugins.cret.plugins.analysis.EffectivenessAnalysis;
+import com.crawljax.plugins.cret.plugins.ClonedDeclarationsPlugin;
+import com.crawljax.plugins.cret.plugins.effectiveness.EffectivenessAnalysis;
 import com.crawljax.plugins.cret.plugins.NormalizeAndSplitPlugin;
-import com.crawljax.plugins.cret.plugins.analysis.ElementSelectorMatcher;
-import com.crawljax.plugins.cret.plugins.analysis.MatchedElements;
+import com.crawljax.plugins.cret.plugins.matcher.ElementSelectorMatcher;
+import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.DefaultStylesHelper;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 import com.google.common.collect.Sets;
@@ -105,7 +105,7 @@ public class CssOnDomVerifier
         originalStyles = normalizer.transform(originalStyles, matchedElementsOrig);
         generatedStyles = normalizer.transform(generatedStyles, matchedElementsGnr);
 
-        DetectClonedDeclarationsPlugin clonedProps = new DetectClonedDeclarationsPlugin();
+        ClonedDeclarationsPlugin clonedProps = new ClonedDeclarationsPlugin();
         originalStyles = clonedProps.transform(originalStyles, matchedElementsOrig);
         generatedStyles = clonedProps.transform(generatedStyles, matchedElementsGnr);
 

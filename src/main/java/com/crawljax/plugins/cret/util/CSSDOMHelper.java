@@ -15,7 +15,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.crawljax.plugins.cret.data.ElementWithClass;
 import com.crawljax.util.UrlUtils;
 import com.crawljax.util.XPathHelper;
 
@@ -119,30 +118,5 @@ public class CSSDOMHelper
 		}
 
 		return buffer.toString();
-	}
-
-
-	/**
-	 *
-	 * @param stateName
-	 * @param dom
-	 * @return a list of elements inside the dom that have a class attribute
-	 * @throws XPathExpressionException
-	 */
-	public static List<ElementWithClass> getElementWithClass(String stateName, Document dom)
-	        throws XPathExpressionException {
-
-		final List<ElementWithClass> results = new ArrayList<>();
-		final NodeList nodes = XPathHelper.evaluateXpathExpression(dom, "./descendant::*[@class != '']");
-
-		for (int i = 0; i < nodes.getLength(); i++)
-		{
-			Element node = (Element) nodes.item(i);
-			String classValue = node.getAttributeNode("class").getValue();
-
-			results.add(new ElementWithClass(stateName, node, Arrays.asList(classValue.split(" "))));
-		}
-
-		return results;
 	}
 }

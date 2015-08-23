@@ -5,14 +5,11 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.List;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import org.w3c.dom.Document;
 
-import com.crawljax.plugins.cret.data.ElementWithClass;
 import com.crawljax.plugins.cret.util.CSSDOMHelper;
 import com.crawljax.util.DomUtils;
 
@@ -92,33 +89,6 @@ public class CSSDOMHelperTest {
 			Assert.assertEquals(true, result.contains(".newsletter"));
 			Assert.assertEquals(true, result.contains(".nrc"));
 		} catch (IOException e) {
-			fail(e.getMessage());
-		}
-	}
-
-	@Test
-	public void testGetElementWithClass() {
-		String html =
-		        "<html>" + "<head><title>example</title> \n"
-		                + "<link href='basic.css' rel='stylesheet' type='text/css'>"
-		                + "<style> \n" + ".newsletter { color: bla;} #world {dec: 234 }"
-		                + "</style>" + "<style>" + ".nrc { font: bold;}" + "</style>" + "</head>"
-		                +
-
-		                "<body><span><div width='56' id='div1' class='news plusnews votebutton medium green'>"
-		                + "<p id='24' class=''>this is just a test</p></div>"
-		                + "<span id='span1' class='news'/><p>bla</p></span></body></html>";
-
-		try {
-			Document dom = DomUtils.asDocument(html);
-			List<ElementWithClass> elements = CSSDOMHelper.getElementWithClass("state1", dom);
-			Assert.assertEquals(2, elements.size());
-
-			Assert.assertEquals(5, elements.get(0).getClassValues().size());
-
-		} catch (IOException e) {
-			fail(e.getMessage());
-		} catch (XPathExpressionException e) {
 			fail(e.getMessage());
 		}
 	}

@@ -2,6 +2,8 @@ package com.crawljax.plugins.cret;
 
 /**
  * Created by axel on 5/27/2015.
+ *
+ * Exception extension supporting string formats
  */
 public class CssSuiteException extends Exception
 {

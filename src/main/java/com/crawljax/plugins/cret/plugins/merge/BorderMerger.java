@@ -23,13 +23,7 @@ public class BorderMerger extends MergerBase
         _color = "";
     }
 
-
-    /**
-     *
-     * @param name
-     * @param value
-     */
-    protected boolean parseFromSingle(String name, String value)
+    protected boolean parseSingleDeclaration(String name, String value)
     {
         switch (name.split("-")[1])
         {

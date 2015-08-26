@@ -10,6 +10,10 @@ import java.io.IOException;
  */
 public class FileHelper
 {
+    /**
+     * @return File object for given filename
+     * @throws IOException
+     */
     public static File createFileAndDirs(String fileName) throws IOException
     {
         File file = new File(fileName);

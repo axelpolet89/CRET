@@ -4,11 +4,12 @@ public class Specificity
 {
 	private final int value;
 
-	Specificity(int value)
+	public Specificity(int value)
 	{
 		this.value = value;
 	}
 
+	/** Getter */
 	public int getValue()
 	{
 		return value;

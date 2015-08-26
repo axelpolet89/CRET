@@ -8,6 +8,9 @@ import java.util.List;
 
 /**
  * Created by axel on 5/27/2015.
+ *
+ * Base class responsible for merging one or more separate declarations into a shorthand
+ * If not all declarations are merge-able, then they are returned as-is
  */
 public abstract class MergerBase
 {
@@ -17,10 +20,6 @@ public abstract class MergerBase
     protected boolean _isSet;
     protected final List<MDeclaration> _otherDeclarations;
 
-    /**
-     *
-     * @param name
-     */
     public MergerBase(String name)
     {
         _name = name;
@@ -28,24 +27,19 @@ public abstract class MergerBase
     }
 
     /**
-     *
-     * @param name
-     * @param value
+     * Parse single declaration in for this merge instance
+     * @return false if parse was unsuccesful
      */
-    protected abstract boolean parseFromSingle(String name, String value);
-
+    protected abstract boolean parseSingleDeclaration(String name, String value);
 
     /**
-     *
-     * @return
+     * Merge some or all parsed declarations into a shorthand declaration
+     * @return merged and unmerged declarations
      */
     protected abstract List<MDeclaration> mergeDeclarations();
 
 
-    /**
-     *
-     * @return
-     */
+    /** Getter */
     public final Boolean isImportant()
     {
         return _isImportant;
@@ -53,10 +47,7 @@ public abstract class MergerBase
 
 
     /**
-     *
-     * @param name
-     * @param value
-     * @param isImportant
+     * parse given name, value, !important and order if possible
      * @throws CssSuiteException
      */
     public final void parse(String name, String value, boolean isImportant, int order) throws CssSuiteException
@@ -74,13 +65,16 @@ public abstract class MergerBase
         }
 
         _order = Math.min(order, _order);
-        if(!parseFromSingle(name, value))
+        if(!parseSingleDeclaration(name, value))
         {
             _otherDeclarations.add(new MDeclaration(name, value, isImportant, order));
         }
         _isSet = true;
     }
 
+    /**
+     * @return parsed declarations in their merged or ummerged form
+     */
     public final List<MDeclaration> buildMDeclarations()
     {
         _otherDeclarations.addAll(mergeDeclarations());

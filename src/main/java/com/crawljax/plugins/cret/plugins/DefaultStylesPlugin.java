@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * Created by axel on 6/2/2015.
  *
- * Responsible for finding invalid undo styles. A declaration is defind to be an invalid undo style if:
+ * Responsible for finding invalid undo styles. A declaration is defined to be an invalid undo style if:
  * the declaration's value is a default value for that declaration
  * the declaration is effective
  * the declaration overrides no other effective declaration
@@ -182,9 +182,7 @@ public class DefaultStylesPlugin implements ICssTransformer
 
 
     /**
-     * Filter all properties that perform an invalid undo
-     * @param file
-     * @return
+     * Filter all declarations that perform an invalid undo from given CSS file
      */
     private MCssFile filterUndoRules(MCssFile file)
     {

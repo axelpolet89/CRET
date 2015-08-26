@@ -22,7 +22,6 @@ public class CSSDOMHelper
 {
 	/**
 	 * Extract all css file names from the link elements in the head of the document
-	 * @param dom
 	 * @return a list of css file names
 	 */
 	public static List<String> extractCssFileNames(Document dom)

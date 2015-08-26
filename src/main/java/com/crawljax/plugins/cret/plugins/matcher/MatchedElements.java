@@ -19,6 +19,17 @@ public class MatchedElements
 		_elementSelectors = new HashMap<>();
 	}
 
+
+	/** Getter */
+	public Set<String> getMatchedElements()
+	{
+		return _elementSelectors.keySet();
+	}
+
+
+	/**
+	 * Map given selector to a DOM element, including the order of the CSS file in which the selector is contained
+	 */
 	public void setMatchedElement(ElementWrapper element, MSelector selector, int order)
 	{
 		String key = element.getKey();
@@ -31,30 +42,22 @@ public class MatchedElements
 		_elementSelectors.get(key).put(order, selector);
 	}
 
-	/**
-	 * @return all matched elements stored in this instance, by their string representations
-	 */
-	public Set<String> getMatchedElements()
-	{
-		return _elementSelectors.keySet();
-	}
-
 
 	/**
 	 * Transform all selectors that match a given element into a list of SpecificitySelector instances
 	 * Use that list to sort the selectors in place, and then return the MSelectors contained by the SpecificitySelectors instances in the sorted list
-	 * @param cssFilesOrder we need a list of selectors first by their 'file' order and then by their specificity
+	 * @param cssFileOrders we need a list of selectors first by their 'file' order and then by their specificity
 	 * @param orderSelectorMap
 	 * @return all selectors that were matched to the given element, sorted by their specificity and cascading rules
 	 */
-	public List<MSelector> sortSelectorsForMatchedElem(List<Integer> cssFilesOrder, ListMultimap orderSelectorMap)
+	public List<MSelector> sortSelectorsForMatchedElem(List<Integer> cssFileOrders, ListMultimap orderSelectorMap)
 	{
 		// we know that cssFilesOrder is ordered (by using LinkedHashMap and ListMultiMap implementations),
 		// just need to reverse it (so we get highest order first)
-		Collections.reverse(cssFilesOrder);
+		Collections.reverse(cssFileOrders);
 
 		List<SpecificitySelector> selectorsToSort = new ArrayList<>();
-		for(int order : cssFilesOrder)
+		for(int order : cssFileOrders)
 		{
 			List<MSelector> selectorsForFile = orderSelectorMap.get(order);
 
@@ -72,8 +75,6 @@ public class MatchedElements
 	/**
 	 * Transform all selectors that match a given element into a list of SpecificitySelector instances
 	 * Use that list to sort the selectors in place, and then return the MSelectors contained by the SpecificitySelectors instances in the sorted list
-	 * @param element
-	 * @return
 	 */
 	public List<MSelector> sortSelectorsForMatchedElem(String element)
 	{
@@ -82,7 +83,7 @@ public class MatchedElements
 
 
 	/**
-	 * @param selectors
+	 * In-place sorting of given list of selectors by their specificity, file order, line number and selector order
 	 */
 	public static void sortBySpecificity(List<SpecificitySelector> selectors)
 	{
@@ -123,4 +124,3 @@ public class MatchedElements
 		});
 	}
 }
-

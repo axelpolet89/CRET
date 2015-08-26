@@ -109,7 +109,6 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * Filter pseudo-element from a selector, since it is recognized as a descendant combinator (while it is not in scope of this plug-in)
      * It can only be applied once, at the end of the subject selector sequence (http://www.w3.org/TR/css3-selectors/)
      * Therefore, it only has to be filtered once
-     * @param selector
      * @return selector without pseudo element
      */
     private static Selector tryFilterPseudoElement(Selector selector)
@@ -134,9 +133,6 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * In some cases (Descendant and GeneralAdjacent), we will not match a direct parent or direct previous sibling
      * of the given node, with the ancestor or sibling declaration of the given selector.
      * We then need to find the right node (either parent or previous sibling), before proceeding with further analysis of the remaining selector parts
-     * @param selector
-     * @param node
-     * @param mSelector
      */
     private void recursiveFindDescendants(Selector selector, Node node, MSelector mSelector)
     {
@@ -218,10 +214,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * Filter method for selecting a node with a css selector
      * Since the caller of this method can pass another chained (e.g. Child, Sibling or Descendant) selector
      * and we are just interested in the 'last' selector part (e.g. the 'a' in div a), we need to find it using the selector type
-     * @param selector
-     * @param node
-     * @param mSelector
-     * @return
+     * @return true if CSS selector matches given DOM node
      */
     private static boolean trySelectNodeWithCss(Selector selector, Node node, MSelector mSelector)
     {
@@ -260,8 +253,6 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * If selector contains class or ID, match by node name and attribute equivalence of class and ID
      * If selector contains attribute with or without value, match by node name and attribute name and/or value
      * If selector contains pseudo-class condition, just match by node name
-     * @param node
-     * @param selector
      * @return true if node is selectable by given selector
      */
     private static boolean trySelectNodeWithCss(Node node, Selector selector)
@@ -299,10 +290,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
      * Recursively match multiple conditions of a selector to a single node
      * Recursive call is executed when selector like '.class1.class2.class3'
      * Otherwise match single condition to single node
-     * @param innerSelector
-     * @param condition
-     * @param node
-     * @return
+     * @return true if given all CSS conditions (ID, class, attribute, substring attribute or pseudo-element)
      */
     private static boolean recursiveMatchConditionToNode(Selector innerSelector, Condition condition, Node node)
     {
@@ -320,10 +308,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
     /**
      * Main method to match a given condition to a given node, by parsing the attributes contained in that node (except for pseudo-elements)
      * Supports IDs, classes, attributes, substring attributes and pseudo-elements
-     * @param innerSelector
-     * @param innerCondition
-     * @param node
-     * @return
+     * @return true if DOM nodes attributes match given CSS condition
      */
     private static boolean matchConditionToNode(Selector innerSelector, Condition innerCondition, Node node)
     {
@@ -420,8 +405,6 @@ public class ChildCombinatorPlugin implements ICssTransformer
 
 
     /**
-     * @param node
-     * @param elementSelector
      * @return true if given node matches the given element-selector (div, body, etc..) by name, or if element-selector equals '*'
      */
     private static boolean matchNodeWithElementSelector(Node node, Selector elementSelector)
@@ -436,8 +419,6 @@ public class ChildCombinatorPlugin implements ICssTransformer
 
 
     /**
-     * @param attributes
-     * @param attributeName
      * @return the value for the given attribute, or NULL
      */
     private static String getAttributeValue(NamedNodeMap attributes, String attributeName)
@@ -455,10 +436,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
 
 
     /**
-     * Match a given class text to the class attribute, when it is contained in it
-     * @param classAttribute
-     * @param search
-     * @return
+     * @return true if a given CSS class text is contained in given  class attribute
      */
     private static boolean findMatchInClass(String classAttribute, String search)
     {
@@ -477,7 +455,6 @@ public class ChildCombinatorPlugin implements ICssTransformer
     /**
      * Update given selector in place and return it
      * Update starting with the first selector, by seeking up using sibling and ancestor operators
-     * @param selector
      * @return selector with one or more descendants replaced by childs
      */
     private Selector recursiveUpdateSelector(Selector selector)
@@ -517,8 +494,7 @@ public class ChildCombinatorPlugin implements ICssTransformer
 
 
     /**
-     * @param node
-     * @return Simple print of a node in HTML format, including attributes
+     * @return simple print of a node in HTML format, including attributes
      */
     private static String printNode(Node node)
     {

@@ -12,14 +12,14 @@ import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.*;
 
-
 /**
  * Created by axel on 5/27/2015.
  *
  * This class is responsible for normalizing declaration values contained in MSelectors
  * 1) split shorthand declarations into separate parts
- * 2) normalize zero values
- * 3) normalize url values
+ * 2) normalize color values
+ * 3) normalize zero values
+ * 4) normalize url values
  */
 public class NormalizeAndSplitPlugin implements ICssTransformer
 {
@@ -35,6 +35,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
         builder.appendLine("%s<NU>%d</NU>", prefix, _normalizedUrls);
         builder.appendLine("%s<NZ>%d</NZ>", prefix, _normalizedZeroes);
     }
+
 
     @Override
     public Map<String, MCssFile> transform(Map<String, MCssFile> cssRules, MatchedElements matchedElements)
@@ -66,7 +67,6 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
     /**
      * Normalize any rgb color to it's hexadecimal representation
      * Normalize any rbga color by filtering whitespace between it's color parts
-     * @param mSelector
      */
     private void normalizeColors(MSelector mSelector)
     {
@@ -146,7 +146,6 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
     /**
      * Normalize zero values and url values
-     * @param mSelector
      */
     private void normalizeZeroes(MSelector mSelector)
     {
@@ -176,7 +175,6 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
     /**
      * Normalize zero values and url values
-     * @param mSelector
      */
     private void normalizeUrls(MSelector mSelector)
     {
@@ -251,8 +249,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     * Split any shorthand margin, padding, border, border-radius, outline and background declaration into parts
-     * @param mSelector
+     * Split a shorthand margin, padding, border, border-radius, outline and background declaration into parts
      */
     private static void splitShortHandDeclarations(MSelector mSelector)
     {
@@ -343,10 +340,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     * Split any box declaration into four parts: top, right, bottom, left
-     * @param value
-     * @param isImportant
-     * @return
+     * Split a box declaration into four parts: top, right, bottom, left
      * @throws CssSuiteException
      */
     private static List<MDeclaration> boxToDeclarations(String value, boolean isImportant, int order, String formatter) throws CssSuiteException
@@ -396,10 +390,6 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
     /**
      * Split a shorthand border declaration into separate declarations
-     * @param name
-     * @param value
-     * @param isImportant
-     * @return
      */
     private static List<MDeclaration> borderToDeclarations(String name, String value, boolean isImportant, int order)
     {
@@ -434,10 +424,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     *
-     * @param value
-     * @param isImportant
-     * @return
+     * Split a given border radius into separate declarations
      */
     private static List<MDeclaration> borderRadiusToDeclarations(String value, String vendor, boolean isImportant, int order) throws CssSuiteException
     {
@@ -470,9 +457,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     * Split any box declaration into four parts: top, right, bottom, left
-     * @param value
-     * @return
+     * Split a box declaration into four parts: top, right, bottom, left
      * @throws CssSuiteException
      */
     private static List<String> parseRadiiParts(String value) throws CssSuiteException
@@ -511,10 +496,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     * Split a shorthand background declaration into separate declararations
-     * @param value
-     * @param isImportant
-     * @return
+     * Split a shorthand background declaration into separate declarations
      * @throws CssSuiteException
      */
     private static List<MDeclaration> backgroundToDeclarations(String value, boolean isImportant, int order) throws CssSuiteException
@@ -633,9 +615,7 @@ public class NormalizeAndSplitPlugin implements ICssTransformer
 
 
     /**
-     *
-     * @param value
-     * @return
+     * @return trie if given string contains a length unit
      */
     private static boolean containsUnitLength(String value)
     {

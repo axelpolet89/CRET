@@ -8,9 +8,16 @@ import java.util.Map;
  */
 public class DefaultStylesHelper
 {
+    private static void setSeparateStyles(String formatter, String value, Map<String, String> styles)
+    {
+        styles.put(String.format(formatter, "top"), value);
+        styles.put(String.format(formatter, "right"), value);
+        styles.put(String.format(formatter, "bottom"), value);
+        styles.put(String.format(formatter, "left"), value);
+    }
+
     /**
-     *
-     * @return
+     * @return defualt declaration names and values
      */
     public static Map<String, String> createDefaultStyles()
     {
@@ -48,20 +55,5 @@ public class DefaultStylesHelper
         defaultStyles.put("background-origin", "padding-box");
 
         return defaultStyles;
-    }
-
-
-    /**
-     *
-     * @param formatter
-     * @param value
-     * @param styles
-     */
-    public static void setSeparateStyles(String formatter, String value, Map<String, String> styles)
-    {
-        styles.put(String.format(formatter, "top"), value);
-        styles.put(String.format(formatter, "right"), value);
-        styles.put(String.format(formatter, "bottom"), value);
-        styles.put(String.format(formatter, "left"), value);
     }
 }

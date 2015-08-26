@@ -6,7 +6,7 @@ package com.crawljax.plugins.cret.util;
  */
 public class CretStringBuilder
 {
-    private StringBuilder _builder;
+    private final StringBuilder _builder;
 
     public CretStringBuilder()
     {
@@ -33,7 +33,7 @@ public class CretStringBuilder
         _builder.append("\n" + String.format(format, varArgsToArray(arguments)));
     }
 
-    private static Object[] varArgsToArray(Object... arguments)
+    private Object[] varArgsToArray(Object... arguments)
     {
         //need to copy varargs to Object[], otherwise String.format fails
         Object[] args = new Object[arguments.length + 1];

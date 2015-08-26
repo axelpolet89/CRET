@@ -17,12 +17,6 @@ public class MBorderDeclaration extends MDeclaration
 		_allowedWith = allowedWith;
 	}
 
-
-	/**
-	 *
-	 * @param otherDeclaration
-	 * @return
-	 */
 	@Override
 	public boolean allowCoexistence(MDeclaration otherDeclaration)
 	{

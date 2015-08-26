@@ -93,6 +93,58 @@ public class CssOnDomVerifier
         return effectiveProps;
     }
 
+
+    private boolean containsEffectiveDeclarations(List<MDeclaration> declarations)
+    {
+        if(declarations.isEmpty())
+        {
+            return false;
+        }
+
+        return !declarations.stream().allMatch(p -> _defaultStyles.containsKey(p.getName()) && _defaultStyles.get(p.getName()).equals(p.getValue()));
+    }
+
+
+    private void logResults()
+    {
+        LogHandler.info("[VERIFICATION] %d elements matched originally, %d elements matches effective originally, %d elements equally matched by new,  %d elements unmatched, %d additional elements matched",
+                _equallyMatchedElems.size(), _matchedAndEffectiveOrig.size(), _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
+        LogHandler.info("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
+                _totalEffectiveDeclsOrig.size(), _totalEquallyEffectiveDecls.size(), _totalEffectiveByName.size(), _totalDefaultDeclsOrig.size(), _totalMissingDecls.size(), _totalAdditionalDecls.size());
+
+        for(MDeclaration orig : _totalEffectiveByName.keySet())
+        {
+            MDeclaration gnr = _totalEffectiveByName.get(orig);
+            LogHandler.info("[VERIFICATION] Matched by name: '%s'\nwith '%s'", printOrigDeclaration(orig), printGnrDeclaration(gnr));
+        }
+        for(MDeclaration orig : _totalMissingDecls)
+        {
+            LogHandler.info("[VERIFICATION] Missing declaration: '%s'", printOrigDeclaration(orig));
+        }
+        for(MDeclaration gnr : _totalAdditionalDecls)
+        {
+            LogHandler.info("[VERIFICATION] Additional declaration: '%s'", printGnrDeclaration(gnr));
+        }
+    }
+
+
+    private String printOrigDeclaration(MDeclaration declaration)
+    {
+        return String.format("%s %s %s", declaration, _declSelMapOrig.get(declaration), _selFileMapOrig.get(_declSelMapOrig.get(declaration)));
+    }
+
+
+    private String printGnrDeclaration(MDeclaration declaration)
+    {
+        return String.format("%s %s %s", declaration, _declSelMapGnr.get(declaration), _selFileMapGnr.get(_declSelMapGnr.get(declaration)));
+    }
+
+
+    /**
+     * Compare original and optimized CSS files on discovered DOM states
+     * Compare on DOM elements selected by CSS selectors and CSS declaration styles applied on those DOM elements
+     * @throws IOException
+     */
     public void verify(Map<StateVertex, LinkedHashMap<String, Integer>> states, Map<String, MCssFile> originalStyles, Map<String, MCssFile> generatedStyles) throws IOException
     {
         _selFileMapOrig = generateSelectorFileMap(originalStyles);
@@ -329,38 +381,10 @@ public class CssOnDomVerifier
         logResults();
     }
 
-    private void logResults()
-    {
-        LogHandler.info("[VERIFICATION] %d elements matched originally, %d elements matches effective originally, %d elements equally matched by new,  %d elements unmatched, %d additional elements matched",
-                _equallyMatchedElems.size(), _matchedAndEffectiveOrig.size(), _equallyMatchedElems.size(), _missedMatchedElements.size(), _additionalMatchedElems.size());
-        LogHandler.info("[VERIFICATION] %d effective props originally, %d effective props by compare, %d effective props by name, %d missing props but default style, %d missing props, %d additional props",
-                _totalEffectiveDeclsOrig.size(), _totalEquallyEffectiveDecls.size(), _totalEffectiveByName.size(), _totalDefaultDeclsOrig.size(), _totalMissingDecls.size(), _totalAdditionalDecls.size());
 
-        for(MDeclaration orig : _totalEffectiveByName.keySet())
-        {
-            MDeclaration gnr = _totalEffectiveByName.get(orig);
-            LogHandler.info("[VERIFICATION] Matched by name: '%s'\nwith '%s'", printOrigDeclaration(orig), printGnrDeclaration(gnr));
-        }
-        for(MDeclaration orig : _totalMissingDecls)
-        {
-            LogHandler.info("[VERIFICATION] Missing declaration: '%s'", printOrigDeclaration(orig));
-        }
-        for(MDeclaration gnr : _totalAdditionalDecls)
-        {
-            LogHandler.info("[VERIFICATION] Additional declaration: '%s'", printGnrDeclaration(gnr));
-        }
-    }
-
-    private String printOrigDeclaration(MDeclaration declaration)
-    {
-        return String.format("%s %s %s", declaration, _declSelMapOrig.get(declaration), _selFileMapOrig.get(_declSelMapOrig.get(declaration)));
-    }
-
-    private String printGnrDeclaration(MDeclaration declaration)
-    {
-        return String.format("%s %s %s", declaration, _declSelMapGnr.get(declaration), _selFileMapGnr.get(_declSelMapGnr.get(declaration)));
-    }
-
+    /**
+     * Append results of verification on given CretStringBuilder
+     */
     public void generateXml(CretStringBuilder builder, String prefix)
     {
         builder.append("%s<matched_elements_orig>%d</matched_elements_orig>", prefix, _matchedElementsOrig.size());
@@ -375,15 +399,5 @@ public class CssOnDomVerifier
         builder.appendLine("%s<missing_but_default_props>%d</missing_but_default_props>", prefix, _totalDefaultDeclsOrig.size());
         builder.appendLine("%s<missing_props>%d</missing_props>", prefix, _totalMissingDecls.size());
         builder.appendLine("%s<additional_props>%d</additional_props>", prefix, _totalAdditionalDecls.size());
-    }
-
-    public boolean containsEffectiveDeclarations(List<MDeclaration> declarations)
-    {
-        if(declarations.isEmpty())
-        {
-            return false;
-        }
-
-        return !declarations.stream().allMatch(p -> _defaultStyles.containsKey(p.getName()) && _defaultStyles.get(p.getName()).equals(p.getValue()));
     }
 }

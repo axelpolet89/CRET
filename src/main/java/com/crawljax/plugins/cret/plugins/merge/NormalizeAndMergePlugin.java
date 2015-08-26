@@ -12,7 +12,6 @@ import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.*;
 
-
 /**
  * Created by axel on 6/8/2015.
  *
@@ -58,7 +57,6 @@ public class NormalizeAndMergePlugin implements ICssTransformer
 
     /**
      * Split any shorthand margin, padding, border, border-radius, outline and background declaration into parts
-     * @param mSelector
      */
     private void mergeDeclarationsToShorthand(MSelector mSelector)
     {
@@ -202,10 +200,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
 
 
     /**
-     *
-     * @param declarations
-     * @param merger
-     * @return
+     * merge box (top, right, left, bottom) declarations
      */
     private List<MDeclaration> mergeBoxDeclarations(List<MDeclaration> declarations, MergerBase merger)
     {
@@ -246,10 +241,7 @@ public class NormalizeAndMergePlugin implements ICssTransformer
 
 
     /**
-     *
-     * @param declarations
-     * @param merger
-     * @return
+     * merge border (color, style, width) declarations
      */
     private List<MDeclaration> mergeBorderDeclarations(List<MDeclaration> declarations, MergerBase merger)
     {

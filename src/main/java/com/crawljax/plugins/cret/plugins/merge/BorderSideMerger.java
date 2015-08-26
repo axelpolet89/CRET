@@ -10,14 +10,8 @@ public class BorderSideMerger extends BorderMerger
         super(name);
     }
 
-
-    /**
-     *
-     * @param name
-     * @param value
-     */
     @Override
-    protected boolean parseFromSingle(String name, String value)
+    protected boolean parseSingleDeclaration(String name, String value)
     {
         switch (name.split("-")[2])
         {

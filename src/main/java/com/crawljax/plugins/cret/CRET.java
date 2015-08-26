@@ -126,6 +126,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 		_sassStatistics = new ArrayList<>();
 	}
 
+	
 	/**
 	 *
 	 */

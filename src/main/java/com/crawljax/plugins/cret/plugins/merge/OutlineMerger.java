@@ -17,14 +17,8 @@ public class OutlineMerger extends BorderMerger
         _offset = "";
     }
 
-
-    /**
-     *
-     * @param name
-     * @param value
-     */
     @Override
-    protected boolean parseFromSingle(String name, String value)
+    protected boolean parseSingleDeclaration(String name, String value)
     {
         if (name.contains("offset"))
         {
@@ -34,7 +28,7 @@ public class OutlineMerger extends BorderMerger
         }
         else
         {
-            return super.parseFromSingle(name, value);
+            return super.parseSingleDeclaration(name, value);
         }
     }
 

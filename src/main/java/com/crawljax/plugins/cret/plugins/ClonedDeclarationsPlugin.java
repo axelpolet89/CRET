@@ -15,6 +15,8 @@ import java.util.Map;
 
 /**
  * Created by axel on 6/12/2015.
+ *
+ * This class is responsible for removing declarations per selector, when multiple declarations share the same name
  */
 public class ClonedDeclarationsPlugin implements ICssTransformer
 {

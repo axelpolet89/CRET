@@ -11,6 +11,9 @@ import java.util.concurrent.TimeUnit;
  */
 public class CrawljaxHelper
 {
+    /**
+     * Default Crawljax configuration used in CRET
+     */
     public static void configureCrawljax(CrawljaxConfiguration.CrawljaxConfigurationBuilder builder, int minutes)
     {
         //set global properties, depth of crawl, max states and max crawl-time

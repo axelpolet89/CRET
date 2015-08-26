@@ -68,8 +68,6 @@ public class EffectivenessPlugin implements ICssTransformer
 
 	/**
 	 * Filter all ineffective rules or individual selectors within those rules by their (in)effective declarations
-	 * @param file
-	 * @return
 	 */
 	private MCssFile filterIneffectiveRules(MCssFile file)
 	{

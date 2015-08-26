@@ -26,13 +26,8 @@ public class BorderRadiusMerger extends MergerBase
     }
 
 
-    /**
-     *
-     * @param name
-     * @param value
-     */
     @Override
-    protected boolean parseFromSingle(String name, String value)
+    protected boolean parseSingleDeclaration(String name, String value)
     {
         String[] parts = name.split("-");
         String vert = parts[1];

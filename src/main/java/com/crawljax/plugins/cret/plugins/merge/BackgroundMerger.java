@@ -34,12 +34,7 @@ public class BackgroundMerger extends MergerBase
     }
 
 
-    /**
-     *
-     * @param name
-     * @param value
-     */
-    protected boolean parseFromSingle(String name, String value)
+    protected boolean parseSingleDeclaration(String name, String value)
     {
         switch (name.split("-")[1])
         {

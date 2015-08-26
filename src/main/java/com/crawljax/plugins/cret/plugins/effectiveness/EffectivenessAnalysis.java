@@ -10,10 +10,14 @@ import java.util.List;
  */
 public class EffectivenessAnalysis
 {
+    /**
+     * Compute effectiveness for given selectors and their declarations
+     * @param selectors A list sorted by specificity and location
+     * @param randomString A random string that is used to indicate the specific element on which this computation take place
+     *                     If a declaration was previously marked ineffective on a certain element, is not analyzed again
+     */
     public static void computeEffectiveness(List<MSelector> selectors, String randomString)
     {
-        String overridden = randomString;
-
         for (int i = 0; i < selectors.size(); i++)
         {
             MSelector selector = selectors.get(i);
@@ -22,7 +26,7 @@ public class EffectivenessAnalysis
                 // find out if declaration was already deemed effective previously
                 boolean alreadyEffective = declaration.isEffective();
 
-                if (!declaration.getStatus().equals(overridden))
+                if (!declaration.getStatus().equals(randomString))
                 {
                     declaration.setEffective(true);
 
@@ -73,17 +77,17 @@ public class EffectivenessAnalysis
 
                         if (pseudoCompare)
                         {
-                            compareDeclarationsPs(declaration, nextSelector, overridden, alreadyEffective);
+                            compareDeclarationsPs(declaration, nextSelector, randomString, alreadyEffective);
                         }
                         else if (mediaCompare)
                         {
-                            compareDeclarationsMq(declaration, nextSelector, overridden);
+                            compareDeclarationsMq(declaration, nextSelector, randomString);
                         }
                         else
                         {
                             // by default: if both selectors apply under the same condition, simply check matching declaration names
                             // otherwise, the only way for next selector to be ineffective is too have same declaration name AND value
-                            compareDeclarations(declaration, nextSelector, overridden, alreadyEffective);
+                            compareDeclarations(declaration, nextSelector, randomString, alreadyEffective);
                         }
                     }
                 }
@@ -95,9 +99,6 @@ public class EffectivenessAnalysis
     /**
      * Compare declarations of a (less specific) selector with a given declaration on ONLY their name
      * set the other (less specific) declarations overridden or set 'this' declaration overridden due to !important
-     * @param declaration
-     * @param otherSelector
-     * @param overridden
      */
     private static void compareDeclarations(MDeclaration declaration, MSelector otherSelector, String overridden, boolean alreadyEffective)
     {
@@ -156,9 +157,6 @@ public class EffectivenessAnalysis
     /**
      * Compare declarations of a (less specific) selector with a given declaration on their name
      * and the absence of the !important statement in the less-specific declaration OR presence in the more-specific declaration
-     * @param declaration
-     * @param otherSelector
-     * @param overridden
      */
     private static void compareDeclarationsMq(MDeclaration declaration, MSelector otherSelector, String overridden)
     {

@@ -16,74 +16,83 @@ import se.fishtank.css.selectors.parser.ParserException;
 
 public class ElementSelectorMatcher
 {
+	/**
+	 * Match a given set of CSS files and their rules to the DOM state they are included in
+	 * Uses fishtank css selector library to match W3C selectors to W3C nodes
+	 * @param stateName name of given state, used in marking unique DOM nodes
+	 * @param dom the document CSS files are included in
+	 * @param cssRules the CSS files
+	 * @param stateFileOrder the order by which CSS files where included
+	 * @param matchedElements the total set of matched elements (static)
+	 */
 	public static void matchElementsToDocument(String stateName, Document dom, Map<String, MCssFile> cssRules, LinkedHashMap<String, Integer> stateFileOrder, MatchedElements matchedElements)
 	{
-			for (String fileName : stateFileOrder.keySet())
+		for (String fileName : stateFileOrder.keySet())
+		{
+			LogHandler.info("[ElementSelectorMatcher] Matching DOM elements for css file '%s'...", fileName);
+			int matchCount = 0;
+
+			int order = stateFileOrder.get(fileName);
+
+			for (MCssRule mRule : cssRules.get(fileName).getRules())
 			{
-				LogHandler.info("[ElementSelectorMatcher] Matching DOM elements for css file '%s'...", fileName);
-				int matchCount = 0;
-
-				int order = stateFileOrder.get(fileName);
-
-				for (MCssRule mRule : cssRules.get(fileName).getRules())
+				List<MSelector> mSelectors = mRule.getSelectors();
+				for (MSelector mSelector : mSelectors)
 				{
-					List<MSelector> mSelectors = mRule.getSelectors();
-					for (MSelector mSelector : mSelectors)
+					if (mSelector.isIgnored())
 					{
-						if (mSelector.isIgnored())
-						{
-							continue;
-						}
+						continue;
+					}
 
-						String cssSelector = mSelector.getFilteredSelectorText();
+					String cssSelector = mSelector.getFilteredSelectorText();
 
-						Selectors seSelectors = new Selectors(new W3CNode(dom));
+					Selectors seSelectors = new Selectors(new W3CNode(dom));
 
-						List<Node> result;
-						try
-						{
-							result = seSelectors.querySelectorAll(cssSelector);
-						}
-						catch (ParserException ex)
-						{
-							LogHandler.warn("[ElementSelectorMatcher] Could not query DOM tree with selector '%s' from rule '%s' from file '%s'", cssSelector, mRule, fileName);
-							continue;
-						}
-						catch (Exception ex)
-						{
-							LogHandler.error("[ElementSelectorMatcher] Could not query DOM tree with selector '%s' from rule '%s' from file '%s'" + cssSelector, mRule, fileName);
-							continue;
-						}
+					List<Node> result;
+					try
+					{
+						result = seSelectors.querySelectorAll(cssSelector);
+					}
+					catch (ParserException ex)
+					{
+						LogHandler.warn("[ElementSelectorMatcher] Could not query DOM tree with selector '%s' from rule '%s' from file '%s'", cssSelector, mRule, fileName);
+						continue;
+					}
+					catch (Exception ex)
+					{
+						LogHandler.error("[ElementSelectorMatcher] Could not query DOM tree with selector '%s' from rule '%s' from file '%s'" + cssSelector, mRule, fileName);
+						continue;
+					}
 
-						for (Node node : result)
+					for (Node node : result)
+					{
+						//compare any selector containing non-structural pseudo classes on their compatibility with the node they matched
+						if (mSelector.isNonStructuralPseudo())
 						{
-							//compare any selector containing non-structural pseudo classes on their compatibility with the node they matched
-							if (mSelector.isNonStructuralPseudo())
+							if (!mSelector.checkPseudoCompatibility(node.getNodeName(), node.getAttributes()))
 							{
-								if (!mSelector.checkPseudoCompatibility(node.getNodeName(), node.getAttributes()))
-								{
-									continue;
-								}
+								continue;
 							}
+						}
 
-							if (node instanceof Document)
-							{
-								LogHandler.warn("[ElementSelectorMatcher] CSS rule returns the whole document, rule '%s", mRule);
-								mSelector.setMatched(true);
-								matchCount++;
-							}
-							else
-							{
-								ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
-								mSelector.addMatchedElement(ew);
-								matchedElements.setMatchedElement(ew, mSelector, order);
-								matchCount++;
-							}
+						if (node instanceof Document)
+						{
+							LogHandler.warn("[ElementSelectorMatcher] CSS rule returns the whole document, rule '%s", mRule);
+							mSelector.setMatched(true);
+							matchCount++;
+						}
+						else
+						{
+							ElementWrapper ew = new ElementWrapper(stateName, (Element) node);
+							mSelector.addMatchedElement(ew);
+							matchedElements.setMatchedElement(ew, mSelector, order);
+							matchCount++;
 						}
 					}
 				}
+			}
 
-				LogHandler.info("[ElementSelectorMatcher] Matched '%d' elements in DOM to CSS selectors", matchCount);
+			LogHandler.info("[ElementSelectorMatcher] Matched '%d' elements in DOM to CSS selectors", matchCount);
 		}
 	}
 }

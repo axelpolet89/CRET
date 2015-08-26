@@ -61,8 +61,7 @@ public class SpecificityCalculator
 
 
 	/**
-	 * Recursively parse all attributes in given part
-	 * @param part
+	 * Recursively parse all CSS attributes in given part
 	 */
 	private void recursiveParseAttribute(String part)
 	{
@@ -87,15 +86,19 @@ public class SpecificityCalculator
 
 
 	/**
-	 * Ignore any part (by splitting on white-space) that is a combinator
-	 * @param part
-	 * @return
+	 * @return true if part should be ignored because it is a combinator or universal selector
 	 */
 	private static boolean ignorePart(String part)
 	{
 		return part.isEmpty() || part.equals("+") || part.equals(">") || part.equals("~") || part.equals("*");
 	}
 
+
+	/**
+	 * Compute specificity for given selector (text)
+	 * Also use amount of pseudo classes and pseudo-element presence
+	 * @return
+	 */
 	public Specificity computeSpecificity(String selector, int pseudoClassCount, boolean isPseudoElement)
 	{
 		for(int i = 0; i < pseudoClassCount; i++)

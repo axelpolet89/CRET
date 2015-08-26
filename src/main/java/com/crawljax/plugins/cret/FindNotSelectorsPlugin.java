@@ -52,21 +52,9 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 		_embeddedStyles = new HashMap<>();
 	}
 
-	public void onNewState(CrawlerContext context, StateVertex newState)
-	{
-		LogHandler.info("[NEW STATE] %s", newState.getUrl());
-
-		// if the external CSS files are not parsed yet, do so
-		LogHandler.info("Parse CSS rules...");
-		ParseCssRulesForState(context, newState);
-	}
-
 
 	/**
 	 *
-	 * @param context
-	 * @param state
-	 * @return
 	 */
 	private void ParseCssRulesForState(CrawlerContext context, StateVertex state)
 	{
@@ -115,6 +103,9 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 	}
 
 
+	/**
+	 *
+	 */
 	private boolean embeddedAlreadyParsed(MCssFile check)
 	{
 		boolean result = false;
@@ -154,8 +145,6 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 
 	/**
 	 *
-	 * @param url
-	 * @param code
 	 */
 	private MCssFile parseCssRules(String url, String code)
 	{
@@ -166,6 +155,35 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 		LogHandler.info("[CssParser] Parsed '%s' -> CSS rules parsed into McssRules: %d", url, file.getRules().size());
 
 		return file;
+	}
+
+
+	/**
+	 *
+	 */
+	private static String encodeUrl(String url)
+	{
+		try
+		{
+			return URLEncoder.encode(url, "UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			LogHandler.error(e, "URL encode error on url '%s'", url);
+		}
+
+		return url;
+	}
+
+
+	@Override
+	public void onNewState(CrawlerContext context, StateVertex newState)
+	{
+		LogHandler.info("[NEW STATE] %s", newState.getUrl());
+
+		// if the external CSS files are not parsed yet, do so
+		LogHandler.info("Parse CSS rules...");
+		ParseCssRulesForState(context, newState);
 	}
 
 
@@ -263,19 +281,5 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 		{
 			LogHandler.error(e, "Error occurred while writing :not analysis for site %s", _siteName);
 		}
-	}
-
-	private static String encodeUrl(String url)
-	{
-		try
-		{
-			return URLEncoder.encode(url, "UTF-8");
-		}
-		catch (UnsupportedEncodingException e)
-		{
-			LogHandler.error(e, "URL encode error on url '%s'", url);
-		}
-
-		return url;
 	}
 }

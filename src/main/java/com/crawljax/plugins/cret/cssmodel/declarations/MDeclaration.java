@@ -24,14 +24,6 @@ public class MDeclaration
 	private boolean _isInvalidUndo;
 	private boolean _invalidUndoSet;
 
-
-	/**
-	 * Default constructor
-	 * @param name
-	 * @param value
-	 * @param isImportant
-	 * @param w3cError
-	 */
 	public MDeclaration(String name, String value, boolean isImportant, String w3cError, int order)
 	{
 		_name = name;
@@ -194,7 +186,7 @@ public class MDeclaration
 	}
 
 	/**
-	 * @param value a normalized value for this MDeclaration
+	 * Set the normalized value for this MDeclaration
 	 */
 	public void setNormalizedValue(String value)
 	{
@@ -203,7 +195,7 @@ public class MDeclaration
 
 
 	/**
-	 * @param effective mark this MDeclaration as effective or ineffectiv
+	 * mark this MDeclaration as effective or ineffective
 	 */
 	public void setEffective(boolean effective)
 	{
@@ -212,8 +204,7 @@ public class MDeclaration
 
 
 	/**
-	 *
-	 * @param status
+	 * Set MDeclaration status to overridden using a unique string
 	 */
 	public void setStatus(String status)
 	{
@@ -247,7 +238,6 @@ public class MDeclaration
 
 
 	/**
-	 * Transform this property into valid CSS syntax
 	 * @return valid CSS syntax
 	 */
 	public String print()

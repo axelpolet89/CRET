@@ -13,6 +13,9 @@ import java.io.IOException;
  */
 public class CssValidator
 {
+    /**
+     * Use the kcabi W3C validator to request a CSS validation on the W3C jigsaw service
+     */
     public static ValidationResponse validateW3C(String cssCode) throws IOException
     {
         LogHandler.info("[W3C Validator] start css validation");

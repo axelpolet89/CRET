@@ -33,7 +33,7 @@ public class CssParserTest
 		List <MCssRule> mRules = mCssFile.getRules();
 
 		//make sure no parse errors occurred
-		Assert.assertEquals(0, parser.getParseErrors().printParseErrors().size());
+		Assert.assertEquals(0, parser.getParseErrors().getParseErrors().size());
 		Assert.assertEquals(4, mRules.size());
 
 		MCssRule mRule = mRules.get(2);
@@ -57,7 +57,7 @@ public class CssParserTest
 		// only 1 declaration parsed for third rule (first rule in list)
 		Assert.assertEquals(1, mRules.get(0).getSelectors().get(0).getDeclarations().size());
 
-		List<String> parseErrors = parser.getParseErrors().printParseErrors();
+		List<String> parseErrors = parser.getParseErrors().getParseErrors();
 		Assert.assertEquals(parseErrors.size(), 3);
 		System.out.println("Found expected parse errors, and parser filtered incorrect rule and incorrect declaration");
 		System.out.println(parseErrors.get(0));
@@ -74,7 +74,7 @@ public class CssParserTest
 		mRules = mCssFile.getRules();
 		Assert.assertEquals(4, mRules.size());
 
-		parseErrors = parser.getParseErrors().printParseErrors();
+		parseErrors = parser.getParseErrors().getParseErrors();
 		Assert.assertEquals(parseErrors.size(), 0);
 	}
 
@@ -86,7 +86,7 @@ public class CssParserTest
 		List<MCssRule> rules = mCssFile.getRules();
 
 		//make sure no parse errors occurred
-		Assert.assertEquals(0, parser.getParseErrors().printParseErrors().size());
+		Assert.assertEquals(0, parser.getParseErrors().getParseErrors().size());
 
 		MCssRule mRule = rules.get(0);
 		Assert.assertEquals(1, mRule.getLineNumber());
@@ -116,7 +116,7 @@ public class CssParserTest
 		List<MCssRule> mRules = mCssFile.getRules();
 
 		//make sure no parse errors occurred
-		Assert.assertEquals(0, parser.getParseErrors().printParseErrors().size());
+		Assert.assertEquals(0, parser.getParseErrors().getParseErrors().size());
 
 		//first rule
 		MCssRule mRule = mRules.get(0);
@@ -247,7 +247,7 @@ public class CssParserTest
 		List<MCssRule> mRules = mCssFile.getRules();
 
 		//make sure no parse errors occurred
-		Assert.assertEquals(0, parser.getParseErrors().printParseErrors().size());
+		Assert.assertEquals(0, parser.getParseErrors().getParseErrors().size());
 
 		//first rule
 		MCssRule mRule = mRules.get(0);
@@ -309,7 +309,7 @@ public class CssParserTest
 		List<MCssRule> mRules = mCssFile.getRules();
 
 		//make sure no parse errors occurred
-		Assert.assertEquals(0, parser.getParseErrors().printParseErrors().size());
+		Assert.assertEquals(0, parser.getParseErrors().getParseErrors().size());
 
 		//first rule
 		MCssRule mRule = mRules.get(0);
@@ -343,7 +343,7 @@ public class CssParserTest
 		List<MCssRule> mRules = mCssFile.getRules();
 
 		//make sure no parse errors occurred
-		Assert.assertEquals(0, parser.getParseErrors().printParseErrors().size());
+		Assert.assertEquals(0, parser.getParseErrors().getParseErrors().size());
 
 		//verify that the correct selectors have w3c error messages
 		MCssRule mRule = mRules.get(0);

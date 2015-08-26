@@ -48,7 +48,7 @@ public class EffectivenessAnalysis
 
                         // both selectors have different media-queries
                         if (selector.getMediaQueries().size() > 0 && nextSelector.getMediaQueries().size() > 0
-                                && !selector.HasEqualMediaQueries(nextSelector))
+                                && !selector.hasEqualMediaQueries(nextSelector))
                         {
                             continue;
                         }

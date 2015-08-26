@@ -29,17 +29,13 @@ import com.steadystate.css.parser.SACParserCSS3;
 /**
  * Created by axel on 6/15/2015.
  *
- * Responsible for parsing a given string of CSS code, possible executing W3C validation beforehand
+ * Responsible for parsing a given string of CSS code, optionally executing W3C validation beforehand
  */
 public class CssParser
 {
 	private final ParserErrorHandler _errorHandler;
 	private final boolean _doW3cValidation;
 
-
-	/**
-	 * Constructor
-	 */
 	public CssParser(boolean doW3cValidation)
 	{
 		_errorHandler = new ParserErrorHandler();
@@ -47,10 +43,7 @@ public class CssParser
 	}
 
 
-	/**
-	 *
-	 * @return
-	 */
+	/** Getter */
 	public ParserErrorHandler getParseErrors()
 	{
 		return _errorHandler;
@@ -58,8 +51,7 @@ public class CssParser
 
 
 	/**
-	 * Parse css code using the CSSOMParser and a SACParserCSS3 to support CSS3 rules
-	 * @param cssCode
+	 * Parse css code using the CSSOMParser and a SACParserCSS3 (to support CSS3 rules)
 	 * @return a CSSRuleList which contains objects which adhere to the org.w3c.dom.css specification
 	 */
 	private CSSRuleList parseCssCode(String cssCode)
@@ -84,8 +76,7 @@ public class CssParser
 
 
 	/**
-	 * @param cssCode the css code
-	 * @return a list of MCssRule objects, of which each wraps a cssrule
+	 * @return a list of MCssRule objects, of which each wraps a CSS rule
 	 */
 	public MCssFile parseCssIntoMCssRules(String url, String cssCode)
 	{
@@ -147,10 +138,7 @@ public class CssParser
 
 	/**
 	 * Recursively parse a media rule by iterating it's inner rules
-	 * @param rule
-	 * @param w3cErrors
-	 * @param ignoredRules any rule that resides inside the given MediaRule,
-	 *                        that is not regular style or another media, should be ignored
+	 * @param ignoredRules any rule that resides inside the given MediaRule, that is not regular style or another media, should be ignored
 	 * @return List of parsed media rules
 	 */
 	private MCssMediaRule recursiveParseMediaRules(AbstractCSSRuleImpl rule, MCssMediaRule parent, List<MCssRule> styleRules, List<MCssRuleBase> ignoredRules, Set<Defect> w3cErrors)

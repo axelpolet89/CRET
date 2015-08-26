@@ -8,6 +8,8 @@ import java.util.Map;
 
 /**
  * Created by axel on 5/18/2015.
+ *
+ * Interface for a CSS transformer, called on post-crawling
  */
 public interface ICssTransformer
 {

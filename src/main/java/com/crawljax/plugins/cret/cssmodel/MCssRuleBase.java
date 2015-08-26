@@ -18,7 +18,6 @@ public class MCssRuleBase
     protected final AbstractCSSRuleImpl _rule;
     protected final List<MediaQuery> _mediaQueries;
     protected final Locator _locator;
-
     protected final MCssRuleBase _parent;
 
     public MCssRuleBase(AbstractCSSRuleImpl rule, List<MediaQuery> mediaQueries, MCssRuleBase parent)
@@ -26,7 +25,6 @@ public class MCssRuleBase
         _rule = rule;
         _mediaQueries = mediaQueries;
         _locator = (Locator)_rule.getUserData(UserDataConstants.KEY_LOCATOR);
-
         _parent = parent;
     }
 
@@ -37,25 +35,33 @@ public class MCssRuleBase
 
     public AbstractCSSRuleImpl getAbstractRule() { return _rule; }
 
+    /** Getter */
     public int getLineNumber()
     {
         return _locator.getLineNumber();
     }
 
+    /** Getter */
     public int getColumnNumber()
     {
         return _locator.getColumnNumber();
     }
 
+    /** Getter */
     public List<MediaQuery> getMediaQueries()
     {
         return _mediaQueries;
     }
 
+    /** Getter */
     public boolean isEmpty()
     {
         return false;
     }
 
-    public String print() { return _rule.toString() + "\n\n";  }
+    /** Getter */
+    public String print()
+    {
+        return _rule.toString() + "\n\n";
+    }
 }

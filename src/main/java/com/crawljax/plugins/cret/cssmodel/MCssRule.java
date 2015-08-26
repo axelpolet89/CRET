@@ -68,9 +68,6 @@ public class MCssRule extends MCssRuleBase
 
 	/**
 	 * Parse all declarations contained in this rule once, and pass them to each selector that this rule is composed of
-	 * @param styleRule
-	 * @param w3cErrors
-	 * @return
 	 */
 	private static List<MDeclaration> parseDeclarations(CSSStyleRuleImpl styleRule, Set<Defect> w3cErrors)
 	{
@@ -86,8 +83,6 @@ public class MCssRule extends MCssRuleBase
 
 	/**
 	 * Find out if the given property is related to a W3C validation error
-	 * @param property
-	 * @param w3cErrors
 	 * @return W3C error, if present for given property
 	 */
 	private static String TryFindW3cErrorForProperty(Property property, Set<Defect> w3cErrors)
@@ -112,8 +107,6 @@ public class MCssRule extends MCssRuleBase
 
 	/**
 	 * Find out if the given selector is related to a W3C validation error
-	 * @param selector
-	 * @param w3cErrors
 	 * @return W3C error, if present for given selector
 	 */
 	private static String tryFindW3CErrorForSelector(Selector selector, Set<Defect> w3cErrors)
@@ -174,25 +167,11 @@ public class MCssRule extends MCssRuleBase
 		return "";
 	}
 
-
-	/** Getter */
-	public CSSStyleRuleImpl getStyleRule()
-	{
-		return _styleRule;
-	}
-
 	/** Getter */
 	public List<MSelector> getSelectors()
 	{
 		return _selectors;
 	}
-
-	/** Getter */
-	public Locator getLocator()
-	{
-		return _locator;
-	}
-
 
 	/**
 	 * @return the _selectors that are not matched (no associated DOM elements have been detected)
@@ -222,7 +201,7 @@ public class MCssRule extends MCssRuleBase
 
 
 	/**
-	 * Replace selector with another, used in selector transformations
+	 * Replace selector with another
 	 */
 	public void replaceSelector(MSelector oldS, MSelector newS)
 	{
@@ -234,7 +213,7 @@ public class MCssRule extends MCssRuleBase
 	@Override
 	public boolean isEmpty()
 	{
-		return _selectors.size() == 0;
+		return _selectors.isEmpty();
 	}
 
 
@@ -259,7 +238,7 @@ public class MCssRule extends MCssRuleBase
 	@Override
 	public String print()
 	{
-		Map<String, MTuple> combinations = new HashMap<>();
+		Map<String, PrintRule> combinations = new HashMap<>();
 		for(MSelector mSelector : _selectors)
 		{
 			List<MDeclaration> mProps = mSelector.getDeclarations();
@@ -273,14 +252,14 @@ public class MCssRule extends MCssRuleBase
 			}
 			else
 			{
-				combinations.put(key[0], new MTuple(mSelector, mProps));
+				combinations.put(key[0], new PrintRule(mSelector, mProps));
 			}
 		}
 
 		CretStringBuilder builder = new CretStringBuilder();
 		for(String key : combinations.keySet())
 		{
-			MTuple mTuple = combinations.get(key);
+			PrintRule mTuple = combinations.get(key);
 			List<MSelector> mSelectors = mTuple.getSelectors();
 
 			int size = mSelectors.size();
@@ -303,12 +282,12 @@ public class MCssRule extends MCssRuleBase
 	}
 
 
-	private class MTuple
+	private class PrintRule
 	{
 		private final List<MSelector> _selectors;
 		private final List<MDeclaration> _declarations;
 
-		public MTuple(MSelector mSelector, List<MDeclaration> declarations)
+		public PrintRule(MSelector mSelector, List<MDeclaration> declarations)
 		{
 			_selectors = new ArrayList<>(Arrays.asList(mSelector));
 			_declarations = declarations;

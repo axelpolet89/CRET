@@ -34,7 +34,7 @@ public class MSelector
 	private final MCssRuleBase _parent;
 	private final String _w3cError;
 
-	private String _selectorText; // possibly updatet in filtering universal selectors
+	private String _selectorText; // possibly changed in filtering universal selectors
 	private final int _lineNumber;
 	private final int _order;
 
@@ -51,16 +51,9 @@ public class MSelector
 	private String _keyPseudoElement;
 
 	private Specificity _specificity;
-
 	private List<ElementWrapper> _matchedElements;
 
-	/**
-	 * Constructor
-	 *
-	 * @param w3cSelector:   the selector text (CSS).
-	 * @param declarations: the declarations that are contained in this selector
-	 * @param ruleNumber: the lineNumber on which the rule, in which this selector is contained, exists in the file/html document
-	 */
+
 	public MSelector(Selector w3cSelector, List<MDeclaration> declarations, int ruleNumber, int order, List<MediaQuery> queries, MCssRuleBase parent, String w3cError)
 	{
 		_selector = w3cSelector;
@@ -78,8 +71,6 @@ public class MSelector
 
 	/**
 	 * Partial copy constructor, generate from new w3cSelector, with declarations from old MSelector
-	 * @param w3cSelector
-	 * @param mSel
 	 */
 	public MSelector(Selector w3cSelector, MSelector mSel)
 	{
@@ -164,7 +155,6 @@ public class MSelector
 
 	/**
 	 * Recursively filter every selector in the sequence on universal selectors that were added by the CssParser
-	 * @param selector
 	 */
 	private void recursiveFilterUniversalSelector(Selector selector)
 	{
@@ -201,7 +191,6 @@ public class MSelector
 
 	/**
 	 * Replace part of the selector sequence from the universal selector
-	 * @param part
 	 */
 	private void filterUniversalSelector(String part)
 	{
@@ -249,7 +238,6 @@ public class MSelector
 	/**
 	 * Recursively check every selector for a pseudo-class, starting at the key-selector (right-most)
 	 * If a pseudo-class is present, set it via PutPseudoClass
-	 * @param selector
 	 */
 	private void recursiveParsePseudoClasses(Selector selector)
 	{
@@ -285,20 +273,23 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @param parts
+	 * Save a non-structural pseudo-class
 	 */
 	private void putPseudoClass(String[] parts)
 	{
 		//will be 3 if pseudo in :not
 		if(parts.length != 2)
+		{
 			return;
+		}
 
 		String pseudo = ":" + parts[1];
 		if(PseudoHelper.isNonStructuralPseudo(pseudo))
 		{
 			if(_pseudoLevel == 0)
+			{
 				_keyPseudoClass = pseudo;
+			}
 
 			_nonStructuralPseudoClasses.put(parts[0], pseudo);
 			_isNonStructuralPseudo = true;
@@ -359,6 +350,7 @@ public class MSelector
 	public List<ElementWrapper> getMatchedElements() { return _matchedElements; }
 
 
+
 	/**
 	 * @return css code that is usable to query a DOM, e.g. with filtered-out pseudo selectors
 	 */
@@ -414,15 +406,7 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @param attributes
-	 * @param attributeName
-	 * @return
-	 */
-	/**
-	 * @param attributes
-	 * @param attributeName
-	 * @return the value for the given attribute, or NULL
+	 * @return the value for the given attribute of a DOM node, or NULL
 	 */
 	private static String getAttributeValue(NamedNodeMap attributes, String attributeName)
 	{
@@ -440,8 +424,7 @@ public class MSelector
 
 
 	/**
-	 * Indicate that this selector matches to one or more elements in a DOM
-	 * @param matched
+	 * Indicate that this selector matches to one or DOM elements
 	 */
 	public void setMatched(boolean matched)
 	{
@@ -451,7 +434,6 @@ public class MSelector
 
 	/**
 	 * Add a DOM element that matches this selector
-	 * @param element
 	 */
 	public void addMatchedElement(ElementWrapper element)
 	{
@@ -464,8 +446,7 @@ public class MSelector
 
 
 	/**
-	 * @param otherSelector
-	 * @return true if the 'key' (right-most) pseudo-class is equal to the key pseudo-class of the other selector
+	 * @return true if the 'key' (right-most) pseudo-element is equal to the key pseudo-element of the other selector
 	 */
 	public boolean hasEqualPseudoElement(MSelector otherSelector)
 	{
@@ -475,7 +456,6 @@ public class MSelector
 
 
 	/**
-	 * @param otherSelector
 	 * @return true if the 'key' (right-most) pseudo-class is equal to the key pseudo-class of the other selector
 	 */
 	public boolean hasEqualPseudoClass(MSelector otherSelector)
@@ -486,26 +466,18 @@ public class MSelector
 
 
 	/**
-	 * Verifies if the otherSelector applies under the same conditions as this selector
+	 * Verifies if the otherSelector applies under the same media conditions as this selector
 	 * @param otherSelector the less specific selector in relation to this selector
-	 * @return
 	 */
-	public boolean HasEqualMediaQueries(MSelector otherSelector)
+	public boolean hasEqualMediaQueries(MSelector otherSelector)
 	{
 		List<MediaQuery> commonQueries = findCommonMediaQueries(otherSelector);
-		if(_mediaQueries.containsAll(commonQueries) && commonQueries.containsAll(_mediaQueries))
-		{
-			return true;
-		}
-
-		return false;
+		return _mediaQueries.containsAll(commonQueries) && commonQueries.containsAll(_mediaQueries);
 	}
 
 
 	/**
 	 * Find all common media-queries between two selectors
-	 * @param otherSelector
-	 * @return
 	 */
 	private List<MediaQuery> findCommonMediaQueries(MSelector otherSelector)
 	{
@@ -574,8 +546,7 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @param mDeclaration
+	 * Add declaration previously removed, only used on restore
 	 */
 	public void restoreDeclaration(MDeclaration mDeclaration)
 	{
@@ -584,8 +555,7 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @param newProps
+	 * Update all declarations with a new set
 	 */
 	public void setNewDeclarations(List<MDeclaration> newProps)
 	{
@@ -613,8 +583,7 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @param declarations
+	 * Remove all declarations from this selector
 	 */
 	public void removeDeclarations(List<MDeclaration> declarations)
 	{
@@ -623,8 +592,7 @@ public class MSelector
 
 
 	/**
-	 *
-	 * @param declarations
+	 * Remove all declarations that match a equals declarations by its string representation
 	 */
 	public void removeDeclarationsByText(List<MDeclaration> declarations)
 	{

@@ -28,7 +28,8 @@ public class ParserErrorHandler implements ErrorHandler
         _fatalErrors = new ArrayList<>();
     }
 
-    public List<String> printParseErrors()
+    /** Getter */
+    public List<String> getParseErrors()
     {
         List<String> result = new ArrayList<>();
 

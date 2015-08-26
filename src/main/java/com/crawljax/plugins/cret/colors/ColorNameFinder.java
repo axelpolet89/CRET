@@ -113,24 +113,12 @@ public class ColorNameFinder
     }
 
 
-    /**
-     *
-     * @param r
-     * @param g
-     * @param b
-     * @return
-     */
     private String rgbToHex(int r, int g, int b)
     {
         return String.format("#%02x%02x%02x", r, g, b);
     }
 
 
-    /**
-     *
-     * @param hex
-     * @return
-     */
     private Rgb hexToRgb(String hex)
     {
         if(hex.length() == 6)
@@ -140,22 +128,12 @@ public class ColorNameFinder
     }
 
 
-    /**
-     *
-     * @param hex
-     * @return
-     */
     private Hsl hexToHsl(String hex)
     {
         return rgbToHsl(hexToRgb(hex));
     }
 
 
-    /**
-     *
-     * @param rgb
-     * @return
-     */
     private Hsl rgbToHsl(Rgb rgb)
     {
         final double r = (double)rgb.r/(double)255;
@@ -190,6 +168,11 @@ public class ColorNameFinder
     }
 
 
+    /**
+     * @param hex
+     * @return a name for a given hexadecimal color
+     * @throws CssSuiteException
+     */
     public String tryGetNameForHex(String hex) throws CssSuiteException
     {
         Rgb rgb = hexToRgb(hex);
@@ -202,7 +185,7 @@ public class ColorNameFinder
      * @param r
      * @param g
      * @param b
-     * @return
+     * @return a name for a given rgb color
      * @throws CssSuiteException
      */
     public String tryGetNameForRgb(int r, int g, int b) throws CssSuiteException

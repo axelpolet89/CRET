@@ -12,7 +12,9 @@ import java.util.Map;
 /**
  * Created by axel on 6/9/2015.
  *
- * Transforms browser color names (X11 color scheme) into its rgb representation.
+ * Transforms browser color names (X11 color scheme) into its hexadecimal representation.
+ * Uses a table of X11 colors mapped to hexadecimal colors from https://developer.mozilla.org/en-US/docs/Web/CSS/color_value
+ *
  */
 public class BrowserColorParser
 {
@@ -40,8 +42,8 @@ public class BrowserColorParser
     }
 
     /**
-     * @param browserColor the browser color (text)
-     * @return an rgb representation for the given browserColor, if it is a valid X11 browser color
+     * @param browserColor the browser color (X11)
+     * @return an hexadecimal representation for the given browserColor, if it is a valid X11 browser color
      */
     public String tryParseColorToHex(String browserColor)
     {

@@ -301,7 +301,7 @@ public class CRET implements OnNewStatePlugin, PostCrawlingPlugin
 			FileWriter esWriter = new FileWriter(FileHelper.createFileAndDirs(_outputRoot.concat("parser_errors.txt")));
 			for (String url : _parserErrors.keySet())
 			{
-				List<String> parseErrors = _parserErrors.get(url).printParseErrors();
+				List<String> parseErrors = _parserErrors.get(url).getParseErrors();
 				if(!parseErrors.isEmpty())
 				{
 					esWriter.append(String.format("\n\n\n Parser errors found for CSS URL %s", url));

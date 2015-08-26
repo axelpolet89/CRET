@@ -19,10 +19,12 @@ public class MCssMediaRule extends MCssRuleBase
         super(rule, queries, parent);
     }
 
+    /** Setter */
     public void setInnerRules(List<MCssRuleBase> innerRules)
     {
         _innerRules = innerRules;
     }
 
+    /** Getter */
     public List<MCssRuleBase> getInnerRules(){ return _innerRules; }
 }

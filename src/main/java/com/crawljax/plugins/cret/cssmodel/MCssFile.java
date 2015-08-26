@@ -7,8 +7,7 @@ import java.util.stream.Collectors;
 /**
  * Created by axel on 5/22/2015.
  *
- * Represents a CSS file
- * For example, we will ignore @page and @import rules
+ * Represents a CSS file, containing regular rules, media rules and ignored rules (such as @import)
  */
 public class MCssFile
 {

@@ -58,9 +58,9 @@ public class TestHelper
         CssParser parser = new CssParser(false);
         MCssFile mCssFile = parser.parseCssIntoMCssRules(path, contents);
 
-        if(parser.getParseErrors().printParseErrors().size() > 0)
+        if(parser.getParseErrors().getParseErrors().size() > 0)
         {
-            for(String parseError : parser.getParseErrors().printParseErrors())
+            for(String parseError : parser.getParseErrors().getParseErrors())
                 System.out.println(String.format("Incorrect CSS in file '%s' -> 's'", path, parseError));
 
             return null;
@@ -74,9 +74,9 @@ public class TestHelper
         CssParser parser = new CssParser(false);
         MCssFile mCssFile  = parser.parseCssIntoMCssRules(name, cssCode);
 
-        if(parser.getParseErrors().printParseErrors().size() > 0)
+        if(parser.getParseErrors().getParseErrors().size() > 0)
         {
-            for(String parseError : parser.getParseErrors().printParseErrors())
+            for(String parseError : parser.getParseErrors().getParseErrors())
                 System.out.println(String.format("Incorrect CSS in file '%s' -> 's'", name, parseError));
 
             return null;

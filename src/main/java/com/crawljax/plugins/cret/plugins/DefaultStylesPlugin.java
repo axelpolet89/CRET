@@ -117,7 +117,7 @@ public class DefaultStylesPlugin implements ICssTransformer
                                 }
 
                                 if (selector.getMediaQueries().size() > 0 && nextSelector.getMediaQueries().size() > 0
-                                        && !selector.HasEqualMediaQueries(nextSelector))
+                                        && !selector.hasEqualMediaQueries(nextSelector))
                                 {
                                     continue;
                                 }

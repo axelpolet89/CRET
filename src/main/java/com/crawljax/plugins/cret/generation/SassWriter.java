@@ -20,6 +20,9 @@ import java.util.stream.Collectors;
  */
 public class SassWriter
 {
+    /**
+     * Generate valid SCSS code and write it to a given File
+     */
     public File generateSassCode(File file, SassFile sassFile) throws URISyntaxException, IOException
     {
         LogHandler.info("[SassWriter] Generating SASS code for file '%s'...", file.getPath().replace("%", "-PERC-"));

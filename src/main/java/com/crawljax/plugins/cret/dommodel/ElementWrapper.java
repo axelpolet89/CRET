@@ -9,7 +9,7 @@ import com.crawljax.util.DomUtils;
 /**
  * Created by axel on 6/9/2015.
  *
- * Wraps the org.w3c.dom.Element class, and combines a given Element with the state crawljax found it in
+ * Wraps the org.w3c.dom.Element class, and combines a given Element with the state Crawljax discovered it in
  */
 public class ElementWrapper 
 {
@@ -17,12 +17,6 @@ public class ElementWrapper
 	private final Element _element;
 	private final String _key;
 
-
-	/**
-	 * Constructor
-	 * @param stateName  name of the corresponding DOM state.
-	 * @param element the affected element.
-	 */
 	public ElementWrapper(String stateName, Element element)
 	{
 		_stateName = stateName;

@@ -27,11 +27,6 @@ public class SassBuilder
     private final Map<String, String> _alreadyDefinedVars;
     private final SassStatistics _statistics;
 
-    public SassBuilder(MCssFile mCssFile)
-    {
-        this(mCssFile, 999);
-    }
-
     public SassBuilder(MCssFile mCssFile, int propUpperLimit)
     {
         _mixinMinPropCount = 0;
@@ -42,12 +37,29 @@ public class SassBuilder
         _statistics = new SassStatistics();
     }
 
+    /**
+     * Test constructor
+     */
+    public SassBuilder(MCssFile mCssFile)
+    {
+        this(mCssFile, 999);
+    }
+
+
+    /**
+     * @return Statistics object contained data for 1 CSS to SASS transformation
+     */
     public SassStatistics getStatistics()
     {
         _statistics.variableCount = _sassVariables.size();
         return _statistics;
     }
 
+
+    /**
+     * Transform CSS into SASS by extracting variables, clone mixins and parameterized mixins
+     * @return SassFile object contianing SassVariables, SassMixins and SassRules
+     */
     public SassFile generateSass()
     {
         CloneDetector cd = new CloneDetector();
@@ -78,14 +90,14 @@ public class SassBuilder
         generateVariables(largeSelectors);
 
         LogHandler.debug("[SassBuilder] Build SASS mixins...");
-        List<SassCloneMixin> validMixins = processAndFilterClones(cd.generateMixins(validSelectors));
+        List<SassCloneMixin> validMixins = processAndFilterClones(cd.generateMixinsFromClones(validSelectors));
 
         LogHandler.debug("[SassBuilder] Build SASS selectors...");
         List<SassSelector> sassSelectors = generateSassSelectors(validSelectors, validMixins);
         sassSelectors.addAll(generateSassSelectors(largeSelectors, validMixins));
 
         LogHandler.debug("[SassBuilder] Build SASS convenience mixins...");
-        List<SassMixinBase> sassMixins = generateConvenienceMixins(sassSelectors);
+        List<SassMixinBase> sassMixins = generateParameterizedMixins(sassSelectors);
 
         LogHandler.debug("[SassBuilder] Build SASS rules...");
         List<SassRuleBase> sassRules = generateSassRules(sassSelectors, _mcssFile.getMediaRules(), _mcssFile.getIgnoredRules());
@@ -95,8 +107,9 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param selectors
+     * Generate SASS variables from given list of MSelectors
+     * Analyze declarations in selectors and extract fonts, colors and URLs
+     * Save extracted values in SassVariables
      */
     private void generateVariables(List<MSelector> selectors)
     {
@@ -122,7 +135,7 @@ public class SassBuilder
                         String varName = "font-stack";
                         String varValue = origValue;
 
-                        varName = generateVariable(varName, varValue, varType, mDeclaration);
+                        varName = generateVariable(varName, varValue, varType);
                         String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
                         String escapedName = String.format("\\$%s", varName);
                         origValue = origValue.replaceFirst(escapedValue, escapedName);
@@ -193,7 +206,7 @@ public class SassBuilder
 
                             if (!varName.isEmpty() && !varValue.isEmpty())
                             {
-                                varName = String.format("$%s", generateVariable(varName, varValue, varType, mDeclaration));
+                                varName = String.format("$%s", generateVariable(varName, varValue, varType));
 
                                 String escapedValue = varValue.replaceFirst("\\(", "\\\\(").replaceFirst("\\)", "\\\\)");
                                 String escapedName = String.format("\\%s", varName);
@@ -224,7 +237,7 @@ public class SassBuilder
     }
 
 
-    private String generateVariable(String varName, String varValue, SassVarType varType, MDeclaration originalProperty)
+    private String generateVariable(String varName, String varValue, SassVarType varType)
     {
         // if varName already used, extend varName with an id
         if (_alreadyDefinedVars.containsKey(varName) && !_alreadyDefinedVars.get(varName).equals(varValue))
@@ -256,7 +269,6 @@ public class SassBuilder
     private String tryFindUrl(String value)
     {
         int s =  value.indexOf("url(");
-        //int e = value.indexOf(")", s);
         return value.substring(s, value.length());
     }
 
@@ -296,9 +308,11 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param mixins
-     * @return
+     * Filter given list of SASS mixins, which contain cloned declaration groups
+     * Filter based on effectiveness of mixin
+     * Number of declarations should exceed certain minimum count (default 0)
+     * Then number of (declarations in mixin) - 1 * number of mixin usages > declarations in mixin
+     * @return list of valid mixins
      */
     private List<SassCloneMixin> processAndFilterClones(List<SassCloneMixin> mixins)
     {
@@ -358,8 +372,7 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param mixin
+     * In-place sort of selectors related to mixin and declaration contained in mizin
      */
     private void sortMixinValues(SassCloneMixin mixin)
     {
@@ -377,8 +390,7 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param mixin
+     * Restore clone mixin by added declarations contained in it to related CSS selectors
      */
     private void restoreCloneMixin(SassCloneMixin mixin)
     {
@@ -394,11 +406,9 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param sassSelectors
-     * @return
+     * Generate two parameterized mixins, to replace padding and margin declarations in selectors that are not 'shorthandable'
      */
-    private List<SassMixinBase> generateConvenienceMixins(List<SassSelector> sassSelectors)
+    private List<SassMixinBase> generateParameterizedMixins(List<SassSelector> sassSelectors)
     {
         List<SassMixinBase> mixins = new ArrayList<>();
 
@@ -415,7 +425,7 @@ public class SassBuilder
 
             if(paddings.size() > 1)
             {
-                sassSelector.addInclude(padding.createMixinCall(paddings));
+                sassSelector.addInclude(padding.createMixinInclude(paddings));
                 sassSelector.removeDeclarations(paddings);
 
                 pUsed = true;
@@ -425,7 +435,7 @@ public class SassBuilder
 
             if(margins.size() > 1)
             {
-                sassSelector.addInclude(margin.createMixinCall(margins));
+                sassSelector.addInclude(margin.createMixinInclude(margins));
                 sassSelector.removeDeclarations(margins);
 
                 mUsed = true;
@@ -449,10 +459,7 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param selectors
-     * @param extensions
-     * @return
+     * Generate sass selectors, in which some declarations inside a given list of selectors are replaced by @include statements
      */
     private List<SassSelector> generateSassSelectors(List<MSelector> selectors, List<SassCloneMixin> extensions)
     {
@@ -483,11 +490,10 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param sassSelectors
-     * @param mediaRules
-     * @param ignoredRules
-     * @return
+     * Generate SASS rules containing SASS selectors
+     * Also include ignored CSS rules
+     * Also recursively parse media rules
+     * @return list of SASS rules
      */
     private List<SassRuleBase> generateSassRules(List<SassSelector> sassSelectors, List<MCssMediaRule> mediaRules, List<MCssRuleBase> ignoredRules)
     {
@@ -576,11 +582,7 @@ public class SassBuilder
 
 
     /**
-     *
-     * @param mediaRule
-     * @param selectors
-     * @param ignoredRules
-     * @return
+     * Recursively generate SASS media rules, containing other SASS rules
      */
     private SassMediaRule recursiveGenerateMediaRules(MCssMediaRule mediaRule, List<SassSelector> selectors, List<MCssRuleBase> ignoredRules)
     {

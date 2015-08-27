@@ -33,15 +33,22 @@ public class SassSelector
         _otherIncludes = new ArrayList<>();
     }
 
-    public void addCloneInclude(SassCloneMixin sassTemplate)
+    /**
+     * Add clone mixin, transform into @include to this selector
+     */
+    public void addCloneInclude(SassCloneMixin sassMixin)
     {
-        _cloneIncludes.add(sassTemplate);
+        _cloneIncludes.add(sassMixin);
     }
 
+    /**
+     * Add @include, as simple string
+     */
     public void addInclude(String include)
     {
         _otherIncludes.add(include);
     }
+
 
     public void printContents(CretStringBuilder builder, String prefix)
     {
@@ -66,35 +73,59 @@ public class SassSelector
         }
     }
 
+    /** Getter */
     public List<SassCloneMixin> getIncludes()
     {
         return _cloneIncludes;
     }
 
+    /** Getter */
     public List<String> getOtherIncludes()
     {
         return _otherIncludes;
     }
 
+    /** Getter */
     public String getSelectorText()
     {
         return _selectorText;
     }
 
+    /** Getter */
     public int getLineNumber()
     {
         return _original.getLineNumber();
     }
 
+    /** Getter */
     public int getOrder()
     {
         return _original.getOrder();
     }
 
-    public List<MediaQuery> getMediaQueries() { return _original.getMediaQueries();}
+    /** Getter */
+    public List<MediaQuery> getMediaQueries()
+    {
+        return _original.getMediaQueries();
+    }
 
-    public MCssRuleBase getParent() { return _original.getParent(); }
+    /** Getter */
+    public MCssRuleBase getParent()
+    {
+        return _original.getParent();
+    }
 
+    /** Getter */
+    public List<MDeclaration> getDeclarations()
+    {
+        return _declarations;
+    }
+
+
+    /**
+     * Compare given selector with this selector on their declarations
+     * @return true if they contain equal declarations
+     */
     public boolean hasEqualDeclarationsByText(SassSelector other)
     {
         List<String> sorted = getSortedDeclarationsText();
@@ -116,6 +147,10 @@ public class SassSelector
         return true;
     }
 
+
+    /**
+     * @return list of declarations containing clone includes, simple includes and declarations sorted by their order
+     */
     public List<String> getSortedDeclarationsText()
     {
         List<String> result = _cloneIncludes.stream().sorted((e1, e2) -> Integer.compare(e1.getNumber(), e2.getNumber())).map(e -> e.toString()).collect(Collectors.toList());
@@ -124,11 +159,10 @@ public class SassSelector
         return result;
     }
 
-    public List<MDeclaration> getDeclarations()
-    {
-        return _declarations;
-    }
 
+    /**
+     * Remove given set of declarations from this selector
+     */
     public void removeDeclarations(List<MDeclaration> declarations)
     {
         _declarations.removeAll(declarations);

@@ -28,14 +28,15 @@ public class SassFile
         _rules.sort((r1, r2 ) -> Integer.compare(r1.getLineNumber(), r2.getLineNumber()));
     }
 
+    /** Getter */
     public List<SassVariable> getVariables() { return _variables; }
 
+    /** Getter */
     public List<SassCloneMixin> getCloneMixins() { return _cloneMixins; }
 
+    /** Getter */
     public List<SassMixinBase> getMixins() { return _mixins; }
 
-    public List<SassRuleBase> getRules()
-    {
-        return _rules;
-    }
+    /** Getter */
+    public List<SassRuleBase> getRules() { return _rules; }
 }

@@ -18,17 +18,22 @@ public class SassVariable
         _value = value;
     }
 
-    public void print(CretStringBuilder builder)
-    {
-        builder.append("$%s: %s;", _name, _value);
-    }
-
+    /** Getter */
     public SassVarType getVarType()
     {
         return _type;
     }
 
-    public String getValue() { return _value; }
+    /** Getter */
+    public String getValue()
+    {
+        return _value;
+    }
+
+    public void print(CretStringBuilder builder)
+    {
+        builder.append("$%s: %s;", _name, _value);
+    }
 
     @Override
     public String toString()

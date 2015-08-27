@@ -14,10 +14,13 @@ public abstract class SassRuleBase
         _lineNumber = lineNumber;
     }
 
+
+    /** Getter */
     public int getLineNumber()
     {
         return _lineNumber;
     }
+
 
     public abstract void print(CretStringBuilder builder, String prefix);
 }

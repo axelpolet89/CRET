@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Created by axel on 6/10/2015.
+ *
+ * Base class for a mixin, including parameters and contents
  */
 public abstract class SassMixinBase
 {

@@ -38,10 +38,13 @@ public class SassRule extends SassRuleBase
         }
     }
 
+
+    /** Getter */
     public List<SassSelector> getSassSelectors()
     {
         return _sassSelectors;
     }
+
 
     public void print(CretStringBuilder builder, String prefix)
     {

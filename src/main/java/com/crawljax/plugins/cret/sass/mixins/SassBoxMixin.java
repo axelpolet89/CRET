@@ -18,7 +18,11 @@ public class SassBoxMixin extends SassMixinBase
                 Arrays.asList(String.format("%s-top: $top;", name), String.format("%s-bottom: $bottom;", name), String.format("%s-right: $right;", name), String.format("%s-left: $left;", name)));
     }
 
-    public String createMixinCall(List<MDeclaration> declarations)
+    /**
+     * Create mixin include for this box mixin, to be included in a selector
+     * @return correct mixin include, with parameters for given list of declarations
+     */
+    public String createMixinInclude(List<MDeclaration> declarations)
     {
         CretStringBuilder builder = new CretStringBuilder();
         builder.append("%s(", _name);

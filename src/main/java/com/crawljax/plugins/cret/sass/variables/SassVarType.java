@@ -18,7 +18,8 @@ public enum SassVarType
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return _stringRepresentation;
     }
 }

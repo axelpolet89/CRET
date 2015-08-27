@@ -14,16 +14,23 @@ import com.crawljax.plugins.cret.sass.clonedetection.items.ItemSetList;
 /**
  * Created by axel on 5/5/2015.
  *
- * Implementation of detecting clones based on FP-growth solution in https://github.com/dmazinanian/css-analyser
+ * Implementation of detecting clones in CSS declarations,
+ * based on FP-growth solution in https://github.com/dmazinanian/css-analyser
  */
 public class CloneDetector
 {
     /**
+     * Implementation taken from https://github.com/dmazinanian/css-analyser
+     * and adapted to generate SASS mixins from groups of cloned declarations
+     * which are detected using an FP-growth algorithm to find associations
      *
-     * @param selectors
-     * @return
+     * 1) Takes the largest cloned declaration group, and generate a mixin from it
+     * 2) Removes the declarations contained in the mixin from the CSS selectors it was taken from
+     * 3) Rerun clone detection until no more groups of cloned declarations are found
+     *
+     * @return list of SASS mixins extraced from groups of cloned declarations
      */
-    public List<SassCloneMixin> generateMixins(List<MSelector> selectors)
+    public List<SassCloneMixin> generateMixinsFromClones(List<MSelector> selectors)
     {
         List<SassCloneMixin> templates = new ArrayList<>();
         List<MSelector> allSelectors = new ArrayList<>(selectors);
@@ -81,7 +88,7 @@ public class CloneDetector
                             if (!pSet)
                             {
                                 pSet = true;
-                                existing.get().addProperty(d.getProperty());
+                                existing.get().addDeclaration(d.getProperty());
                             }
                         }
                     }
@@ -97,7 +104,7 @@ public class CloneDetector
                             if (!pSet)
                             {
                                 pSet = true;
-                                template.addProperty(d.getProperty());
+                                template.addDeclaration(d.getProperty());
                             }
                         }
 
@@ -129,9 +136,7 @@ public class CloneDetector
 
     /**
      * Implementation taken from https://github.com/dmazinanian/css-analyser
-     * and adapted to be applied on MSelectors and MProperties
-     * @param selectors
-     * @return
+     * and adapted to be applied on MSelectors and MDeclarations
      */
     private List<ItemSetList> findDuplicationsAndFpGrowth(List<MSelector> selectors)
     {

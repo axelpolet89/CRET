@@ -17,6 +17,7 @@ public class SassIgnoredRule extends SassRuleBase
         _rule = rule;
     }
 
+
     public void print(CretStringBuilder builder, String prefix)
     {
         builder.append("%s%s", prefix, _rule.toString()

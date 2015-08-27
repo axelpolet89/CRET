@@ -5,6 +5,8 @@ import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 
 /**
  * Created by axel on 6/5/2015.
+ *
+ * Wrapper used to identify a cloned declaration, including the selector in which it is contained
  */
 public class ClonedDeclaration
 {
@@ -17,11 +19,13 @@ public class ClonedDeclaration
         _mSelector = mSelector;
     }
 
+    /** Getter */
     public MSelector getSelector()
     {
         return _mSelector;
     }
 
+    /** Getter */
     public MDeclaration getProperty()
     {
         return _mDeclaration;

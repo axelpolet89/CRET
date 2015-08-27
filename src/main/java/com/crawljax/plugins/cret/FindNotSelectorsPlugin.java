@@ -53,6 +53,114 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 	}
 
 
+	@Override
+	public void onNewState(CrawlerContext context, StateVertex newState)
+	{
+		LogHandler.info("[NEW STATE] %s", newState.getUrl());
+
+		// if the external CSS files are not parsed yet, do so
+		LogHandler.info("Parse CSS rules...");
+		ParseCssRulesForState(context, newState);
+	}
+
+
+	@Override
+	public void postCrawling(CrawlSession session, ExitStatus exitReason)
+	{
+		CretStringBuilder builder = new CretStringBuilder();
+		builder.append("<site>");
+		builder.appendLine("\t<site_name>%s</site_name>", _siteName);
+
+		CretStringBuilder detailBuilder = new CretStringBuilder();
+		detailBuilder.append("<site>");
+		detailBuilder.appendLine("\t<site_name>%s</site_name>", _siteName);
+
+		int totalForSite = 0;
+		int notForSite = 0;
+
+		for(String fileName : _cssFiles.keySet())
+		{
+			int totalSelectors = 0;
+			int notSelectors = 0;
+
+			for(MCssRule mCssRule : _cssFiles.get(fileName).getRules())
+			{
+				for(MSelector mSelector : mCssRule.getSelectors())
+				{
+					if(mSelector.getSelectorText().contains(":not"))
+					{
+						notSelectors++;
+					}
+
+					totalSelectors++;
+				}
+			}
+
+			detailBuilder.appendLine("\t\t<file>");
+			detailBuilder.appendLine("\t\t\t<css_file>%s</css_file>", encodeUrl(fileName));
+			detailBuilder.appendLine("\t\t\t<embedded_file></embedded_file>");
+			detailBuilder.appendLine("\t\t\t<total_selectors>%d</total_selectors>", totalSelectors);
+			detailBuilder.appendLine("\t\t\t<not_selectors>%d</not_selectors>", notSelectors);
+			detailBuilder.appendLine("\t\t</file>");
+
+			//LogHandler.info("file:\t\t%s\ntotal selectors:\t%d\n:not selectors:\t%d\npercentage:\t%.2f", fileName, totalSelectors, notSelectors, percentage);
+
+			totalForSite += totalSelectors;
+			notForSite += notSelectors;
+		}
+
+		for(String fileName : _embeddedStyles.keySet())
+		{
+			int totalSelectors = 0;
+			int notSelectors = 0;
+
+			for(MCssRule mCssRule : _embeddedStyles.get(fileName).getRules())
+			{
+				for(MSelector mSelector : mCssRule.getSelectors())
+				{
+					if(mSelector.getSelectorText().contains(":not"))
+					{
+						notSelectors++;
+					}
+
+					totalSelectors++;
+				}
+			}
+
+			detailBuilder.appendLine("\t\t<file>");
+			detailBuilder.appendLine("\t\t\t<css_file></css_file>");
+			detailBuilder.appendLine("\t\t\t<embedded_file>%s</embedded_file>", encodeUrl(fileName));
+			detailBuilder.appendLine("\t\t\t<total_selectors>%d</total_selectors>", totalSelectors);
+			detailBuilder.appendLine("\t\t\t<not_selectors>%d</not_selectors>", notSelectors);
+			detailBuilder.appendLine("\t\t</file>");
+
+			totalForSite += totalSelectors;
+			notForSite += notSelectors;
+		}
+
+		builder.appendLine("\t<total_for_site>%d</total_for_site>", totalForSite);
+		builder.appendLine("\t<not_for_site>%d</not_for_site>", notForSite);
+		builder.appendLine("</site>");
+
+		detailBuilder.appendLine("</site>");
+
+		try
+		{
+			_outputWriter.append(builder.toString());
+			_outputWriter.append("\n\n");
+			_outputWriter.flush();
+
+			_detailWriter.append(detailBuilder.toString());
+			_detailWriter.append("\n\n");
+			_detailWriter.flush();
+		}
+		catch (IOException e)
+		{
+			LogHandler.error(e, "Error occurred while writing :not analysis for site %s", _siteName);
+		}
+	}
+
+
 	/**
 	 *
 	 */
@@ -173,113 +281,5 @@ public class FindNotSelectorsPlugin implements OnNewStatePlugin, PostCrawlingPlu
 		}
 
 		return url;
-	}
-
-
-	@Override
-	public void onNewState(CrawlerContext context, StateVertex newState)
-	{
-		LogHandler.info("[NEW STATE] %s", newState.getUrl());
-
-		// if the external CSS files are not parsed yet, do so
-		LogHandler.info("Parse CSS rules...");
-		ParseCssRulesForState(context, newState);
-	}
-
-
-	@Override
-	public void postCrawling(CrawlSession session, ExitStatus exitReason)
-	{
-		CretStringBuilder builder = new CretStringBuilder();
-		builder.append("<site>");
-		builder.appendLine("\t<site_name>%s</site_name>", _siteName);
-
-		CretStringBuilder detailBuilder = new CretStringBuilder();
-		detailBuilder.append("<site>");
-		detailBuilder.appendLine("\t<site_name>%s</site_name>", _siteName);
-
-		int totalForSite = 0;
-		int notForSite = 0;
-
-		for(String fileName : _cssFiles.keySet())
-		{
-			int totalSelectors = 0;
-			int notSelectors = 0;
-
-			for(MCssRule mCssRule : _cssFiles.get(fileName).getRules())
-			{
-				for(MSelector mSelector : mCssRule.getSelectors())
-				{
-					if(mSelector.getSelectorText().contains(":not"))
-					{
-						notSelectors++;
-					}
-
-					totalSelectors++;
-				}
-			}
-
-			detailBuilder.appendLine("\t\t<file>");
-			detailBuilder.appendLine("\t\t\t<css_file>%s</css_file>", encodeUrl(fileName));
-			detailBuilder.appendLine("\t\t\t<embedded_file></embedded_file>");
-			detailBuilder.appendLine("\t\t\t<total_selectors>%d</total_selectors>", totalSelectors);
-			detailBuilder.appendLine("\t\t\t<not_selectors>%d</not_selectors>", notSelectors);
-			detailBuilder.appendLine("\t\t</file>");
-
-			//LogHandler.info("file:\t\t%s\ntotal selectors:\t%d\n:not selectors:\t%d\npercentage:\t%.2f", fileName, totalSelectors, notSelectors, percentage);
-
-			totalForSite += totalSelectors;
-			notForSite += notSelectors;
-		}
-
-		for(String fileName : _embeddedStyles.keySet())
-		{
-			int totalSelectors = 0;
-			int notSelectors = 0;
-
-			for(MCssRule mCssRule : _embeddedStyles.get(fileName).getRules())
-			{
-				for(MSelector mSelector : mCssRule.getSelectors())
-				{
-					if(mSelector.getSelectorText().contains(":not"))
-					{
-						notSelectors++;
-					}
-
-					totalSelectors++;
-				}
-			}
-
-			detailBuilder.appendLine("\t\t<file>");
-			detailBuilder.appendLine("\t\t\t<css_file></css_file>");
-			detailBuilder.appendLine("\t\t\t<embedded_file>%s</embedded_file>", encodeUrl(fileName));
-			detailBuilder.appendLine("\t\t\t<total_selectors>%d</total_selectors>", totalSelectors);
-			detailBuilder.appendLine("\t\t\t<not_selectors>%d</not_selectors>", notSelectors);
-			detailBuilder.appendLine("\t\t</file>");
-
-			totalForSite += totalSelectors;
-			notForSite += notSelectors;
-		}
-
-		builder.appendLine("\t<total_for_site>%d</total_for_site>", totalForSite);
-		builder.appendLine("\t<not_for_site>%d</not_for_site>", notForSite);
-		builder.appendLine("</site>");
-
-		detailBuilder.appendLine("</site>");
-
-		try
-		{
-			_outputWriter.append(builder.toString());
-			_outputWriter.append("\n\n");
-			_outputWriter.flush();
-
-			_detailWriter.append(detailBuilder.toString());
-			_detailWriter.append("\n\n");
-			_detailWriter.flush();
-		}
-		catch (IOException e)
-		{
-			LogHandler.error(e, "Error occurred while writing :not analysis for site %s", _siteName);
-		}
 	}
 }

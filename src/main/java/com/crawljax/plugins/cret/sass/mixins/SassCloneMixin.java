@@ -26,11 +26,38 @@ public class SassCloneMixin
         _declarationOrdering = new HashMap<>();
     }
 
-    public void addProperty(MDeclaration mDeclaration)
+    /** Getter */
+    public List<MDeclaration> getDeclarations()
+    {
+        return _declarations;
+    }
+
+    /** Getter */
+    public List<MSelector> getRelatedSelectors()
+    {
+        return _extractedFrom;
+    }
+
+    /** Getter */
+    public int getNumber()
+    {
+        return _number;
+    }
+
+
+    /**
+     * Add declaration to be included in this mixin
+     */
+    public void addDeclaration(MDeclaration mDeclaration)
     {
         _declarations.add(mDeclaration);
     }
 
+
+    /**
+     * Add a selector that will require an @include to this mixin
+     * Also retain ordering of the declarations contained in that selector,
+     */
     public void addSelector(MSelector mSelector)
     {
         _extractedFrom.add(mSelector);
@@ -41,35 +68,34 @@ public class SassCloneMixin
         _declarationOrdering.put(mSelector, declarationOrdering);
     }
 
+
+    /**
+     * Set number that will be used in this mixins name
+     */
     public void setNumber(int number)
     {
         _number = number;
     }
 
+
+    /**
+     * Check if given list of selectors is equal to selectors related to this mixin
+     * @return
+     */
     public boolean sameSelectors(List<MSelector> selectors)
     {
         return _extractedFrom.size() == selectors.size() && selectors.containsAll(_extractedFrom);
     }
 
-    public List<MDeclaration> getDeclarations()
-    {
-        return _declarations;
-    }
 
-    public List<MSelector> getRelatedSelectors()
-    {
-        return _extractedFrom;
-    }
-
+    /**
+     * @return order of given declaration in given selector, which is require to correctly place an @include in the selector
+     */
     public int getDeclarationOrderForSelector(MSelector mSelector, MDeclaration mDeclaration)
     {
         return _declarationOrdering.get(mSelector).get(mDeclaration.getName());
     }
 
-    public int getNumber()
-    {
-        return _number;
-    }
 
     public void print(CretStringBuilder builder)
     {

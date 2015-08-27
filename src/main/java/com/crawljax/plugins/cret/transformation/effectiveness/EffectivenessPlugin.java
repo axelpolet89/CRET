@@ -1,11 +1,11 @@
-package com.crawljax.plugins.cret.plugins.effectiveness;
+package com.crawljax.plugins.cret.transformation.effectiveness;
 
 import com.crawljax.plugins.cret.LogHandler;
 import com.crawljax.plugins.cret.cssmodel.MCssFile;
 import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
+import com.crawljax.plugins.cret.transformation.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.*;

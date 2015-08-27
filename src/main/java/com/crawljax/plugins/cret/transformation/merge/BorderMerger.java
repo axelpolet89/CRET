@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.plugins.merge;
+package com.crawljax.plugins.cret.transformation.merge;
 
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 

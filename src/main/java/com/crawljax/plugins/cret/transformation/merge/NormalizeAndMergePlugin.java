@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.plugins.merge;
+package com.crawljax.plugins.cret.transformation.merge;
 
 import com.crawljax.plugins.cret.CssSuiteException;
 import com.crawljax.plugins.cret.LogHandler;
@@ -7,7 +7,7 @@ import com.crawljax.plugins.cret.cssmodel.MCssRule;
 import com.crawljax.plugins.cret.cssmodel.MSelector;
 import com.crawljax.plugins.cret.cssmodel.declarations.MDeclaration;
 import com.crawljax.plugins.cret.interfaces.ICssTransformer;
-import com.crawljax.plugins.cret.plugins.matcher.MatchedElements;
+import com.crawljax.plugins.cret.transformation.matcher.MatchedElements;
 import com.crawljax.plugins.cret.util.CretStringBuilder;
 
 import java.util.*;

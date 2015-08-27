@@ -1,4 +1,4 @@
-package com.crawljax.plugins.cret.plugins.merge;
+package com.crawljax.plugins.cret.transformation.merge;
 
 /**
  * Created by axel on 5/27/2015.
